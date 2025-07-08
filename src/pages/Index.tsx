@@ -14,12 +14,12 @@ const Index = () => {
       <NewsletterPreview />
       <Testimonials />
       <footer className="w-full py-6 text-center text-gray-500 text-sm border-t border-gray-200/60 bg-white/70 backdrop-blur-md">
-        © {new Date().getFullYear()}{" "}
+        © {new Date().getFullYear()} {" "}
         <a
-          href="https://vyyra.com"
+          href="https://briefly.so"
           className="underline hover:text-black transition-colors"
         >
-          Vyyra
+          Briefly
         </a>
         . All rights reserved.
       </footer>

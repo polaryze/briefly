@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 const testimonials = [
   {
     id: 1,
-    quote: "I forgot I even posted these. Vyyra made me sound like a columnist.",
+    quote: "I forgot I even posted these. Briefly made me sound like a columnist.",
     author: "Sarah Chen",
     role: "Senior Dev, NYC",
     avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=64&h=64&fit=crop&crop=face&auto=format"
@@ -20,7 +20,7 @@ const testimonials = [
   },
   {
     id: 3,
-    quote: "Finally, a way to make my random thoughts look intentional. Vyyra gets my voice perfectly.",
+    quote: "Finally, a way to make my random thoughts look intentional. Briefly gets my voice perfectly.",
     author: "Alex Kumar",
     role: "Startup Founder",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face&auto=format"
@@ -65,7 +65,7 @@ const Testimonials = () => {
           Loved by <span className="gradient-text">Creators</span>
         </h2>
         <p className="text-xl text-gray-600 mb-16">
-          See what our users are saying about their Vyyra experience
+          See what our users are saying about their Briefly experience
         </p>
 
         <div className="relative">

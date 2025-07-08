@@ -26,13 +26,13 @@ const Hero = () => {
       <div className="text-center max-w-6xl mx-auto relative z-10">
         {/* Main tagline - now the biggest element */}
         <h1 className="tagline-font text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold mb-8 leading-tight text-gray-800 animate-fade-in">
-          "Where scattered thoughts<br />
+          "Where scattered posts<br />
           become <span className="gradient-text">structured stories</span>"
         </h1>
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-gray-700 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
-          Vyyra auto-generates a sleek, intelligent monthly newsletter from your posts 
+          Briefly auto-generates a sleek, intelligent monthly newsletter from your posts 
           across LinkedIn & X — powered by AI agents tuned to your tone.
         </p>
 
