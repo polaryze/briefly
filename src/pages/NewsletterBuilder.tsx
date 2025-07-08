@@ -178,7 +178,7 @@ export default function NewsletterBuilder() {
               <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Newsletter Summary</h3>
               
               {/* Summary and Images Layout */}
-              <div className="flex gap-6">
+              <div className="flex gap-8">
                 {/* Summary Text */}
                 <div className="flex-1">
                   <div className="text-gray-700 leading-relaxed text-justify space-y-4">
@@ -204,8 +204,8 @@ export default function NewsletterBuilder() {
                 </div>
                 
                 {/* Social Media Highlights */}
-                <div className="flex-shrink-0">
-                  {/* Instagram Images Grid */}
+                <div className="flex-shrink-0 w-80">
+                  {/* Instagram Latest Image */}
                   {newsletterData && newsletterData.some((post: any) => 
                     post.platform === "Instagram" && 
                     post.thumbnail && 
@@ -214,9 +214,9 @@ export default function NewsletterBuilder() {
                     !post.thumbnail.includes('placeholder') &&
                     post.thumbnail.length > 10
                   ) && (
-                    <div className="mb-6">
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">Instagram Highlights</h4>
-                      <div className="grid grid-cols-2 gap-3">
+                    <div className="mb-8">
+                      <h4 className="text-sm font-medium text-gray-600 mb-4">Latest Instagram Post</h4>
+                      <div className="flex justify-center">
                         {newsletterData
                           .filter((post: any) => 
                             post.platform === "Instagram" && 
@@ -227,13 +227,13 @@ export default function NewsletterBuilder() {
                             !post.thumbnail.includes('placehold.co') &&
                             post.thumbnail.length > 10
                           )
-                          .slice(0, 4) // Show exactly 4 images
+                          .slice(0, 1) // Show only the latest image
                           .map((post: any, index: number) => (
                             <div key={index} className="relative group">
                               <img 
                                 src={post.thumbnail} 
                                 alt={post.title || "Instagram post"}
-                                className="w-28 h-28 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                className="w-48 h-48 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                 }}
@@ -267,8 +267,8 @@ export default function NewsletterBuilder() {
                     post.thumbnail.length > 10
                   ) && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">YouTube Latest</h4>
-                      <div className="grid grid-cols-2 gap-3">
+                      <h4 className="text-sm font-medium text-gray-600 mb-4">YouTube Latest</h4>
+                      <div className="grid grid-cols-2 gap-4">
                         {newsletterData
                           .filter((post: any) => 
                             post.platform === "YouTube" && 
@@ -285,7 +285,7 @@ export default function NewsletterBuilder() {
                               <img 
                                 src={post.thumbnail} 
                                 alt={post.title || "YouTube video"}
-                                className="w-28 h-28 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                className="w-36 h-36 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                 }}
@@ -296,7 +296,7 @@ export default function NewsletterBuilder() {
                                   <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded block mb-1">
                                     YT
                                   </span>
-                                  <div className="text-xs text-white bg-black/50 px-2 py-1 rounded block max-w-24">
+                                  <div className="text-xs text-white bg-black/50 px-2 py-1 rounded block max-w-32">
                                     <div className="line-clamp-2 text-xs leading-tight">
                                       {post.title}
                                     </div>
