@@ -117,13 +117,13 @@ export default function NewsletterBuilder() {
         <h2 className="text-2xl font-bold mb-4">Build Your Weekly Newsletter</h2>
         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800 mb-2">
-            <strong>Enhanced: Instagram Deep Analysis!</strong> 
+            <strong>Enhanced: Multi-Platform Analysis!</strong> 
           </p>
           <ul className="text-xs text-blue-700 space-y-1">
-            <li>• Analyzes individual Instagram posts for detailed descriptions</li>
-            <li>• Captures engagement data (likes, comments) for context</li>
-            <li>• Extracts high-quality images from actual post pages</li>
-            <li>• AI summarizes content with engagement insights</li>
+            <li>• Instagram: Deep post analysis with engagement data and high-quality images</li>
+            <li>• YouTube: Latest video thumbnails and titles with detailed descriptions</li>
+            <li>• LinkedIn: Professional updates and insights from public profiles</li>
+            <li>• AI summarizes content with platform-specific context</li>
           </ul>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -203,57 +203,112 @@ export default function NewsletterBuilder() {
                   </div>
                 </div>
                 
-                {/* Instagram Images Grid */}
-                {newsletterData && newsletterData.some((post: any) => 
-                  post.platform === "Instagram" && 
-                  post.thumbnail && 
-                  post.thumbnail !== "https://placehold.co/120x120?text=IG" &&
-                  !post.thumbnail.includes('data:image/svg') &&
-                  !post.thumbnail.includes('placeholder') &&
-                  post.thumbnail.length > 10
-                ) && (
-                  <div className="flex-shrink-0">
-                    <h4 className="text-sm font-medium text-gray-600 mb-3">Instagram Highlights</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      {newsletterData
-                        .filter((post: any) => 
-                          post.platform === "Instagram" && 
-                          post.thumbnail && 
-                          post.thumbnail !== "https://placehold.co/120x120?text=IG" &&
-                          !post.thumbnail.includes('data:image/svg') &&
-                          !post.thumbnail.includes('placeholder') &&
-                          !post.thumbnail.includes('placehold.co') &&
-                          post.thumbnail.length > 10
-                        )
-                        .slice(0, 4) // Show exactly 4 images
-                        .map((post: any, index: number) => (
-                          <div key={index} className="relative group">
-                            <img 
-                              src={post.thumbnail} 
-                              alt={post.title || "Instagram post"}
-                              className="w-28 h-28 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                            {/* Hover overlay with platform badge and engagement info */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-end justify-start p-2">
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded block mb-1">
-                                  IG
-                                </span>
-                                {post.likes && (
-                                  <span className="text-xs text-white bg-black/50 px-2 py-1 rounded block">
-                                    {post.likes}
+                {/* Social Media Highlights */}
+                <div className="flex-shrink-0">
+                  {/* Instagram Images Grid */}
+                  {newsletterData && newsletterData.some((post: any) => 
+                    post.platform === "Instagram" && 
+                    post.thumbnail && 
+                    post.thumbnail !== "https://placehold.co/120x120?text=IG" &&
+                    !post.thumbnail.includes('data:image/svg') &&
+                    !post.thumbnail.includes('placeholder') &&
+                    post.thumbnail.length > 10
+                  ) && (
+                    <div className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-600 mb-3">Instagram Highlights</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {newsletterData
+                          .filter((post: any) => 
+                            post.platform === "Instagram" && 
+                            post.thumbnail && 
+                            post.thumbnail !== "https://placehold.co/120x120?text=IG" &&
+                            !post.thumbnail.includes('data:image/svg') &&
+                            !post.thumbnail.includes('placeholder') &&
+                            !post.thumbnail.includes('placehold.co') &&
+                            post.thumbnail.length > 10
+                          )
+                          .slice(0, 4) // Show exactly 4 images
+                          .map((post: any, index: number) => (
+                            <div key={index} className="relative group">
+                              <img 
+                                src={post.thumbnail} 
+                                alt={post.title || "Instagram post"}
+                                className="w-28 h-28 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              {/* Hover overlay with platform badge and engagement info */}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-end justify-start p-2">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded block mb-1">
+                                    IG
                                   </span>
-                                )}
+                                  {post.likes && (
+                                    <span className="text-xs text-white bg-black/50 px-2 py-1 rounded block">
+                                      {post.likes}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* YouTube Videos Grid */}
+                  {newsletterData && newsletterData.some((post: any) => 
+                    post.platform === "YouTube" && 
+                    post.thumbnail && 
+                    post.thumbnail !== "https://placehold.co/120x120?text=YT" &&
+                    !post.thumbnail.includes('data:image/svg') &&
+                    !post.thumbnail.includes('placeholder') &&
+                    post.thumbnail.length > 10
+                  ) && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-600 mb-3">YouTube Latest</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {newsletterData
+                          .filter((post: any) => 
+                            post.platform === "YouTube" && 
+                            post.thumbnail && 
+                            post.thumbnail !== "https://placehold.co/120x120?text=YT" &&
+                            !post.thumbnail.includes('data:image/svg') &&
+                            !post.thumbnail.includes('placeholder') &&
+                            !post.thumbnail.includes('placehold.co') &&
+                            post.thumbnail.length > 10
+                          )
+                          .slice(0, 4) // Show up to 4 videos
+                          .map((post: any, index: number) => (
+                            <div key={index} className="relative group">
+                              <img 
+                                src={post.thumbnail} 
+                                alt={post.title || "YouTube video"}
+                                className="w-28 h-28 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              {/* Video title overlay */}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-end justify-start p-2">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded block mb-1">
+                                    YT
+                                  </span>
+                                  <div className="text-xs text-white bg-black/50 px-2 py-1 rounded block max-w-24">
+                                    <div className="line-clamp-2 text-xs leading-tight">
+                                      {post.title}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

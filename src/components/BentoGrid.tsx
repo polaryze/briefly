@@ -14,7 +14,7 @@ const bentoItems = [
   {
     id: 2,
     title: "Your Voice, Amplified",
-    description: "Vyyra retains your tone, voice, and content rhythm.",
+            description: "Briefly retains your tone, voice, and content rhythm.",
     icon: AudioWaveform,
     className: "md:col-span-1 md:row-span-2",
     gradient: "from-gray-600/10 to-gray-700/10",
@@ -54,7 +54,7 @@ const BentoGrid = () => {
     >
       <div className="text-center mb-16">
         <h2 className="text-4xl md:text-5xl font-bold mb-6">
-          How <span className="gradient-text">Vyyra</span> Works
+          How <span className="gradient-text">Briefly</span> Works
         </h2>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Transform your scattered social content into professional publications
@@ -89,7 +89,7 @@ const BentoGrid = () => {
                 {item.id === 2 ? (
                   <div className="text-gray-600 leading-relaxed flex-1 flex flex-col gap-2">
                     <div>
-                      Vyyra retains your tone, voice, and content rhythm.
+                      Briefly retains your tone, voice, and content rhythm.
                     </div>
                     <ul className="mt-6 space-y-2">
                       <li className="flex items-start gap-3">

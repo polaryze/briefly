@@ -34,7 +34,7 @@ const Hero = () => {
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-gray-700 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
-          Vyyra auto-generates a sleek, intelligent monthly newsletter from your posts 
+          Briefly auto-generates a sleek, intelligent monthly newsletter from your posts 
           across LinkedIn & X — powered by AI agents tuned to your tone.
         </p>
 
