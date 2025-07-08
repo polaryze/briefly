@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
   const [displayText, setDisplayText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const navigate = useNavigate();
   
   const newsletterTitle = 'The Weekly Digest - November Edition';
   
@@ -41,6 +43,7 @@ const Hero = () => {
           size="lg" 
           className="text-lg px-8 py-6 rounded-2xl bg-black hover:bg-gray-800 text-white shadow-2xl hover:shadow-black/25 transition-all duration-300 hover:scale-105 animate-fade-in"
           style={{ animationDelay: '0.6s' }}
+          onClick={() => navigate('/newsletter-builder')}
         >
           Generate My First Issue →
         </Button>

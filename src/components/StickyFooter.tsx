@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const StickyFooter = () => {
   const [isVisible, setIsVisible] = useState(false);
   const closedRef = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,7 +46,10 @@ const StickyFooter = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button className="bg-black hover:bg-gray-800 text-white rounded-xl px-6">
+            <Button 
+              className="bg-black hover:bg-gray-800 text-white rounded-xl px-6"
+              onClick={() => navigate('/newsletter-builder')}
+            >
               Start Free
             </Button>
             <Button

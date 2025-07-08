@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const TopNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,6 +61,7 @@ const TopNav = () => {
 
         <Button 
           className="bg-black hover:bg-gray-800 text-white rounded-xl px-6"
+          onClick={() => navigate('/newsletter-builder')}
         >
           Get Started
         </Button>
