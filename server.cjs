@@ -280,8 +280,6 @@ async function fetchTwitterPosts(username, timeRange, twitterApiKey = "") {
   return tweets;
 }
 
-
-
 // Helper to call OpenAI API for newsletter generation
 async function generateNewsletterWithOpenAI(posts) {
   if (!process.env.OPENAI_API_KEY) throw new Error("Missing OpenAI API key");
@@ -303,9 +301,9 @@ async function generateNewsletterWithOpenAI(posts) {
     let prompt;
     
     if (platform === "YouTube") {
-      prompt = `Write a concise, natural paragraph (2-3 sentences) summarizing the following YouTube content. Focus on the video titles and descriptions to create an engaging summary. Don't use sections, headers, or bullet points. Just write a short, flowing paragraph that captures the main themes and content. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform} - ${p.type || 'video'}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
+      prompt = `Write a concise, first-person summary (under 100 words) of the following YouTube content as if you are the creator. Use "I" or "my" to describe what was shared. Focus on the video titles and descriptions to create an engaging, personal update. Do not use sections, headers, or bullet points. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform} - ${p.type || 'video'}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
     } else if (platform === "Instagram") {
-      prompt = `Write a concise, natural paragraph (2-3 sentences) summarizing the following Instagram content. Focus on the post descriptions, engagement (likes/comments), and elaborate on what's happening in the posts. Explain the context and meaning behind the content, including any notable engagement patterns. Don't use sections, headers, or bullet points. Just write a short, flowing paragraph that captures the visual stories, personal moments, and audience response. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}${p.likes ? ` (Likes: ${p.likes})` : ''}${p.comments ? ` (Comments: ${p.comments})` : ''}\n`).join("\n")}`;
+      prompt = `Write a concise, first-person summary (under 100 words) of the following Instagram content as if you are the creator. Use "I" or "my" to describe what was shared. Focus on the post descriptions, engagement (likes/comments), and elaborate on what's happening in the posts. Do not use sections, headers, or bullet points. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}${p.likes ? ` (Likes: ${p.likes})` : ''}${p.comments ? ` (Comments: ${p.comments})` : ''}\n`).join("\n")}`;
     } else if (platform === "LinkedIn") {
       prompt = `Write a concise, natural paragraph (2-3 sentences) summarizing the following LinkedIn content. Focus on professional updates, achievements, and insights shared. Keep it professional yet engaging. Don't use sections, headers, or bullet points. Just write a short, flowing paragraph that captures the key professional updates. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
     } else if (platform === "Twitter") {
@@ -866,30 +864,26 @@ app.post('/api/scrape-and-transcribe', async (req, res) => {
           
           // For now, we'll skip transcription and just use titles/descriptions
           // You can uncomment the transcription code below if needed
-          for (const content of youtubeContent) {
-            // Skip transcription for now - just use the text field we created
-            // Uncomment below if you want transcription:
-            /*
-            if (content.type === "video" && content.videoId) {
-              try {
-                const audioFile = path.join(audioDir, `${content.videoId}.mp3`);
-                const audioUrl = `/audio/${content.videoId}.mp3`;
-                if (!fs.existsSync(audioFile)) {
-                  await downloadYouTubeAudio(content.url, audioFile);
-                }
-                // Transcribe
-                const client = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
-                const transcript = await client.transcripts.transcribe({ audio: `http://localhost:3001${audioUrl}` });
-                content.transcript = transcript.text;
-                content.audioUrl = audioUrl;
-              } catch (err) {
-                content.transcript = "[Transcription failed]";
-                content.audioUrl = null;
+          /*
+          if (content.type === "video" && content.videoId) {
+            try {
+              const audioFile = path.join(audioDir, `${content.videoId}.mp3`);
+              const audioUrl = `/audio/${content.videoId}.mp3`;
+              if (!fs.existsSync(audioFile)) {
+                await downloadYouTubeAudio(content.url, audioFile);
               }
+              // Transcribe
+              const client = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
+              const transcript = await client.transcripts.transcribe({ audio: `http://localhost:3001${audioUrl}` });
+              content.transcript = transcript.text;
+              content.audioUrl = audioUrl;
+            } catch (err) {
+              content.transcript = "[Transcription failed]";
+              content.audioUrl = null;
             }
-            */
-            results.push(content);
           }
+          */
+          results = results.concat(youtubeContent);
         } catch (error) {
           return res.status(400).json({ 
             error: `YouTube scraping failed: ${error.message}`,
