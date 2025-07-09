@@ -14,14 +14,8 @@ const NewsletterExample = () => (
     <article className="prose prose-neutral max-w-2xl w-full bg-white rounded-3xl shadow-2xl border border-gray-200 notion-style overflow-hidden">
       {/* Header */}
       <header className="bg-white px-8 py-8 flex flex-col gap-2 border-b border-gray-200">
-        <h1 className="mb-2 text-4xl font-extrabold tracking-tight leading-tight text-gray-900">Alex's Weekly Recap <span className="text-2xl font-normal text-gray-500">(July 7, 2025)</span></h1>
-        <div className="flex items-center gap-4 text-base text-gray-700 opacity-90 mb-2">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Alex Kumar" className="w-10 h-10 rounded-full border-2 border-gray-200" />
-          <span className="font-medium">by Alex Kumar</span>
-          <span className="opacity-60">·</span>
-          <span className="opacity-80">Week 27, 2025</span>
-        </div>
-        <div className="text-lg mt-1 opacity-90 font-light text-gray-700">Hey friends! Here's what I've been up to this week as a creator, entrepreneur, and engineer. Thanks for following along on my journey!</div>
+        {/* Removed static title and byline */}
+        {/* Removed avatar image and 'by Alex Kumar' */}
       </header>
       {/* Hero Image */}
       <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Newsletter Hero" className="w-full h-60 object-cover" />
@@ -125,7 +119,6 @@ const NewsletterExample = () => (
         <div className="text-center mt-8 mb-2">
           <a href="#" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition">Reply & let me know what you're working on! →</a>
         </div>
-        <div className="text-center text-xs text-gray-400 mb-2">© 2025 Alex Kumar. Thanks for reading!</div>
       </main>
     </article>
   </div>

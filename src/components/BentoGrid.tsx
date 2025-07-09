@@ -14,7 +14,7 @@ const bentoItems = [
   {
     id: 2,
     title: "Your Voice, Amplified",
-    description: "Briefly retains your tone, voice, and content rhythm.",
+            description: "Briefly retains your tone, voice, and content rhythm.",
     icon: AudioWaveform,
     className: "md:col-span-1 md:row-span-2",
     gradient: "from-gray-600/10 to-gray-700/10",
