@@ -6,10 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 const SOCIALS = [
-  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username (public profile)" },
-  { key: "twitter", label: "Twitter", placeholder: "@yourhandle or https://twitter.com/yourhandle" },
-  { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourprofile" },
-  { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@yourchannel" },
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username (public profile)", disabled: true },
+  { key: "twitter", label: "X", placeholder: "@yourhandle or https://twitter.com/yourhandle", disabled: true },
+  { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourprofile", disabled: false },
+  { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@yourchannel", disabled: false },
 ];
 
 // Custom Switch Component
@@ -131,13 +131,13 @@ export default function NewsletterBuilder() {
             <label className="block text-gray-700 text-sm mb-1">Select Social Platforms</label>
             <div className="grid grid-cols-2 gap-4">
               {SOCIALS.map((s) => (
-                <label key={s.key} className="flex items-center gap-3 cursor-pointer">
+                <label key={s.key} className={`flex items-center gap-3 cursor-pointer ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <Switch
                     checked={selected[s.key as keyof typeof selected]}
                     onChange={() => handleCheck(s.key)}
-                    disabled={loading}
+                    disabled={loading || s.disabled}
                   />
-                  <span className="text-gray-800 capitalize">{s.label}</span>
+                  <span className={`text-gray-800 capitalize ${s.disabled ? 'text-gray-400' : ''}`}>{s.label}</span>
                 </label>
               ))}
             </div>
