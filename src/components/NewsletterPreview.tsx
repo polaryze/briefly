@@ -81,7 +81,7 @@ const NewsletterPreview = () => {
             <h2 className="text-2xl font-bold mb-4">Build Your Weekly Newsletter</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-gray-700 text-sm mb-1">Your Name</label>
+                <label className="block text-foreground text-sm mb-1">Your Name</label>
                 <Input
                   type="text"
                   value={name}
@@ -91,7 +91,7 @@ const NewsletterPreview = () => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 text-sm mb-1">Socials to include</label>
+                <label className="block text-foreground text-sm mb-1">Socials to include</label>
                 <div className="flex gap-4 flex-wrap">
                   {SOCIALS.map((s) => (
                     <label key={s.key} className="flex items-center gap-2 cursor-pointer">
@@ -100,7 +100,7 @@ const NewsletterPreview = () => {
                         checked={socials[s.key as keyof typeof socials]}
                         onChange={() => handleSocialCheck(s.key)}
                         disabled={loading}
-                        className="accent-primary w-4 h-4 rounded focus:ring-2 focus:ring-primary"
+                        className="accent-primary w-4 h-4 rounded focus:ring-2 focus:ring-primary dark:accent-primary"
                       />
                       <span className="text-foreground capitalize">{s.label}</span>
                     </label>
@@ -112,7 +112,7 @@ const NewsletterPreview = () => {
                 {SOCIALS.map((s) =>
                   socials[s.key as keyof typeof socials] && (
                     <div key={s.key} className="flex flex-col md:flex-row gap-2 items-center">
-                      <label className="block text-gray-600 text-xs md:w-32 capitalize">{s.label}:</label>
+                      <label className="block text-muted-foreground text-xs md:w-32 capitalize">{s.label}:</label>
                       <Input
                         type="text"
                         className="flex-1"
@@ -126,7 +126,7 @@ const NewsletterPreview = () => {
                 )}
               </div>
               <div>
-                <label className="block text-gray-700 text-sm mb-1">How far back?</label>
+                <label className="block text-foreground text-sm mb-1">How far back?</label>
                 <select
                   className="border rounded px-3 py-2 text-base"
                   value={timeRange}

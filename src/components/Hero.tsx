@@ -29,7 +29,7 @@ const Hero = () => {
         {/* Main tagline - now the biggest element */}
         <h1 className="tagline-font text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold mb-8 leading-tight text-foreground animate-fade-in">
           "Where scattered posts<br />
-          become <span className="gradient-text">structured stories</span>"
+          become <span className="structured-gradient">structured</span> stories"
         </h1>
 
         {/* Subheadline */}

@@ -21,17 +21,17 @@ const Switch = ({ checked, onChange, disabled }: { checked: boolean; onChange: (
     disabled={disabled}
     onClick={onChange}
     className={`
-      relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-400
+      relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
       ${checked 
-        ? 'bg-green-500 hover:bg-green-600' 
-        : 'bg-gray-300 hover:bg-gray-400'
+        ? 'bg-primary hover:bg-primary/90' 
+        : 'bg-muted hover:bg-muted/80'
       }
       ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
     `}
   >
     <span
       className={`
-        inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300 ease-in-out
+        inline-block h-4 w-4 transform rounded-full bg-background shadow-lg transition-transform duration-300 ease-in-out
         ${checked ? 'translate-x-6' : 'translate-x-1'}
       `}
     />
