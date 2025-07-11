@@ -35,7 +35,7 @@ const StickyFooter = () => {
       id="pricing"
       className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-fade-in"
     >
-      <div className="glass-card rounded-2xl p-4 shadow-2xl max-w-md mx-auto border border-border/50">
+      <div className="bg-background/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl max-w-md mx-auto border border-border/50">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
             <p className="font-semibold text-foreground mb-1">
@@ -56,7 +56,7 @@ const StickyFooter = () => {
               variant="ghost"
               size="icon"
               onClick={handleClose}
-              className="rounded-xl hover:bg-secondary"
+              className="rounded-xl hover:bg-secondary text-foreground"
             >
               <X className="w-4 h-4" />
             </Button>

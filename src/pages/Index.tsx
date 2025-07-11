@@ -31,11 +31,11 @@ const Index = () => {
         )}
       </div>
       <Testimonials />
-      <footer className="w-full py-6 text-center text-gray-500 text-sm border-t border-gray-200/60 bg-white/70 backdrop-blur-md">
+      <footer className="w-full py-6 text-center text-muted-foreground text-sm border-t border-border/60 bg-background/70 dark:bg-primary/10 backdrop-blur-md">
         © {new Date().getFullYear()}{" "}
         <a
           href="https://briefly.ai"
-          className="underline hover:text-black transition-colors"
+          className="underline hover:text-foreground transition-colors"
         >
           Briefly
         </a>

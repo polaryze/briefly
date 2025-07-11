@@ -9,10 +9,6 @@ const { Rettiwt } = require('rettiwt-api');
 const OpenAI = require('openai');
 const puppeteer = require('puppeteer');
 
-// Instagram API setup
-const InstagramAPI = require('instagram-private-api').IgApiClient;
-const ig = new InstagramAPI();
-
 const app = express();
 app.use(express.json());
 

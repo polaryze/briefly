@@ -9,7 +9,7 @@ const testimonials = [
             quote: "I forgot I even posted these. Briefly made me sound like a columnist.",
     author: "Sarah Chen",
     role: "Senior Dev, NYC",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=64&h=64&fit=crop&crop=face&auto=format"
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face&auto=format"
   },
   {
     id: 2,

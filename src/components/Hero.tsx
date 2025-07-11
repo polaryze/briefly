@@ -24,7 +24,7 @@ const Hero = () => {
   }, [displayText, isTyping, newsletterTitle]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden pt-16">
+    <section className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden pt-32">
       <div className="text-center max-w-6xl mx-auto relative z-10">
         {/* Main tagline - now the biggest element */}
         <h1 className="tagline-font text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold mb-8 leading-tight text-foreground animate-fade-in">

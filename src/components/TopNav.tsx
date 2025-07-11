@@ -23,7 +23,7 @@ const TopNav = () => {
           ? 'max-w-4xl rounded-2xl bg-background/60 backdrop-blur-md shadow-xl border border-border/30 mt-2 mb-2' 
           : 'max-w-7xl'
       }`}>
-        <div className="text-2xl font-bold text-foreground dark:text-primary">
+        <div className="text-2xl font-black text-foreground dark:text-primary tracking-tight drop-shadow-sm">
           Briefly
         </div>
         

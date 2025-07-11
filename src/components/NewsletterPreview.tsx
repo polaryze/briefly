@@ -142,7 +142,7 @@ const NewsletterPreview = () => {
                 <Button
                   id="get-started"
                   type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500 via-pink-500 to-cyan-400 text-white font-bold text-base shadow-lg hover:scale-105 transition-transform disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground font-bold text-base shadow-lg hover:scale-105 transition-transform disabled:opacity-60"
                   disabled={loading}
                 >
                   {loading ? (
