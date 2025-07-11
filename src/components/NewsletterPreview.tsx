@@ -66,13 +66,13 @@ const NewsletterPreview = () => {
   };
 
   return (
-    <section className="py-24 px-4 bg-gray-50/50">
+    <section className="py-24 px-4 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             See Your <span className="gradient-text">Newsletter</span> Come to Life
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Simulate making your own newsletter by entering your social links below!
           </p>
         </div>
@@ -102,7 +102,7 @@ const NewsletterPreview = () => {
                         disabled={loading}
                         className="accent-primary w-4 h-4 rounded focus:ring-2 focus:ring-primary"
                       />
-                      <span className="text-gray-800 capitalize">{s.label}</span>
+                      <span className="text-foreground capitalize">{s.label}</span>
                     </label>
                   ))}
                 </div>
@@ -160,7 +160,7 @@ const NewsletterPreview = () => {
               </div>
             </form>
           </Card>
-          <Card className="max-w-2xl w-full p-8 min-h-[300px] flex items-center justify-center bg-white shadow-xl">
+          <Card className="max-w-2xl w-full p-8 min-h-[300px] flex items-center justify-center shadow-xl">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 w-full">
                 {/* Progress Bar */}
@@ -177,7 +177,7 @@ const NewsletterPreview = () => {
             ) : showGeneration ? (
               <NewsletterExample />
             ) : (
-              <span className="text-gray-400">Your generated newsletter will appear here.</span>
+              <span className="text-muted-foreground">Your generated newsletter will appear here.</span>
             )}
           </Card>
         </div>

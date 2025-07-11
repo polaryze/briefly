@@ -28,7 +28,7 @@ const Hero = () => {
       <div className="text-center max-w-6xl mx-auto relative z-10">
         {/* Main tagline - now the biggest element */}
         <h1 className="tagline-font text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold mb-8 leading-tight text-gray-800 animate-fade-in">
-          "Where scattered thoughts<br />
+          "Where scattered posts<br />
           become <span className="gradient-text">structured stories</span>"
         </h1>
 

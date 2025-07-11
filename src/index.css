@@ -50,40 +50,41 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 0% 4.9%;
-    --foreground: 0 0% 98%;
+    --background: 240 10% 8%; /* Dark background */
+    --foreground: 0 0% 95%; /* Light text */
 
-    --card: 0 0% 4.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 240 10% 12%; /* Dark card background */
+    --card-foreground: 0 0% 95%; /* Light text */
 
-    --popover: 0 0% 4.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 240 10% 12%; /* Dark popover */
+    --popover-foreground: 0 0% 95%; /* Light text */
 
-    --primary: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+    --primary: 240 100% 68%; /* #6C63FF (Indigo Glow) - same in dark */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 17.5%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 240 10% 16%; /* Dark secondary */
+    --secondary-foreground: 0 0% 95%; /* Light text */
 
-    --muted: 0 0% 17.5%;
-    --muted-foreground: 0 0% 65.1%;
+    --muted: 240 10% 16%; /* Dark muted */
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 180 100% 87%; /* #B8F3FF (Icy Mint) */
+    --accent: 180 100% 87%; /* #B8F3FF (Icy Mint) - same in dark */
     --accent-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 17.5%;
-    --input: 0 0% 17.5%;
+    --border: 240 10% 20%; /* Dark border */
+    --input: 240 10% 20%; /* Dark input */
     --ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 95.9%;
+    
+    --sidebar-background: 240 10% 8%; /* Dark sidebar */
+    --sidebar-foreground: 0 0% 95%; /* Light text */
     --sidebar-primary: 240 100% 68%; /* #6C63FF (Indigo Glow) */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 180 100% 87%; /* #B8F3FF (Icy Mint) */
     --sidebar-accent-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
-    --sidebar-border: 0 0% 15.9%;
+    --sidebar-border: 240 10% 20%; /* Dark border */
     --sidebar-ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
   }
 }
@@ -111,6 +112,11 @@ All colors MUST be HSL.
     background-size: 60px 60px;
     pointer-events: none;
     z-index: -1;
+  }
+
+  .dark body::before {
+    background-image: 
+      radial-gradient(circle at 20px 20px, rgba(255,255,255,0.03) 1px, transparent 0);
   }
 }
 

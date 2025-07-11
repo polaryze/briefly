@@ -115,11 +115,11 @@ export default function NewsletterBuilder() {
       </div>
       <Card className="max-w-2xl w-full p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Build Your Weekly Newsletter</h2>
-        <div className="mb-4 p-3 bg-accent/20 rounded-lg border border-accent/30">
+        <div className="mb-4 p-3 bg-accent/10 dark:bg-accent/20 rounded-lg border border-accent/20 dark:border-accent/30">
           <p className="text-sm text-foreground mb-2">
             <strong>Enhanced: Multi-Platform Analysis!</strong> 
           </p>
-          <ul className="text-xs text-foreground/80 space-y-1">
+          <ul className="text-xs text-muted-foreground space-y-1">
             <li>• Instagram: Deep post analysis with engagement data and high-quality images</li>
             <li>• YouTube: Latest video thumbnails and titles with detailed descriptions</li>
             <li>• LinkedIn: Professional updates and insights from public profiles</li>
@@ -129,25 +129,25 @@ export default function NewsletterBuilder() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label className="block text-gray-700 text-sm mb-1">Select Social Platforms</label>
-            <div className="grid grid-cols-2 gap-4">
-              {SOCIALS.map((s) => (
-                <label key={s.key} className={`flex items-center gap-3 cursor-pointer ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  <Switch
-                    checked={selected[s.key as keyof typeof selected]}
-                    onChange={() => handleCheck(s.key)}
-                    disabled={loading || s.disabled}
-                  />
-                  <span className={`text-gray-800 capitalize ${s.disabled ? 'text-gray-400' : ''}`}>{s.label}</span>
-                </label>
-              ))}
-            </div>
+                      <div className="grid grid-cols-2 gap-4">
+            {SOCIALS.map((s) => (
+              <label key={s.key} className={`flex items-center gap-3 cursor-pointer ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <Switch
+                  checked={selected[s.key as keyof typeof selected]}
+                  onChange={() => handleCheck(s.key)}
+                  disabled={loading || s.disabled}
+                />
+                <span className={`text-foreground capitalize ${s.disabled ? 'text-muted-foreground' : ''}`}>{s.label}</span>
+              </label>
+            ))}
+          </div>
           </div>
           {/* Show input for each checked social */}
           <div className="space-y-2">
             {SOCIALS.map((s) =>
               selected[s.key as keyof typeof selected] && (
                 <div key={s.key} className="flex flex-col md:flex-row gap-2 items-center">
-                  <label className="block text-gray-600 text-xs md:w-32 capitalize">{s.label}:</label>
+                  <label className="block text-muted-foreground text-xs md:w-32 capitalize">{s.label}:</label>
                   <Input
                     type="text"
                     className="flex-1"
@@ -166,7 +166,7 @@ export default function NewsletterBuilder() {
         </form>
         {error && <div className="text-red-500 mt-2">{error}</div>}
       </Card>
-      <Card className="max-w-2xl w-full p-8 min-h-[300px] bg-white shadow-xl">
+      <Card className="max-w-2xl w-full p-8 min-h-[300px] shadow-xl">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <span className="text-gray-400 animate-pulse">Processing your social links...</span>
@@ -175,22 +175,22 @@ export default function NewsletterBuilder() {
           <div className="space-y-6">
             {/* Newsletter Summary with Side-by-side Images */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Newsletter Summary</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4 text-center">Newsletter Summary</h3>
               
               {/* Summary and Images Layout */}
               <div className="flex gap-8">
                 {/* Summary Text */}
                 <div className="flex-1">
-                  <div className="text-gray-700 leading-relaxed text-justify space-y-4">
+                  <div className="text-foreground leading-relaxed text-justify space-y-4">
                     {newsletter.split('\n\n').map((paragraph, index) => (
                       <div key={index} className="mb-4">
                         {paragraph.startsWith('**') ? (
                           // Platform-specific paragraph with bold header
                           <div>
-                            <div className="font-semibold text-gray-800 mb-2">
+                            <div className="font-semibold text-foreground mb-2">
                               {paragraph.split('**: ')[0].replace('**', '')}
                             </div>
-                            <p className="text-gray-700">
+                            <p className="text-foreground">
                               {paragraph.split('**: ')[1]}
                             </p>
                           </div>
@@ -215,7 +215,7 @@ export default function NewsletterBuilder() {
                     post.thumbnail.length > 10
                   ) && (
                     <div className="mb-8">
-                      <h4 className="text-sm font-medium text-gray-600 mb-4">Latest Instagram Post</h4>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-4">Latest Instagram Post</h4>
                       <div className="flex justify-center">
                         {newsletterData
                           .filter((post: any) => 
@@ -267,7 +267,7 @@ export default function NewsletterBuilder() {
                     post.thumbnail.length > 10
                   ) && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-600 mb-4">YouTube Latest</h4>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-4">YouTube Latest</h4>
                       <div className="grid grid-cols-2 gap-4">
                         {newsletterData
                           .filter((post: any) => 
@@ -314,7 +314,7 @@ export default function NewsletterBuilder() {
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
-            <span className="text-gray-400">Your generated newsletter will appear here.</span>
+            <span className="text-muted-foreground">Your generated newsletter will appear here.</span>
           </div>
         )}
       </Card>
