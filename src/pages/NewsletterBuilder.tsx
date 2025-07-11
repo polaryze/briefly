@@ -107,7 +107,7 @@ export default function NewsletterBuilder() {
         <Button 
           variant="ghost" 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-gray-600 hover:text-black"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
@@ -128,7 +128,7 @@ export default function NewsletterBuilder() {
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-gray-700 text-sm mb-1">Select Social Platforms</label>
+            <label className="block text-foreground text-sm mb-1">Select Social Platforms</label>
                       <div className="grid grid-cols-2 gap-4">
             {SOCIALS.map((s) => (
               <label key={s.key} className={`flex items-center gap-3 cursor-pointer ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
@@ -169,7 +169,7 @@ export default function NewsletterBuilder() {
       <Card className="max-w-2xl w-full p-8 min-h-[300px] shadow-xl">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <span className="text-gray-400 animate-pulse">Processing your social links...</span>
+            <span className="text-muted-foreground animate-pulse">Processing your social links...</span>
           </div>
         ) : newsletter ? (
           <div className="space-y-6">

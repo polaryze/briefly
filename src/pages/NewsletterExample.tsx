@@ -1,8 +1,8 @@
 import React from 'react';
 
 const Section = ({ title, icon, children }) => (
-  <section className="mb-10 bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
-    <h2 className="flex items-center gap-2 text-2xl font-bold mb-4 tracking-tight">
+  <section className="mb-10 bg-background/80 dark:bg-background/80 rounded-xl p-6 shadow-sm border border-border/30 dark:border-border/20 backdrop-blur-sm">
+    <h2 className="flex items-center gap-2 text-2xl font-bold mb-4 tracking-tight text-foreground">
       <span className="text-3xl">{icon}</span> {title}
     </h2>
     {children}
@@ -10,51 +10,51 @@ const Section = ({ title, icon, children }) => (
 );
 
 const NewsletterExample = () => (
-  <div className="min-h-screen flex flex-col items-center bg-[#f7f7fa] py-12 px-2 md:px-4">
-    <article className="prose prose-neutral max-w-2xl w-full bg-white rounded-3xl shadow-2xl border border-gray-200 notion-style overflow-hidden">
+  <div className="min-h-screen flex flex-col items-center bg-background py-12 px-2 md:px-4">
+    <article className="prose prose-neutral max-w-2xl w-full bg-background rounded-3xl shadow-2xl border border-border/40 dark:border-border/30 notion-style overflow-hidden backdrop-blur-sm">
       {/* Header */}
-      <header className="bg-white px-8 py-8 flex flex-col gap-2 border-b border-gray-200">
+      <header className="bg-gradient-to-br from-primary/5 to-accent/5 dark:from-primary/10 dark:to-accent/10 px-8 py-8 flex flex-col gap-2 border-b border-border/30 dark:border-border/20">
         {/* Removed static title and byline */}
         {/* Removed avatar image and 'by Alex Kumar' */}
       </header>
       {/* Hero Image */}
       <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Newsletter Hero" className="w-full h-60 object-cover" />
-      <main className="px-6 md:px-10 py-10">
+      <main className="px-6 md:px-10 py-10 bg-background">
         <Section title="New Project: IndieHub" icon="🚀">
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=200&q=80" alt="IndieHub" className="w-32 h-32 object-cover rounded-xl shadow" />
             <div>
-              <p className="text-gray-700 mb-2">This week I launched <span className="font-bold text-blue-700">IndieHub</span>, a platform for indie makers to share their projects and get feedback. We hit <b>120 signups</b> in the first 3 days! 🎉</p>
-              <code className="block bg-gray-100 text-gray-700 rounded px-2 py-1 text-sm mb-1">Built with Next.js, Supabase, and Tailwind CSS</code>
+              <p className="text-foreground mb-2">This week I launched <span className="font-bold text-primary">IndieHub</span>, a platform for indie makers to share their projects and get feedback. We hit <b>120 signups</b> in the first 3 days! 🎉</p>
+              <code className="block bg-muted text-muted-foreground rounded px-2 py-1 text-sm mb-1">Built with Next.js, Supabase, and Tailwind CSS</code>
             </div>
           </div>
         </Section>
         <Section title="Project Deep Dive: Building IndieHub" icon="🔍">
-          <p className="text-gray-700 mb-4">The idea started from a Twitter poll where 60% of my followers said they struggle to get feedback on side projects. I spent two days wireframing in Figma, then built the MVP in just 5 days. The hardest part? Getting the onboarding flow to feel welcoming and not overwhelming. I iterated on the copy 7 times before it felt right.</p>
+          <p className="text-foreground mb-4">The idea started from a Twitter poll where 60% of my followers said they struggle to get feedback on side projects. I spent two days wireframing in Figma, then built the MVP in just 5 days. The hardest part? Getting the onboarding flow to feel welcoming and not overwhelming. I iterated on the copy 7 times before it felt right.</p>
           <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80" alt="Wireframe" className="w-full h-48 object-cover rounded-xl my-4 shadow" />
-          <blockquote className="border-l-4 border-blue-400 pl-4 italic text-gray-700 bg-blue-50 rounded">“If you want to check out the code, I open-sourced the core feedback module. Would love your thoughts!”</blockquote>
+          <blockquote className="border-l-4 border-primary pl-4 italic text-foreground bg-primary/5 dark:bg-primary/10 rounded">"If you want to check out the code, I open-sourced the core feedback module. Would love your thoughts!"</blockquote>
         </Section>
         <Section title="Social Growth" icon="📈">
           <div className="flex gap-8 justify-center mb-2">
             <div className="flex flex-col items-center">
               <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" className="w-10 h-10 mb-1" />
-              <span className="font-bold text-xl">+320</span>
-              <span className="text-xs text-gray-500">New X Followers</span>
+              <span className="font-bold text-xl text-foreground">+320</span>
+              <span className="text-xs text-muted-foreground">New X Followers</span>
             </div>
             <div className="flex flex-col items-center">
               <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="Instagram" className="w-10 h-10 mb-1" />
-              <span className="font-bold text-xl">+210</span>
-              <span className="text-xs text-gray-500">New IG Followers</span>
+              <span className="font-bold text-xl text-foreground">+210</span>
+              <span className="text-xs text-muted-foreground">New IG Followers</span>
             </div>
             <div className="flex flex-col items-center">
               <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" className="w-10 h-10 mb-1" />
-              <span className="font-bold text-xl">+95</span>
-              <span className="text-xs text-gray-500">New LinkedIn</span>
+              <span className="font-bold text-xl text-foreground">+95</span>
+              <span className="text-xs text-muted-foreground">New LinkedIn</span>
             </div>
           </div>
         </Section>
         <Section title="Lessons Learned" icon="📚">
-          <ul className="list-disc pl-5 text-gray-700">
+          <ul className="list-disc pl-5 text-foreground">
             <li><b>Launch early, iterate often:</b> The MVP wasn't perfect, but real user feedback was 10x more valuable than more polish.</li>
             <li><b>Community is everything:</b> The first 20 users came from my DMs. Don't be afraid to ask for help!</li>
             <li><b>Automate the boring stuff:</b> I set up a Zapier workflow to send me a Slack ping for every new signup. It's a tiny dopamine hit every time.</li>
@@ -65,32 +65,32 @@ const NewsletterExample = () => (
             <div className="flex gap-4 items-center">
               <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=80&q=80" alt="Book" className="w-16 h-16 object-cover rounded-lg shadow" />
               <div>
-                <span className="font-bold">Book:</span> <span className="italic">Show Your Work!</span> by Austin Kleon<br/>
-                <span className="text-gray-600 text-sm">A must-read for anyone building in public. My favorite quote: "Share something small every day."</span>
+                <span className="font-bold text-foreground">Book:</span> <span className="italic text-foreground">Show Your Work!</span> by Austin Kleon<br/>
+                <span className="text-muted-foreground text-sm">A must-read for anyone building in public. My favorite quote: "Share something small every day."</span>
               </div>
             </div>
             <div className="flex gap-4 items-center">
               <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=80&q=80" alt="Podcast" className="w-16 h-16 object-cover rounded-lg shadow" />
               <div>
-                <span className="font-bold">Podcast:</span> <span className="italic">Indie Hackers Podcast</span><br/>
-                <span className="text-gray-600 text-sm">Listened to the episode with Courtland Allen and Daniel Vassallo. So many gems about audience-first products.</span>
+                <span className="font-bold text-foreground">Podcast:</span> <span className="italic text-foreground">Indie Hackers Podcast</span><br/>
+                <span className="text-muted-foreground text-sm">Listened to the episode with Courtland Allen and Daniel Vassallo. So many gems about audience-first products.</span>
               </div>
             </div>
           </div>
         </Section>
         <Section title="Q&A: Ask Me Anything" icon="❓">
           <div className="mb-2">
-            <p className="mb-2"><b>Q:</b> How do you stay motivated when a project stalls?</p>
-            <p className="mb-4 text-gray-700"><b>A:</b> I remind myself why I started, take a break, and talk to other makers. Sometimes a walk or a chat is all it takes to get unstuck.</p>
-            <p className="mb-2"><b>Q:</b> What's your favorite tool this week?</p>
-            <p className="text-gray-700"><b>A:</b> <span className="font-bold text-blue-700">Raycast</span> for quick workflows and <span className="font-bold text-green-700">Fathom Analytics</span> for simple, privacy-friendly stats.</p>
+            <p className="mb-2 text-foreground"><b>Q:</b> How do you stay motivated when a project stalls?</p>
+            <p className="mb-4 text-foreground"><b>A:</b> I remind myself why I started, take a break, and talk to other makers. Sometimes a walk or a chat is all it takes to get unstuck.</p>
+            <p className="mb-2 text-foreground"><b>Q:</b> What's your favorite tool this week?</p>
+            <p className="text-foreground"><b>A:</b> <span className="font-bold text-primary">Raycast</span> for quick workflows and <span className="font-bold text-accent">Fathom Analytics</span> for simple, privacy-friendly stats.</p>
           </div>
         </Section>
         <Section title="Life Update" icon="🌱">
           <div className="flex gap-4 items-center">
             <img src="https://images.unsplash.com/photo-1465101178521-c1a9136a3b41?auto=format&fit=crop&w=200&q=80" alt="Life Update" className="w-24 h-24 object-cover rounded-lg shadow" />
             <div>
-              <p className="text-gray-700">Started a new morning routine: 6am runs, journaling, and no phone until 9am. Already feeling more focused and creative! 🏃‍♂️📓</p>
+              <p className="text-foreground">Started a new morning routine: 6am runs, journaling, and no phone until 9am. Already feeling more focused and creative! 🏃‍♂️📓</p>
             </div>
           </div>
         </Section>
@@ -98,12 +98,12 @@ const NewsletterExample = () => (
           <div className="flex gap-4 items-center">
             <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=200&q=80" alt="Tech" className="w-24 h-24 object-cover rounded-lg shadow" />
             <div>
-              <p className="text-gray-700">Been diving into <span className="font-bold text-green-700">AI agents</span> and <span className="font-bold text-purple-700">Edge Functions</span> this week. Super inspired by what's possible with serverless and LLMs. Stay tuned for some experiments! 🤖</p>
+              <p className="text-foreground">Been diving into <span className="font-bold text-accent">AI agents</span> and <span className="font-bold text-primary">Edge Functions</span> this week. Super inspired by what's possible with serverless and LLMs. Stay tuned for some experiments! 🤖</p>
             </div>
           </div>
         </Section>
         <Section title="Upcoming Goals" icon="🎯">
-          <ul className="list-disc pl-5 text-gray-700">
+          <ul className="list-disc pl-5 text-foreground">
             <li>Ship IndieHub v1.1 with project upvoting and comments</li>
             <li>Write a blog post about my build-in-public journey</li>
             <li>Host a Twitter Space with other indie founders</li>
@@ -111,13 +111,13 @@ const NewsletterExample = () => (
           </ul>
         </Section>
         <Section title="Reflections" icon="📝">
-          <blockquote className="border-l-4 border-blue-400 pl-4 italic text-gray-700 bg-blue-50 rounded">
+          <blockquote className="border-l-4 border-primary pl-4 italic text-foreground bg-primary/5 dark:bg-primary/10 rounded">
             "This week reminded me that progress isn't always linear. Celebrate the small wins, and don't be afraid to launch before you're ready."
           </blockquote>
         </Section>
         {/* Footer CTA */}
         <div className="text-center mt-8 mb-2">
-          <a href="#" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition">Reply & let me know what you're working on! →</a>
+          <a href="#" className="inline-block px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">Reply & let me know what you're working on! →</a>
         </div>
       </main>
     </article>
