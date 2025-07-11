@@ -102,7 +102,7 @@ export default function NewsletterBuilder() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-[#f7f7fa] py-12 px-2 md:px-4">
+    <div className="min-h-screen flex flex-col items-center bg-background py-12 px-2 md:px-4">
       <div className="w-full max-w-6xl mb-6">
         <Button 
           variant="ghost" 
@@ -115,11 +115,11 @@ export default function NewsletterBuilder() {
       </div>
       <Card className="max-w-2xl w-full p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Build Your Weekly Newsletter</h2>
-        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2">
+        <div className="mb-4 p-3 bg-accent/20 rounded-lg border border-accent/30">
+          <p className="text-sm text-foreground mb-2">
             <strong>Enhanced: Multi-Platform Analysis!</strong> 
           </p>
-          <ul className="text-xs text-blue-700 space-y-1">
+          <ul className="text-xs text-foreground/80 space-y-1">
             <li>• Instagram: Deep post analysis with engagement data and high-quality images</li>
             <li>• YouTube: Latest video thumbnails and titles with detailed descriptions</li>
             <li>• LinkedIn: Professional updates and insights from public profiles</li>
@@ -241,13 +241,13 @@ export default function NewsletterBuilder() {
                               {/* Hover overlay with platform badge and engagement info */}
                               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-end justify-start p-2">
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded block mb-1">
+                                  <span className="text-xs font-medium text-white bg-primary/80 px-2 py-1 rounded block mb-1">
                                     IG
                                   </span>
                                   {post.likes && (
-                                    <span className="text-xs text-white bg-black/50 px-2 py-1 rounded block">
-                                      {post.likes}
-                                    </span>
+                                                                      <span className="text-xs text-white bg-primary/80 px-2 py-1 rounded block">
+                                    {post.likes}
+                                  </span>
                                   )}
                                 </div>
                               </div>
@@ -293,10 +293,10 @@ export default function NewsletterBuilder() {
                               {/* Video title overlay */}
                               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-end justify-start p-2">
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded block mb-1">
+                                  <span className="text-xs font-medium text-white bg-primary/80 px-2 py-1 rounded block mb-1">
                                     YT
                                   </span>
-                                  <div className="text-xs text-white bg-black/50 px-2 py-1 rounded block max-w-32">
+                                  <div className="text-xs text-white bg-primary/80 px-2 py-1 rounded block max-w-32">
                                     <div className="line-clamp-2 text-xs leading-tight">
                                       {post.title}
                                     </div>

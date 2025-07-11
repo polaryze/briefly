@@ -100,7 +100,7 @@ const NewsletterPreview = () => {
                         checked={socials[s.key as keyof typeof socials]}
                         onChange={() => handleSocialCheck(s.key)}
                         disabled={loading}
-                        className="accent-pink-400 w-4 h-4 rounded focus:ring-2 focus:ring-pink-400"
+                        className="accent-primary w-4 h-4 rounded focus:ring-2 focus:ring-primary"
                       />
                       <span className="text-gray-800 capitalize">{s.label}</span>
                     </label>
