@@ -313,7 +313,7 @@ async function generateNewsletterWithOpenAI(posts) {
     }
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 150, // Shorter for individual platform summaries
     });
@@ -793,7 +793,7 @@ app.post('/api/scrape-and-transcribe', async (req, res) => {
       if (!process.env.OPENAI_API_KEY) throw new Error("Missing OpenAI API key");
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       const response = await openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4o-mini",
         messages: [{ role: "user", content: testPrompt }],
         max_tokens: 1000,
       });
