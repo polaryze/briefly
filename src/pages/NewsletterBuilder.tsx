@@ -115,7 +115,7 @@ export default function NewsletterBuilder() {
       </div>
       <Card className="max-w-2xl w-full p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Build Your Weekly Newsletter</h2>
-        <div className="mb-4 p-3 bg-accent/10 dark:bg-accent/20 rounded-lg border border-accent/20 dark:border-accent/30">
+        <div className="mb-4 p-3 bg-accent/10 dark:bg-accent/15 rounded-lg border border-accent/20 dark:border-accent/25">
           <p className="text-sm text-foreground mb-2">
             <strong>Enhanced: Multi-Platform Analysis!</strong> 
           </p>

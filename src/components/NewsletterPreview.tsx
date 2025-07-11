@@ -66,7 +66,7 @@ const NewsletterPreview = () => {
   };
 
   return (
-    <section className="py-24 px-4 bg-muted/30">
+    <section className="py-24 px-4 bg-accent/5 dark:bg-accent/10">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">

@@ -9,83 +9,93 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 240 100% 98%; /* #F4F7FF (Snowy White) */
-    --foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
+    --background: 240 100% 99%; /* #F9FAFF (Snowy White) */
+    --foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
 
-    --card: 240 100% 98%; /* #F4F7FF (Snowy White) */
-    --card-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
+    --card: 240 100% 99%; /* #F9FAFF (Snowy White) */
+    --card-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
 
-    --popover: 240 100% 98%; /* #F4F7FF (Snowy White) */
-    --popover-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
+    --popover: 240 100% 99%; /* #F9FAFF (Snowy White) */
+    --popover-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
 
     --primary: 240 100% 68%; /* #6C63FF (Indigo Glow) */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 100% 91%; /* #E3E8FF (Cloud Lavender) */
-    --secondary-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
+    --secondary: 240 100% 93%; /* #E8EBFF (Cloud Lavender) */
+    --secondary-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
 
-    --muted: 240 100% 91%; /* #E3E8FF (Cloud Lavender) */
-    --muted-foreground: 0 0% 40%;
+    --muted: 240 100% 93%; /* #E8EBFF (Cloud Lavender) */
+    --muted-foreground: 0 0% 36%; /* #5B5B5B (Muted Text) */
 
-    --accent: 180 100% 87%; /* #B8F3FF (Icy Mint) */
-    --accent-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
+    --accent: 180 100% 46%; /* #00CFEA (Brighter Icy Mint) */
+    --accent-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 6 78% 57%; /* #E74C3C (Error) */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 100% 91%; /* #E3E8FF (Cloud Lavender) */
-    --input: 240 100% 91%; /* #E3E8FF (Cloud Lavender) */
+    --border: 240 100% 85%; /* #D2D8F2 (Border) */
+    --input: 240 100% 85%; /* #D2D8F2 (Border) */
     --ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
 
     --radius: 0.75rem;
 
-    --sidebar-background: 240 100% 98%; /* #F4F7FF (Snowy White) */
-    --sidebar-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
+    --sidebar-background: 240 100% 99%; /* #F9FAFF (Snowy White) */
+    --sidebar-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
     --sidebar-primary: 240 100% 68%; /* #6C63FF (Indigo Glow) */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 100% 87%; /* #B8F3FF (Icy Mint) */
-    --sidebar-accent-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
-    --sidebar-border: 240 100% 91%; /* #E3E8FF (Cloud Lavender) */
+    --sidebar-accent: 180 100% 46%; /* #00CFEA (Brighter Icy Mint) */
+    --sidebar-accent-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
+    --sidebar-border: 240 100% 85%; /* #D2D8F2 (Border) */
     --sidebar-ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+
+    /* Optional UI Colors */
+    --success: 142 76% 36%; /* #2ECC71 (Success) */
+    --warning: 42 89% 61%; /* #F5B041 (Warning) */
+    --error: 6 78% 57%; /* #E74C3C (Error) */
   }
 
   .dark {
-    --background: 240 10% 8%; /* Dark background */
-    --foreground: 0 0% 95%; /* Light text */
+    --background: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
+    --foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
 
-    --card: 240 10% 12%; /* Dark card background */
-    --card-foreground: 0 0% 95%; /* Light text */
+    --card: 240 20% 12%; /* #1C1F2B (Dark Graphite Blue) */
+    --card-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
 
-    --popover: 240 10% 12%; /* Dark popover */
-    --popover-foreground: 0 0% 95%; /* Light text */
+    --popover: 240 20% 12%; /* #1C1F2B (Dark Graphite Blue) */
+    --popover-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
 
-    --primary: 240 100% 68%; /* #6C63FF (Indigo Glow) - same in dark */
-    --primary-foreground: 0 0% 100%;
+    --primary: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
+    --primary-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
 
-    --secondary: 240 10% 16%; /* Dark secondary */
-    --secondary-foreground: 0 0% 95%; /* Light text */
+    --secondary: 240 20% 16%; /* #1C1F2B (Dark Graphite Blue) */
+    --secondary-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
 
-    --muted: 240 10% 16%; /* Dark muted */
-    --muted-foreground: 0 0% 65%;
+    --muted: 240 20% 16%; /* #1C1F2B (Dark Graphite Blue) */
+    --muted-foreground: 240 20% 70%; /* #A3A3B5 (Muted Text) */
 
-    --accent: 180 100% 87%; /* #B8F3FF (Icy Mint) - same in dark */
-    --accent-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
+    --accent: 180 100% 75%; /* #7DE8F5 (Muted Icy Mint) */
+    --accent-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%; /* #EB5757 (Error) */
+    --destructive-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
 
-    --border: 240 10% 20%; /* Dark border */
-    --input: 240 10% 20%; /* Dark input */
-    --ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+    --border: 240 20% 25%; /* #2E3340 (Border) */
+    --input: 240 20% 25%; /* #2E3340 (Border) */
+    --ring: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
     
-    --sidebar-background: 240 10% 8%; /* Dark sidebar */
-    --sidebar-foreground: 0 0% 95%; /* Light text */
-    --sidebar-primary: 240 100% 68%; /* #6C63FF (Indigo Glow) */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 100% 87%; /* #B8F3FF (Icy Mint) */
-    --sidebar-accent-foreground: 0 0% 18%; /* #2E2E2E (Dark Graphite) */
-    --sidebar-border: 240 10% 20%; /* Dark border */
-    --sidebar-ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+    --sidebar-background: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
+    --sidebar-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
+    --sidebar-primary: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
+    --sidebar-primary-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
+    --sidebar-accent: 180 100% 75%; /* #7DE8F5 (Muted Icy Mint) */
+    --sidebar-accent-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
+    --sidebar-border: 240 20% 25%; /* #2E3340 (Border) */
+    --sidebar-ring: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
+
+    /* Optional UI Colors */
+    --success: 142 76% 60%; /* #6FCF97 (Success) */
+    --warning: 42 89% 65%; /* #F2C94C (Warning) */
+    --error: 0 84% 60%; /* #EB5757 (Error) */
   }
 }
 
