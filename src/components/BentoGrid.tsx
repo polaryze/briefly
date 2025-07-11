@@ -56,7 +56,7 @@ const BentoGrid = () => {
         <h2 className="text-4xl md:text-5xl font-bold mb-6">
           How <span className="gradient-text">Briefly</span> Works
         </h2>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Transform your scattered social content into professional publications
         </p>
       </div>
@@ -67,7 +67,7 @@ const BentoGrid = () => {
           return (
             <div
               key={item.id}
-              className={`bento-card group cursor-pointer ${item.className} bg-white/60 backdrop-blur-xl border border-[#888]/40 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.03] hover:-rotate-1 relative overflow-hidden flex flex-col h-full`}
+              className={`bento-card group cursor-pointer ${item.className} bg-white/60 backdrop-blur-xl border border-[#888]/40 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.03] hover:-rotate-1 relative overflow-hidden flex flex-col h-full dark:bg-card/60 dark:border-border/40`}
               onClick={(e) => {
                 e.currentTarget.classList.remove("pulse");
                 void e.currentTarget.offsetWidth; // trigger reflow
@@ -77,23 +77,23 @@ const BentoGrid = () => {
               <div className="flex flex-col h-full relative z-30">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="relative group/icon-float">
-                    <span className="absolute inset-0 rounded-2xl blur-md opacity-60 bg-gradient-to-br from-gray-400/40 via-gray-600/30 to-black/20 group-hover:opacity-90 transition-all duration-300" />
-                    <div className="p-3 rounded-2xl bg-gray-100/80 border border-gray-200 shadow-lg group-hover:shadow-xl transition-all duration-300 relative z-10 icon-float">
-                      <IconComponent className="w-7 h-7 text-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.10)] group-hover:drop-shadow-[0_4px_16px_rgba(0,0,0,0.18)] transition-all duration-300" />
+                    <span className="absolute inset-0 rounded-2xl blur-md opacity-60 bg-gradient-to-br from-gray-400/40 via-gray-600/30 to-black/20 group-hover:opacity-90 transition-all duration-300 dark:from-gray-600/40 dark:via-gray-700/30 dark:to-black/40" />
+                    <div className="p-3 rounded-2xl bg-gray-100/80 border border-gray-200 shadow-lg group-hover:shadow-xl transition-all duration-300 relative z-10 icon-float dark:bg-secondary/80 dark:border-border/50">
+                      <IconComponent className="w-7 h-7 text-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.10)] group-hover:drop-shadow-[0_4px_16px_rgba(0,0,0,0.18)] transition-all duration-300 dark:text-foreground dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.10)] dark:group-hover:drop-shadow-[0_4px_16px_rgba(255,255,255,0.18)]" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-foreground">
                     {item.title}
                   </h3>
                 </div>
                 {item.id === 2 ? (
-                  <div className="text-gray-600 leading-relaxed flex-1 flex flex-col gap-2">
+                  <div className="text-gray-600 leading-relaxed flex-1 flex flex-col gap-2 dark:text-muted-foreground">
                     <div>
                       Briefly retains your tone, voice, and content rhythm.
                     </div>
                     <ul className="mt-6 space-y-2">
                       <li className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100">
+                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 dark:bg-secondary text-gray-700 dark:text-foreground">
                           <svg
                             width="24"
                             height="24"
@@ -112,7 +112,7 @@ const BentoGrid = () => {
                         </span>
                       </li>
                       <li className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100">
+                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 dark:bg-secondary text-gray-700 dark:text-foreground">
                           <svg
                             width="24"
                             height="24"
@@ -133,7 +133,7 @@ const BentoGrid = () => {
                         </span>
                       </li>
                       <li className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100">
+                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 dark:bg-secondary text-gray-700 dark:text-foreground">
                           <svg
                             width="24"
                             height="24"
@@ -154,7 +154,7 @@ const BentoGrid = () => {
                     </ul>
                   </div>
                 ) : (
-                  <p className="text-gray-600 leading-relaxed flex-1">
+                  <p className="text-gray-600 leading-relaxed flex-1 dark:text-muted-foreground">
                     {item.description}
                   </p>
                 )}

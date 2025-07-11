@@ -59,12 +59,12 @@ const Testimonials = () => {
   };
 
   return (
-    <section id="testimonials" className="py-24 px-4 bg-gradient-to-br from-gray-50/50 to-gray-100/50">
+    <section id="testimonials" className="py-24 px-4 bg-gradient-to-br from-gray-50/50 to-gray-100/50 dark:from-background dark:to-muted/20">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-4xl md:text-5xl font-bold mb-6">
           Loved by <span className="gradient-text">Creators</span>
         </h2>
-        <p className="text-xl text-gray-600 mb-16">
+        <p className="text-xl text-muted-foreground mb-16">
           See what our users are saying about their Briefly experience
         </p>
 
@@ -82,7 +82,7 @@ const Testimonials = () => {
                         : 'opacity-0 translate-x-full'
                   }`}
                 >
-                  <blockquote className="text-2xl md:text-3xl font-medium text-gray-800 mb-6 leading-relaxed">
+                  <blockquote className="text-2xl md:text-3xl font-medium text-foreground mb-6 leading-relaxed">
                     "{testimonial.quote}"
                   </blockquote>
                   <div className="flex items-center justify-center gap-4">
@@ -92,8 +92,8 @@ const Testimonials = () => {
                       className="w-12 h-12 rounded-full object-cover shadow-lg"
                     />
                     <div className="text-left">
-                      <div className="font-semibold text-gray-800">{testimonial.author}</div>
-                      <div className="text-gray-600">{testimonial.role}</div>
+                      <div className="font-semibold text-foreground">{testimonial.author}</div>
+                      <div className="text-muted-foreground">{testimonial.role}</div>
                     </div>
                   </div>
                 </div>
@@ -120,7 +120,7 @@ const Testimonials = () => {
                       setIsAutoPlaying(false);
                     }}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index === currentIndex ? 'bg-black w-8' : 'bg-gray-300'
+                      index === currentIndex ? 'bg-foreground w-8' : 'bg-muted-foreground/30'
                     }`}
                   />
                 ))}

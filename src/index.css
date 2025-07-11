@@ -71,7 +71,7 @@ All colors MUST be HSL.
     --secondary-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
 
     --muted: 240 20% 16%; /* #1C1F2B (Dark Graphite Blue) */
-    --muted-foreground: 240 20% 70%; /* #A3A3B5 (Muted Text) */
+    --muted-foreground: 240 100% 90%; /* #E8EBFF (Gentle Light - more readable) */
 
     --accent: 180 100% 75%; /* #7DE8F5 (Muted Icy Mint) */
     --accent-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
@@ -135,12 +135,24 @@ All colors MUST be HSL.
     @apply bg-white/80 backdrop-blur-sm border border-gray-300/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
   }
   
+  .dark .bento-card {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+  }
+  
   .glass-card {
     @apply bg-white/60 backdrop-blur-md border border-black/10;
   }
   
+  .dark .glass-card {
+    @apply bg-card/60 backdrop-blur-md border border-border/20;
+  }
+  
   .gradient-text {
     @apply bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent;
+  }
+
+  .dark .gradient-text {
+    @apply bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent;
   }
 
   .tagline-font {
