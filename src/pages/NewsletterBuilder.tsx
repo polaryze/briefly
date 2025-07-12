@@ -122,7 +122,7 @@ export default function NewsletterBuilder() {
           <ul className="text-xs text-muted-foreground space-y-1">
             <li>• Instagram: Deep post analysis with engagement data and high-quality images</li>
             <li>• YouTube: Latest video thumbnails and titles with detailed descriptions</li>
-            <li>• LinkedIn: Professional updates and insights from public profiles</li>
+            <li>• LinkedIn: Coming soon with RapidAPI integration</li>
             <li>• AI summarizes content with platform-specific context</li>
           </ul>
         </div>

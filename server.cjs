@@ -225,10 +225,11 @@ app.post('/api/scrape-socials', async (req, res) => {
     } else if (link.includes("linkedin.com")) {
       results.push({
         platform: "LinkedIn",
-        title: "Mocked LinkedIn Post",
+        title: "LinkedIn integration coming soon",
         url: link,
         date: new Date().toISOString().slice(0, 10),
         thumbnail: "https://placehold.co/120x120?text=LI",
+        text: "LinkedIn integration will be available soon with RapidAPI."
       });
     }
   }
@@ -601,188 +602,8 @@ async function scrapeInstagramPosts(profileUrl, timeRange = "week") {
   }
 }
 
-// Helper to scrape LinkedIn posts using Puppeteer
-async function scrapeLinkedInPosts(profileUrl, timeRange = "week") {
-  const browser = await puppeteer.launch({ 
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--disable-features=VizDisplayCompositor']
-  });
-  
-  try {
-    const page = await browser.newPage();
-    
-    // Set user agent to avoid detection
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-    
-    // Set viewport
-    await page.setViewport({ width: 1280, height: 800 });
-    
-    console.log('Navigating to LinkedIn profile:', profileUrl);
-    
-    // Navigate to LinkedIn profile
-    await page.goto(profileUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-    
-    // Wait for content to load
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    // Check if we're on a valid LinkedIn page
-    const pageTitle = await page.title();
-    if (!pageTitle.includes('LinkedIn')) {
-      throw new Error('Not a valid LinkedIn page. Please check the URL.');
-    }
-    
-    console.log('LinkedIn page loaded, searching for posts...');
-    
-    // Try multiple selectors to find posts
-    const posts = await page.evaluate(() => {
-      const results = [];
-      
-      // Method 1: Look for activity/posts section with more specific selectors
-      let postElements = document.querySelectorAll('[data-test-id="post-content"], .feed-shared-update-v2, .artdeco-card, [data-test-id="activity-item"], .feed-shared-update-v2__description');
-      
-      // Method 2: If no posts found, look for any content with text
-      if (postElements.length === 0) {
-        postElements = document.querySelectorAll('.artdeco-card, .feed-shared-update-v2, [class*="post"], [class*="update"], .feed-shared-text');
-      }
-      
-      // Method 3: Look for any div with substantial text content
-      if (postElements.length === 0) {
-        const allDivs = document.querySelectorAll('div');
-        postElements = Array.from(allDivs).filter(div => {
-          const text = div.textContent?.trim();
-          return text && text.length > 50 && text.length < 2000 && 
-                 !div.querySelector('img') && 
-                 !div.querySelector('button') &&
-                 div.children.length < 5;
-        });
-      }
-      
-      console.log('Found', postElements.length, 'potential post elements');
-      
-      postElements.forEach((post, index) => {
-        if (index < 10) { // Limit to 10 posts
-          let text = '';
-          let date = '';
-          let postUrl = '';
-          
-          // Try to extract text content with more selectors
-          const textSelectors = [
-            '[data-test-id="post-text"]',
-            '.feed-shared-text',
-            '.update-components-text',
-            '.feed-shared-update-v2__description',
-            'p',
-            'span'
-          ];
-          
-          for (const selector of textSelectors) {
-            const textElement = post.querySelector(selector);
-            if (textElement && textElement.textContent.trim().length > 10) {
-              text = textElement.textContent.trim();
-              break;
-            }
-          }
-          
-          // If no text found with selectors, try the whole element
-          if (!text) {
-            text = post.textContent.trim();
-          }
-          
-          // Try to extract date
-          const timeSelectors = ['time', '[data-test-id="time-ago"]', '.feed-shared-actor__sub-description'];
-          for (const selector of timeSelectors) {
-            const timeElement = post.querySelector(selector);
-            if (timeElement) {
-              date = timeElement.getAttribute('datetime') || timeElement.textContent.trim();
-              break;
-            }
-          }
-          
-          // Try to extract post URL
-          const linkSelectors = ['a[href*="/posts/"]', 'a[href*="/activity/"]', 'a'];
-          for (const selector of linkSelectors) {
-            const linkElement = post.querySelector(selector);
-            if (linkElement && linkElement.href) {
-              postUrl = linkElement.href;
-              break;
-            }
-          }
-          
-          // Clean up text (remove extra whitespace, newlines)
-          text = text.replace(/\s+/g, ' ').trim();
-          
-          if (text.length > 20 && text.length < 2000) { // Only include posts with substantial content
-            // If no date found, use current date
-            if (!date) {
-              date = new Date().toISOString();
-            }
-            
-            results.push({
-              platform: "LinkedIn",
-              title: text.slice(0, 100) + (text.length > 100 ? "..." : ""),
-              text: text,
-              url: postUrl || profileUrl,
-              date: date.slice(0, 10),
-              thumbnail: "https://placehold.co/120x120?text=LI"
-            });
-          }
-        }
-      });
-      
-      return results;
-    });
-    
-    console.log('Initial scraping found', posts.length, 'posts');
-    
-    // If no posts found, try scrolling to load more content
-    if (posts.length === 0) {
-      console.log('No posts found initially, trying to scroll...');
-      await page.evaluate(() => {
-        window.scrollTo(0, document.body.scrollHeight);
-      });
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Try scraping again after scroll
-      const morePosts = await page.evaluate(() => {
-        const results = [];
-        const postElements = document.querySelectorAll('.artdeco-card, .feed-shared-update-v2, [class*="post"], .feed-shared-text');
-        
-        postElements.forEach((post, index) => {
-          if (index < 5) {
-            const text = post.textContent?.trim().replace(/\s+/g, ' ');
-            if (text && text.length > 20 && text.length < 2000) {
-              results.push({
-                platform: "LinkedIn",
-                title: text.slice(0, 100) + (text.length > 100 ? "..." : ""),
-                text: text,
-                url: window.location.href,
-                date: new Date().toISOString().slice(0, 10),
-                thumbnail: "https://placehold.co/120x120?text=LI"
-              });
-            }
-          }
-        });
-        
-        return results;
-      });
-      
-      posts.push(...morePosts);
-      console.log('After scrolling, found', posts.length, 'total posts');
-    }
-    
-    if (posts.length === 0) {
-      throw new Error('No posts found on this LinkedIn profile. The profile might be private or have no recent activity.');
-    }
-    
-    return posts;
-    
-  } catch (error) {
-    console.error('LinkedIn scraping error:', error);
-    throw new Error(`LinkedIn scraping failed: ${error.message}. Please ensure the profile is public and has recent posts.`);
-  } finally {
-    await browser.close();
-  }
-}
+// LinkedIn functionality will be implemented with RapidAPI
+// Removed web scraping implementation
 
 app.post('/api/scrape-and-transcribe', async (req, res) => {
   const { links, timeRange, twitterApiKey, testPrompt } = req.body;
@@ -905,18 +726,16 @@ app.post('/api/scrape-and-transcribe', async (req, res) => {
           });
         }
       } else if (link.includes("linkedin.com")) {
-        // Use real LinkedIn scraping with proper error handling
-        try {
-          const linkedInPosts = await scrapeLinkedInPosts(link, timeRange);
-          results = results.concat(linkedInPosts);
-        } catch (error) {
-          // Return error instead of mock data
-          return res.status(400).json({ 
-            error: error.message,
-            posts: [],
-            newsletter: null
-          });
-        }
+        // LinkedIn functionality will be implemented with RapidAPI
+        // For now, return a placeholder
+        results.push({
+          platform: "LinkedIn",
+          title: "LinkedIn integration coming soon",
+          url: link,
+          date: new Date().toISOString().slice(0, 10),
+          thumbnail: "https://placehold.co/120x120?text=LI",
+          text: "LinkedIn integration will be available soon with RapidAPI."
+        });
       } else if (link.includes("twitter.com") || link.startsWith("@")) {
         // Accept both full URLs and @usernames
         let username = link;
