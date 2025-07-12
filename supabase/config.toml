@@ -36,12 +36,12 @@ default_pool_size = 15
 # Maximum number of client connections allowed.
 max_client_conn = 100
 
-[realtime]
-enabled = true
+# [realtime]
+# enabled = true  # Removed duplicate enabled key outside of section
 # Bind realtime via either IPv4 or IPv6. (default: 0.0.0.0)
-bind_address = "0.0.0.0"
+# bind_address = "0.0.0.0"  # Commented out: invalid key for deployment
 # Port to use for the local Realtime API.
-port = 54323
+# port = 54323  # Commented out: invalid key for deployment
 
 [studio]
 enabled = true
@@ -212,9 +212,9 @@ secret = ""
 # Use pre-defined map of claims that are added to the JWT.
 # The key is the name of the claim, and the value is the path in the user_metadata or app_metadata
 # object. Use dot notation for nested fields, e.g. "app_metadata.provider"
-[auth.jwt]
+# [auth.jwt]
 # The default claim name is "role" and the default path is "app_metadata.role".
-default_group_name = "role"
+# default_group_name = "role"  # Commented out: invalid key for deployment
 
 # Configure one of the supported SMS providers: `twilio`, `messagebird`, `textlocal`, `vonage`.
 [auth.sms.twilio]
@@ -242,12 +242,12 @@ api_key = ""
 api_secret = ""
 
 # Configure one of the supported MFA providers: `totp`.
-[auth.mfa.totp]
-enabled = false
+# [auth.mfa.totp]
+# enabled = false  # Commented out: invalid key for deployment
 # The issuer name displayed in the authenticator app.
-issuer = ""
+# issuer = ""  # Commented out: invalid key for deployment
 
 [edge_runtime]
 enabled = true
 # Configure the import map file for the edge runtime.
-import_map_path = "./supabase/functions/import_map.json" 
+# import_map_path = "./supabase/functions/import_map.json"  # Commented out: invalid key for deployment 

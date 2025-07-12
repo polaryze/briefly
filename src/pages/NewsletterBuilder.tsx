@@ -75,24 +75,18 @@ export default function NewsletterBuilder() {
       const links = SOCIALS.filter((s) => selected[s.key as keyof typeof selected] && inputs[s.key as keyof typeof inputs])
         .map((s) => inputs[s.key as keyof typeof inputs]);
       if (links.length === 0) throw new Error("Please provide at least one social link.");
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scrape-socials`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ links, timeRange: "week" }),
+      
+      // Use Supabase Edge Functions
+      const { supabase } = await import('@/lib/supabase');
+      const { data, error } = await supabase.functions.invoke('scrape-socials', {
+        body: { links, timeRange: "week" }
       });
       
-      const data = await res.json();
-      
-      if (!res.ok) {
-        // Handle backend errors
-        throw new Error(data.error || "Failed to fetch newsletter");
+      if (error) {
+        throw new Error(error.message || "Failed to fetch newsletter");
       }
       
       if (data.error) {
-        // Handle errors in successful response
         throw new Error(data.error);
       }
       
