@@ -252,33 +252,95 @@ app.post('/api/transcribe', async (req, res) => {
   }
 });
 
-// Helper to fetch recent tweets from a public Twitter/X profile
+// Helper to fetch recent tweets from a public Twitter/X profile using RapidAPI
 async function fetchTwitterPosts(username, timeRange, twitterApiKey = "") {
-  // If username starts with @, remove it
-  const cleanUsername = username.replace(/^@/, "");
-  const rettiwt = twitterApiKey ? new Rettiwt({ apiKey: twitterApiKey }) : new Rettiwt();
-  // Fetch tweets (limit to 10 for now)
-  let tweets = [];
-  try {
-    const data = await rettiwt.tweet.search({ fromUsers: [cleanUsername] }, 10);
-    // Filter by timeRange
-    const now = new Date();
-    const cutoff = new Date(now);
-    if (timeRange === "week") cutoff.setDate(now.getDate() - 7);
-    else cutoff.setMonth(now.getMonth() - 1);
-    tweets = data.filter((t) => t.createdAt && new Date(t.createdAt) >= cutoff).map((t) => ({
-      platform: "Twitter",
-      title: t.text.slice(0, 60) + (t.text.length > 60 ? "..." : ""),
-      url: `https://twitter.com/${cleanUsername}/status/${t.id}`,
-      date: t.createdAt ? t.createdAt.slice(0, 10) : "",
-      thumbnail: t.media && t.media.length > 0 ? t.media[0].url : "https://placehold.co/120x120?text=TW",
-      text: t.text,
-    }));
-  } catch (err) {
-    // If error, return empty
-    tweets = [];
+  if (!process.env.RAPIDAPI_KEY) {
+    throw new Error("Missing RapidAPI key. Please add RAPIDAPI_KEY to your environment variables.");
   }
-  return tweets;
+  
+  try {
+    // Clean username (remove @ if present)
+    const cleanUsername = username.replace(/^@/, "");
+    
+    // First, get user info to get their user ID
+    const userUrl = `https://twitter241.p.rapidapi.com/user?username=${cleanUsername}`;
+    
+    const options = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+        'x-rapidapi-host': 'twitter241.p.rapidapi.com'
+      }
+    };
+
+    const userResponse = await fetch(userUrl, options);
+    const userResult = await userResponse.json();
+    
+    if (!userResponse.ok) {
+      throw new Error(`Twitter API error: ${userResult.message || 'Failed to fetch Twitter user data'}`);
+    }
+    
+    // Get user's latest tweets
+    const tweetsUrl = `https://twitter241.p.rapidapi.com/user-tweets?user_id=${userResult.data.id}&count=10`;
+    
+    const tweetsResponse = await fetch(tweetsUrl, options);
+    const tweetsResult = await tweetsResponse.json();
+    
+    if (!tweetsResponse.ok) {
+      throw new Error(`Twitter API error: ${tweetsResult.message || 'Failed to fetch Twitter posts'}`);
+    }
+    
+    const posts = [];
+    
+    // If we have recent tweets, use the latest one
+    if (tweetsResult.data && tweetsResult.data.length > 0) {
+      const latestTweet = tweetsResult.data[0]; // Get the most recent tweet
+      
+      posts.push({
+        platform: "Twitter",
+        title: latestTweet.text?.slice(0, 100) || "Latest Twitter Post",
+        text: latestTweet.text || "Recent Twitter update",
+        url: `https://twitter.com/${cleanUsername}/status/${latestTweet.id}`,
+        date: latestTweet.created_at || new Date().toISOString().slice(0, 10),
+        thumbnail: latestTweet.media?.[0]?.url || latestTweet.media?.[0]?.preview_image_url || "https://placehold.co/120x120?text=TW",
+        imageUrl: latestTweet.media?.[0]?.url || latestTweet.media?.[0]?.preview_image_url || "https://placehold.co/120x120?text=TW"
+      });
+    } else {
+      // Fallback to user profile data if no tweets available
+      if (userResult.data) {
+        const user = userResult.data;
+        
+        posts.push({
+          platform: "Twitter",
+          title: user.name || `@${cleanUsername}`,
+          text: user.description || `Twitter profile of @${cleanUsername}`,
+          url: `https://twitter.com/${cleanUsername}`,
+          date: new Date().toISOString().slice(0, 10),
+          thumbnail: user.profile_image_url || "https://placehold.co/120x120?text=TW",
+          imageUrl: user.profile_image_url || "https://placehold.co/120x120?text=TW"
+        });
+      }
+    }
+    
+    // If still no posts, create a default post
+    if (posts.length === 0) {
+      posts.push({
+        platform: "Twitter",
+        title: "Twitter Profile",
+        text: "Twitter profile information",
+        url: `https://twitter.com/${cleanUsername}`,
+        date: new Date().toISOString().slice(0, 10),
+        thumbnail: "https://placehold.co/120x120?text=TW",
+        imageUrl: "https://placehold.co/120x120?text=TW"
+      });
+    }
+    
+    return posts;
+    
+  } catch (error) {
+    console.error('Twitter RapidAPI error:', error);
+    throw new Error(`Twitter API failed: ${error.message}`);
+  }
 }
 
 // Helper to call OpenAI API for newsletter generation
@@ -308,7 +370,7 @@ async function generateNewsletterWithOpenAI(posts) {
     } else if (platform === "LinkedIn") {
       prompt = `Write a concise, first-person summary (under 100 words) of the following LinkedIn content as if you are the professional. Use "I" or "my" to describe what was shared. Focus on the professional experience, achievements, and career highlights to create an engaging, personal update. Do not use sections, headers, or bullet points. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
     } else if (platform === "Twitter") {
-      prompt = `Write a concise, natural paragraph (2-3 sentences) summarizing the following Twitter content. Focus on the tweets and discussions shared. Keep it conversational and engaging. Don't use sections, headers, or bullet points. Just write a short, flowing paragraph that captures the main discussions and updates. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
+      prompt = `Write a concise, first-person summary (under 100 words) of the following Twitter content as if you are the user. Use "I" or "my" to describe what was shared. Focus on the tweets, thoughts, and discussions to create an engaging, personal update. Do not use sections, headers, or bullet points. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
     } else {
       prompt = `Write a concise, natural paragraph (2-3 sentences) summarizing the following social media posts. Don't use sections, headers, or bullet points. Just write a short, flowing paragraph that captures the main content and tone of these posts. Keep it conversational and personal. Here are the posts:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
     }

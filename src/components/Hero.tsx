@@ -35,7 +35,7 @@ const Hero = () => {
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
           Briefly auto-generates a sleek, intelligent monthly newsletter from your posts 
-          across LinkedIn, Instagram & YouTube — powered by AI agents tuned to your tone.
+          across LinkedIn, X, Instagram & YouTube — powered by AI agents tuned to your tone.
         </p>
 
         {/* CTA Button */}
