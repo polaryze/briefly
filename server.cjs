@@ -306,7 +306,7 @@ async function generateNewsletterWithOpenAI(posts) {
     } else if (platform === "Instagram") {
       prompt = `Write a concise, first-person summary (under 100 words) of the following Instagram content as if you are the creator. Use "I" or "my" to describe what was shared. Focus on the post descriptions, engagement (likes/comments), and elaborate on what's happening in the posts. Do not use sections, headers, or bullet points. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}${p.likes ? ` (Likes: ${p.likes})` : ''}${p.comments ? ` (Comments: ${p.comments})` : ''}\n`).join("\n")}`;
     } else if (platform === "LinkedIn") {
-      prompt = `Write a concise, natural paragraph (2-3 sentences) summarizing the following LinkedIn content. Focus on professional updates, achievements, and insights shared. Keep it professional yet engaging. Don't use sections, headers, or bullet points. Just write a short, flowing paragraph that captures the key professional updates. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
+      prompt = `Write a concise, first-person summary (under 100 words) of the following LinkedIn content as if you are the professional. Use "I" or "my" to describe what was shared. Focus on the professional experience, achievements, and career highlights to create an engaging, personal update. Do not use sections, headers, or bullet points. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
     } else if (platform === "Twitter") {
       prompt = `Write a concise, natural paragraph (2-3 sentences) summarizing the following Twitter content. Focus on the tweets and discussions shared. Keep it conversational and engaging. Don't use sections, headers, or bullet points. Just write a short, flowing paragraph that captures the main discussions and updates. Here is the content:\n\n${platformPosts.map((p, i) => `${i + 1}. [${p.platform}] ${p.text || p.transcript || ""}\n`).join("\n")}`;
     } else {
@@ -605,6 +605,103 @@ async function scrapeInstagramPosts(profileUrl, timeRange = "week") {
 // LinkedIn functionality will be implemented with RapidAPI
 // Removed web scraping implementation
 
+// Helper function for LinkedIn RapidAPI integration
+async function fetchLinkedInPosts(profileUrl, timeRange = "week") {
+  if (!process.env.RAPIDAPI_KEY) {
+    throw new Error("Missing RapidAPI key. Please add RAPIDAPI_KEY to your environment variables.");
+  }
+  
+  try {
+    // Fetch recent posts using the correct endpoint
+    const postsUrl = `https://fresh-linkedin-profile-data.p.rapidapi.com/get-profile-posts?linkedin_url=${encodeURIComponent(profileUrl)}&type=posts`;
+    
+    const options = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+        'x-rapidapi-host': 'fresh-linkedin-profile-data.p.rapidapi.com'
+      }
+    };
+
+    const response = await fetch(postsUrl, options);
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`LinkedIn API error: ${result.message || 'Failed to fetch LinkedIn posts'}`);
+    }
+    
+    const posts = [];
+    
+    // If we have recent posts, use the latest one
+    if (result.data && result.data.length > 0) {
+      const latestPost = result.data[0]; // Get the most recent post
+      
+      posts.push({
+        platform: "LinkedIn",
+        title: latestPost.title || latestPost.text?.slice(0, 100) || "Latest LinkedIn Post",
+        text: latestPost.text || latestPost.description || "Recent professional update",
+        url: latestPost.url || profileUrl,
+        date: latestPost.date || latestPost.created_at || new Date().toISOString().slice(0, 10),
+        thumbnail: latestPost.image || latestPost.thumbnail || latestPost.media?.[0]?.url || "https://placehold.co/120x120?text=LI",
+        imageUrl: latestPost.image || latestPost.thumbnail || latestPost.media?.[0]?.url || "https://placehold.co/120x120?text=LI"
+      });
+    } else {
+      // Fallback to profile data if no posts available
+      const profileUrl = `https://fresh-linkedin-profile-data.p.rapidapi.com/get-linkedin-profile?linkedin_url=${encodeURIComponent(profileUrl)}&include_skills=false&include_certifications=false&include_publications=false&include_honors=false&include_volunteers=false&include_projects=false&include_patents=false&include_courses=false&include_organizations=false&include_profile_status=false&include_company_public_url=false`;
+      
+      const profileResponse = await fetch(profileUrl, options);
+      const profileResult = await profileResponse.json();
+      
+      if (profileResult.data) {
+        const profile = profileResult.data;
+        
+        if (profile.headline) {
+          posts.push({
+            platform: "LinkedIn",
+            title: profile.headline,
+            text: profile.headline,
+            url: profileUrl,
+            date: new Date().toISOString().slice(0, 10),
+            thumbnail: profile.profilePicture || "https://placehold.co/120x120?text=LI",
+            imageUrl: profile.profilePicture || "https://placehold.co/120x120?text=LI"
+          });
+        }
+        
+        if (profile.summary) {
+          posts.push({
+            platform: "LinkedIn",
+            title: "Professional Summary",
+            text: profile.summary,
+            url: profileUrl,
+            date: new Date().toISOString().slice(0, 10),
+            thumbnail: profile.profilePicture || "https://placehold.co/120x120?text=LI",
+            imageUrl: profile.profilePicture || "https://placehold.co/120x120?text=LI"
+          });
+        }
+      }
+    }
+    
+    // If still no posts, create a default post
+    if (posts.length === 0) {
+      posts.push({
+        platform: "LinkedIn",
+        title: "LinkedIn Profile",
+        text: "Professional profile information from LinkedIn",
+        url: profileUrl,
+        date: new Date().toISOString().slice(0, 10),
+        thumbnail: "https://placehold.co/120x120?text=LI",
+        imageUrl: "https://placehold.co/120x120?text=LI"
+      });
+    }
+    
+    return posts;
+    
+  } catch (error) {
+    console.error('LinkedIn RapidAPI error:', error);
+    throw new Error(`LinkedIn API failed: ${error.message}`);
+  }
+}
+
 app.post('/api/scrape-and-transcribe', async (req, res) => {
   const { links, timeRange, twitterApiKey, testPrompt } = req.body;
   let results = [];
@@ -726,16 +823,18 @@ app.post('/api/scrape-and-transcribe', async (req, res) => {
           });
         }
       } else if (link.includes("linkedin.com")) {
-        // LinkedIn functionality will be implemented with RapidAPI
-        // For now, return a placeholder
-        results.push({
-          platform: "LinkedIn",
-          title: "LinkedIn integration coming soon",
-          url: link,
-          date: new Date().toISOString().slice(0, 10),
-          thumbnail: "https://placehold.co/120x120?text=LI",
-          text: "LinkedIn integration will be available soon with RapidAPI."
-        });
+        // Use LinkedIn RapidAPI integration
+        try {
+          const linkedInPosts = await fetchLinkedInPosts(link, timeRange);
+          results = results.concat(linkedInPosts);
+        } catch (error) {
+          // Return error instead of mock data
+          return res.status(400).json({ 
+            error: error.message,
+            posts: [],
+            newsletter: null
+          });
+        }
       } else if (link.includes("twitter.com") || link.startsWith("@")) {
         // Accept both full URLs and @usernames
         let username = link;

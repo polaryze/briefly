@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 const SOCIALS = [
-  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username (public profile)", disabled: true },
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username (public profile)", disabled: false },
   { key: "twitter", label: "X", placeholder: "@yourhandle or https://twitter.com/yourhandle", disabled: true },
   { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourprofile", disabled: false },
   { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@yourchannel", disabled: false },
@@ -41,7 +41,7 @@ const Switch = ({ checked, onChange, disabled }: { checked: boolean; onChange: (
 export default function NewsletterBuilder() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState({
-    linkedin: false, // No default selection
+    linkedin: false,
     twitter: false,
     instagram: false,
     youtube: false,
@@ -122,7 +122,7 @@ export default function NewsletterBuilder() {
           <ul className="text-xs text-muted-foreground space-y-1">
             <li>• Instagram: Deep post analysis with engagement data and high-quality images</li>
             <li>• YouTube: Latest video thumbnails and titles with detailed descriptions</li>
-            <li>• LinkedIn: Coming soon with RapidAPI integration</li>
+            <li>• LinkedIn: Professional profile data and experience via RapidAPI</li>
             <li>• AI summarizes content with platform-specific context</li>
           </ul>
         </div>
@@ -203,8 +203,60 @@ export default function NewsletterBuilder() {
                   </div>
                 </div>
                 
-                {/* Social Media Highlights */}
+                                  {/* Social Media Highlights */}
                 <div className="flex-shrink-0 w-80">
+                  {/* LinkedIn Latest Post */}
+                  {newsletterData && newsletterData.some((post: any) => 
+                    post.platform === "LinkedIn" && 
+                    post.thumbnail && 
+                    post.thumbnail !== "https://placehold.co/120x120?text=LI" &&
+                    !post.thumbnail.includes('data:image/svg') &&
+                    !post.thumbnail.includes('placeholder') &&
+                    post.thumbnail.length > 10
+                  ) && (
+                    <div className="mb-8">
+                      <h4 className="text-sm font-medium text-muted-foreground mb-4">Latest LinkedIn Post</h4>
+                      <div className="flex justify-center">
+                        {newsletterData
+                          .filter((post: any) => 
+                            post.platform === "LinkedIn" && 
+                            post.thumbnail && 
+                            post.thumbnail !== "https://placehold.co/120x120?text=LI" &&
+                            !post.thumbnail.includes('data:image/svg') &&
+                            !post.thumbnail.includes('placeholder') &&
+                            !post.thumbnail.includes('placehold.co') &&
+                            post.thumbnail.length > 10
+                          )
+                          .slice(0, 1) // Show only the latest post
+                          .map((post: any, index: number) => (
+                            <div key={index} className="relative group">
+                              <img 
+                                src={post.thumbnail} 
+                                alt={post.title || "LinkedIn post"}
+                                className="w-48 h-48 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              {/* Hover overlay with platform badge */}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-end justify-start p-2">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <span className="text-xs font-medium text-white bg-primary/80 px-2 py-1 rounded block mb-1">
+                                    LI
+                                  </span>
+                                  <div className="text-xs text-white bg-primary/80 px-2 py-1 rounded block max-w-40">
+                                    <div className="line-clamp-2 text-xs leading-tight">
+                                      {post.title}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Instagram Latest Image */}
                   {newsletterData && newsletterData.some((post: any) => 
                     post.platform === "Instagram" && 

@@ -7,7 +7,7 @@ import NewsletterExample from "../pages/NewsletterExample";
 const SOCIALS = [
   { key: "twitter", label: "Twitter", placeholder: "@alexkumar", default: "@alexkumar" },
   { key: "instagram", label: "Instagram", placeholder: "@alex.gram", default: "@alex.gram" },
-  { key: "linkedin", label: "LinkedIn (Coming Soon)", placeholder: "https://linkedin.com/in/alexkumar", default: "https://linkedin.com/in/alexkumar" },
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/alexkumar", default: "https://linkedin.com/in/alexkumar" },
   { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@alexkumar", default: "https://youtube.com/@alexkumar" },
 ];
 
