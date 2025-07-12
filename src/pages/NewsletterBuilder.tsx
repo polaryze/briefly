@@ -74,10 +74,13 @@ export default function NewsletterBuilder() {
       const links = SOCIALS.filter((s) => selected[s.key as keyof typeof selected] && inputs[s.key as keyof typeof inputs])
         .map((s) => inputs[s.key as keyof typeof inputs]);
       if (links.length === 0) throw new Error("Please provide at least one social link.");
-      const res = await fetch("http://localhost:3001/api/scrape-and-transcribe", {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scrape-socials`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ links }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ links, timeRange: "week" }),
       });
       
       const data = await res.json();
