@@ -45,6 +45,25 @@ export function useAuth() {
     }
   }
 
+  const loginWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+      if (error) throw error
+      return data
+    } catch (error) {
+      throw error
+    }
+  }
+
   const register = async (email: string, password: string, name: string) => {
     try {
       const { user } = await signUp(email, password, name)
@@ -67,6 +86,7 @@ export function useAuth() {
     session,
     loading,
     login,
+    loginWithGoogle,
     register,
     logout,
     isAuthenticated: !!user,

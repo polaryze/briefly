@@ -67,4 +67,33 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Create trigger to automatically create user profile
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user(); 
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- Create Gmail credentials table
+CREATE TABLE IF NOT EXISTS user_gmail_credentials (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  scope TEXT NOT NULL,
+  token_type TEXT NOT NULL,
+  expiry_date BIGINT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS for Gmail credentials
+ALTER TABLE user_gmail_credentials ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for Gmail credentials table
+CREATE POLICY "Users can view their own Gmail credentials" ON user_gmail_credentials
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own Gmail credentials" ON user_gmail_credentials
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own Gmail credentials" ON user_gmail_credentials
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own Gmail credentials" ON user_gmail_credentials
+  FOR DELETE USING (auth.uid() = user_id); 

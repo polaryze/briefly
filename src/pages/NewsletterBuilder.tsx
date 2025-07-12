@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { GmailConnect } from "@/components/GmailConnect";
 
 const SOCIALS = [
   { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username (public profile)", disabled: false },
@@ -426,6 +427,16 @@ export default function NewsletterBuilder() {
           </div>
         )}
       </Card>
+      
+      {/* Gmail Integration */}
+      {newsletter && (
+        <div className="max-w-2xl w-full mt-8">
+          <GmailConnect 
+            newsletterContent={newsletter}
+            newsletterTitle="Weekly Newsletter"
+          />
+        </div>
+      )}
     </div>
   );
 } 
