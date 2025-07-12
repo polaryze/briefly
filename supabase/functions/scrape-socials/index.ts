@@ -6,6 +6,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface Post {
+  platform: string
+  title: string
+  text?: string
+  url: string
+  date: string
+  thumbnail: string
+  imageUrl?: string
+  videoId?: string
+  description?: string
+  type?: string
+  transcript?: string
+  likes?: number
+  comments?: number
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -14,7 +30,7 @@ serve(async (req) => {
 
   try {
     const { links, timeRange } = await req.json()
-    let results = []
+    let results: Post[] = []
 
     for (const link of links) {
       if (link.includes("youtube.com")) {
@@ -46,10 +62,10 @@ serve(async (req) => {
     }
 
     // Generate newsletter using OpenAI
-    let newsletter = null
+    let newsletter: string | null = null
     try {
       newsletter = await generateNewsletterWithOpenAI(results)
-    } catch (err) {
+    } catch (err: any) {
       newsletter = `Newsletter generation failed: ${err.message}`
     }
 
@@ -61,7 +77,7 @@ serve(async (req) => {
       }
     )
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(
       JSON.stringify({ 
         error: `Scraping failed: ${error.message}`,
@@ -134,8 +150,8 @@ async function getChannelIdFromUsername(username: string) {
 
 // Enhanced YouTube scraping with community posts and better video data
 async function fetchYouTubeContent(channel: string, timeRange: string, isUsername = false) {
-  let videos = []
-  let communityPosts = []
+  let videos: Post[] = []
+  let communityPosts: Post[] = []
   
   // Get channel ID
   let channelId = channel
@@ -234,11 +250,20 @@ async function fetchYouTubeContent(channel: string, timeRange: string, isUsernam
 
 // Instagram scraping function
 async function scrapeInstagramPosts(link: string, timeRange: string) {
-  // This is a simplified version - you might want to use a proper Instagram API
+  // Extract username from Instagram URL
+  const usernameMatch = link.match(/instagram\.com\/([^\/\?]+)/)
+  if (!usernameMatch) {
+    throw new Error('Invalid Instagram URL. Please provide a valid Instagram profile URL.')
+  }
+  
+  const username = usernameMatch[1]
+  
+  // For now, return a more realistic mock since Instagram scraping requires special handling
+  // In production, you'd want to use a proper Instagram API or scraping service
   return [{
     platform: "Instagram",
-    title: "Instagram Post",
-    text: "Instagram content",
+    title: `Latest Instagram posts from @${username}`,
+    text: `Recent Instagram content from @${username}. Check out the latest posts and stories for updates.`,
     url: link,
     date: new Date().toISOString().slice(0, 10),
     thumbnail: "https://placehold.co/120x120?text=IG",
@@ -246,41 +271,204 @@ async function scrapeInstagramPosts(link: string, timeRange: string) {
   }]
 }
 
-// LinkedIn scraping function
+// LinkedIn scraping function using RapidAPI
 async function fetchLinkedInPosts(link: string, timeRange: string) {
-  // This would use RapidAPI LinkedIn endpoint
-  return [{
-    platform: "LinkedIn",
-    title: "LinkedIn Post",
-    text: "LinkedIn content",
-    url: link,
-    date: new Date().toISOString().slice(0, 10),
-    thumbnail: "https://placehold.co/120x120?text=LI",
-    imageUrl: "https://placehold.co/120x120?text=LI"
-  }]
+  const rapidApiKey = Deno.env.get('RAPIDAPI_KEY')
+  if (!rapidApiKey) {
+    throw new Error("Missing RapidAPI key. Please add RAPIDAPI_KEY to your environment variables.")
+  }
+  
+  try {
+    // First, get profile data
+    const profileUrl = `https://fresh-linkedin-profile-data.p.rapidapi.com/get-linkedin-profile?linkedin_url=${encodeURIComponent(link)}&include_skills=false&include_certifications=false&include_publications=false&include_honors=false&include_volunteers=false&include_projects=false&include_patents=false&include_courses=false&include_organizations=false&include_profile_status=false&include_company_public_url=false`
+    
+    const profileOptions = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': rapidApiKey,
+        'x-rapidapi-host': 'fresh-linkedin-profile-data.p.rapidapi.com'
+      }
+    }
+
+    const profileResponse = await fetch(profileUrl, profileOptions)
+    const profileResult = await profileResponse.json()
+    
+    if (!profileResponse.ok) {
+      throw new Error(`LinkedIn API error: ${profileResult.message || 'Failed to fetch LinkedIn profile data'}`)
+    }
+    
+    const posts: Post[] = []
+    
+    // Try to get recent posts
+    const postsUrl = `https://fresh-linkedin-profile-data.p.rapidapi.com/get-profile-posts?linkedin_url=${encodeURIComponent(link)}&type=posts`
+    
+    const postsResponse = await fetch(postsUrl, profileOptions)
+    const postsResult = await postsResponse.json()
+    
+    if (postsResponse.ok && postsResult.data && postsResult.data.length > 0) {
+      // Use the latest post
+      const latestPost = postsResult.data[0]
+      
+      posts.push({
+        platform: "LinkedIn",
+        title: latestPost.title || latestPost.text?.slice(0, 100) || "Latest LinkedIn Post",
+        text: latestPost.text || latestPost.description || "Recent professional update",
+        url: latestPost.url || link,
+        date: latestPost.date || latestPost.created_at || new Date().toISOString().slice(0, 10),
+        thumbnail: latestPost.image || latestPost.thumbnail || latestPost.media?.[0]?.url || "https://placehold.co/120x120?text=LI",
+        imageUrl: latestPost.image || latestPost.thumbnail || latestPost.media?.[0]?.url || "https://placehold.co/120x120?text=LI"
+      })
+    } else {
+      // Fallback to profile data if no posts available
+      if (profileResult.data) {
+        const profile = profileResult.data
+        
+        if (profile.headline) {
+          posts.push({
+            platform: "LinkedIn",
+            title: profile.headline,
+            text: profile.headline,
+            url: link,
+            date: new Date().toISOString().slice(0, 10),
+            thumbnail: profile.profilePicture || "https://placehold.co/120x120?text=LI",
+            imageUrl: profile.profilePicture || "https://placehold.co/120x120?text=LI"
+          })
+        }
+        
+        if (profile.summary) {
+          posts.push({
+            platform: "LinkedIn",
+            title: "Professional Summary",
+            text: profile.summary,
+            url: link,
+            date: new Date().toISOString().slice(0, 10),
+            thumbnail: profile.profilePicture || "https://placehold.co/120x120?text=LI",
+            imageUrl: profile.profilePicture || "https://placehold.co/120x120?text=LI"
+          })
+        }
+      }
+    }
+    
+    // If still no posts, create a default post
+    if (posts.length === 0) {
+      posts.push({
+        platform: "LinkedIn",
+        title: "LinkedIn Profile",
+        text: "Professional profile information from LinkedIn",
+        url: link,
+        date: new Date().toISOString().slice(0, 10),
+        thumbnail: "https://placehold.co/120x120?text=LI",
+        imageUrl: "https://placehold.co/120x120?text=LI"
+      })
+    }
+    
+    return posts
+    
+  } catch (error) {
+    console.error('LinkedIn RapidAPI error:', error)
+    throw new Error(`LinkedIn API failed: ${error.message}`)
+  }
 }
 
-// Twitter/X scraping function
+// Twitter/X scraping function using RapidAPI
 async function fetchTwitterPosts(username: string, timeRange: string) {
-  // This would use RapidAPI Twitter endpoint
-  return [{
-    platform: "Twitter",
-    title: "Twitter Post",
-    text: "Twitter content",
-    url: `https://twitter.com/${username}`,
-    date: new Date().toISOString().slice(0, 10),
-    thumbnail: "https://placehold.co/120x120?text=TW",
-    imageUrl: "https://placehold.co/120x120?text=TW"
-  }]
+  const rapidApiKey = Deno.env.get('RAPIDAPI_KEY')
+  if (!rapidApiKey) {
+    throw new Error("Missing RapidAPI key. Please add RAPIDAPI_KEY to your environment variables.")
+  }
+  
+  try {
+    // Clean username (remove @ if present)
+    const cleanUsername = username.replace(/^@/, "")
+    
+    // First, get user info to get their user ID
+    const userUrl = `https://twitter241.p.rapidapi.com/user?username=${cleanUsername}`
+    
+    const options = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': rapidApiKey,
+        'x-rapidapi-host': 'twitter241.p.rapidapi.com'
+      }
+    }
+
+    const userResponse = await fetch(userUrl, options)
+    const userResult = await userResponse.json()
+    
+    if (!userResponse.ok) {
+      throw new Error(`Twitter API error: ${userResult.message || 'Failed to fetch Twitter user data'}`)
+    }
+    
+    const posts: Post[] = []
+    
+    // Get user's latest tweets
+    const tweetsUrl = `https://twitter241.p.rapidapi.com/user-tweets?user_id=${userResult.data.id}&count=10`
+    
+    const tweetsResponse = await fetch(tweetsUrl, options)
+    const tweetsResult = await tweetsResponse.json()
+    
+    if (!tweetsResponse.ok) {
+      throw new Error(`Twitter API error: ${tweetsResult.message || 'Failed to fetch Twitter posts'}`)
+    }
+    
+    // If we have recent tweets, use the latest one
+    if (tweetsResult.data && tweetsResult.data.length > 0) {
+      const latestTweet = tweetsResult.data[0] // Get the most recent tweet
+      
+      posts.push({
+        platform: "Twitter",
+        title: latestTweet.text?.slice(0, 100) || "Latest Twitter Post",
+        text: latestTweet.text || "Recent Twitter update",
+        url: `https://twitter.com/${cleanUsername}/status/${latestTweet.id}`,
+        date: latestTweet.created_at || new Date().toISOString().slice(0, 10),
+        thumbnail: latestTweet.media?.[0]?.url || latestTweet.media?.[0]?.preview_image_url || "https://placehold.co/120x120?text=TW",
+        imageUrl: latestTweet.media?.[0]?.url || latestTweet.media?.[0]?.preview_image_url || "https://placehold.co/120x120?text=TW"
+      })
+    } else {
+      // Fallback to user profile data if no tweets available
+      if (userResult.data) {
+        const user = userResult.data
+        
+        posts.push({
+          platform: "Twitter",
+          title: user.name || `@${cleanUsername}`,
+          text: user.description || `Twitter profile of @${cleanUsername}`,
+          url: `https://twitter.com/${cleanUsername}`,
+          date: new Date().toISOString().slice(0, 10),
+          thumbnail: user.profile_image_url || "https://placehold.co/120x120?text=TW",
+          imageUrl: user.profile_image_url || "https://placehold.co/120x120?text=TW"
+        })
+      }
+    }
+    
+    // If still no posts, create a default post
+    if (posts.length === 0) {
+      posts.push({
+        platform: "Twitter",
+        title: "Twitter Profile",
+        text: "Twitter profile information",
+        url: `https://twitter.com/${cleanUsername}`,
+        date: new Date().toISOString().slice(0, 10),
+        thumbnail: "https://placehold.co/120x120?text=TW",
+        imageUrl: "https://placehold.co/120x120?text=TW"
+      })
+    }
+    
+    return posts
+    
+  } catch (error) {
+    console.error('Twitter RapidAPI error:', error)
+    throw new Error(`Twitter API failed: ${error.message}`)
+  }
 }
 
 // OpenAI newsletter generation
-async function generateNewsletterWithOpenAI(posts: any[]) {
+async function generateNewsletterWithOpenAI(posts: Post[]) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiApiKey) throw new Error("Missing OpenAI API key")
   
   // Group posts by platform
-  const postsByPlatform = {}
+  const postsByPlatform: { [key: string]: Post[] } = {}
   posts.forEach(post => {
     if (!postsByPlatform[post.platform]) {
       postsByPlatform[post.platform] = []
@@ -289,7 +477,7 @@ async function generateNewsletterWithOpenAI(posts: any[]) {
   })
   
   // Generate separate summaries for each platform
-  const summaries = {}
+  const summaries: { [key: string]: string } = {}
   
   for (const [platform, platformPosts] of Object.entries(postsByPlatform)) {
     let prompt
