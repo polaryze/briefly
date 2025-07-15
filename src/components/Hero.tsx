@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 
 const Hero = () => {
   const [displayText, setDisplayText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const navigate = useNavigate();
+  const { isSignedIn } = useUser();
   
   const newsletterTitle = 'The Weekly Digest - November Edition';
   
@@ -43,9 +45,9 @@ const Hero = () => {
           size="lg" 
           className="text-lg px-8 py-6 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl hover:shadow-primary/25 transition-all duration-300 hover:scale-105 animate-fade-in"
           style={{ animationDelay: '0.6s' }}
-          onClick={() => navigate('/newsletter-builder')}
+          onClick={() => isSignedIn ? navigate('/newsletter-builder') : navigate('/signin')}
         >
-          Generate My First Issue →
+          {isSignedIn ? 'Generate Newsletter' : 'Generate My First Issue →'}
         </Button>
 
         {/* Newsletter Preview Animation */}

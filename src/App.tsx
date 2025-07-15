@@ -5,13 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import NewsletterExample from "./pages/NewsletterExample";
 import NewsletterBuilder from "./pages/NewsletterBuilder";
 import AuthCallback from "./pages/AuthCallback";
+import SignIn from "./pages/SignIn";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
+import DebugSocialAPIs from './pages/DebugSocialAPIs';
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -19,15 +23,25 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/newsletter-example" element={<NewsletterExample />} />
-          <Route path="/newsletter-builder" element={<NewsletterBuilder />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route 
+              path="/newsletter-builder" 
+              element={
+                <ProtectedRoute>
+                  <NewsletterBuilder />
+                </ProtectedRoute>
+              } 
+            />
+            {/* DEV/DEBUG ROUTE: Remove this in production! */}
+            <Route path="/debug-social-apis" element={<DebugSocialAPIs />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

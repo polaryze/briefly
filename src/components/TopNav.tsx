@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useNavigate } from 'react-router-dom';
+import { UserButton, SignInButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 
 const TopNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -62,12 +63,18 @@ const TopNav = () => {
 
         <div className="flex items-center space-x-4">
           <ThemeToggle />
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-6"
-            onClick={() => navigate('/newsletter-builder')}
-          >
-            Get Started
-          </Button>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+        <Button 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-6"
+        >
+          Get Started
+        </Button>
+            </SignInButton>
+          </SignedOut>
         </div>
       </div>
     </nav>

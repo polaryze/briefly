@@ -48,7 +48,7 @@ const StickyFooter = () => {
           <div className="flex items-center gap-2">
             <Button 
               className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-6"
-              onClick={() => navigate('/newsletter-builder')}
+              onClick={() => navigate('/signin')}
             >
               Start Free
             </Button>
