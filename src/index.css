@@ -9,93 +9,93 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 240 100% 99%; /* #F9FAFF (Snowy White) */
-    --foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
+    --background: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --foreground: 0 0% 0%; /* #000000 (Pure Black) */
 
-    --card: 240 100% 99%; /* #F9FAFF (Snowy White) */
-    --card-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
+    --card: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --card-foreground: 0 0% 0%; /* #000000 (Pure Black) */
 
-    --popover: 240 100% 99%; /* #F9FAFF (Snowy White) */
-    --popover-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
+    --popover: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --popover-foreground: 0 0% 0%; /* #000000 (Pure Black) */
 
-    --primary: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+    --primary: 0 0% 0%; /* #000000 (Pure Black) */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 100% 93%; /* #E8EBFF (Cloud Lavender) */
-    --secondary-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
+    --secondary: 0 0% 96%; /* #F5F5F5 (Light Gray) */
+    --secondary-foreground: 0 0% 0%; /* #000000 (Pure Black) */
 
-    --muted: 240 100% 93%; /* #E8EBFF (Cloud Lavender) */
-    --muted-foreground: 0 0% 36%; /* #5B5B5B (Muted Text) */
+    --muted: 0 0% 96%; /* #F5F5F5 (Light Gray) */
+    --muted-foreground: 0 0% 45%; /* #737373 (Medium Gray) */
 
-    --accent: 180 100% 46%; /* #00CFEA (Brighter Icy Mint) */
-    --accent-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
+    --accent: 0 0% 90%; /* #E5E5E5 (Medium Light Gray) */
+    --accent-foreground: 0 0% 0%; /* #000000 (Pure Black) */
 
-    --destructive: 6 78% 57%; /* #E74C3C (Error) */
+    --destructive: 0 84% 60%; /* #DC2626 (Red) */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 100% 85%; /* #D2D8F2 (Border) */
-    --input: 240 100% 85%; /* #D2D8F2 (Border) */
-    --ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+    --border: 0 0% 90%; /* #E5E5E5 (Light Gray Border) */
+    --input: 0 0% 90%; /* #E5E5E5 (Light Gray Input) */
+    --ring: 0 0% 0%; /* #000000 (Black Ring) */
 
     --radius: 0.75rem;
 
-    --sidebar-background: 240 100% 99%; /* #F9FAFF (Snowy White) */
-    --sidebar-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
-    --sidebar-primary: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+    --sidebar-background: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --sidebar-foreground: 0 0% 0%; /* #000000 (Pure Black) */
+    --sidebar-primary: 0 0% 0%; /* #000000 (Pure Black) */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 100% 46%; /* #00CFEA (Brighter Icy Mint) */
-    --sidebar-accent-foreground: 0 0% 11%; /* #1C1C1C (Dark Graphite) */
-    --sidebar-border: 240 100% 85%; /* #D2D8F2 (Border) */
-    --sidebar-ring: 240 100% 68%; /* #6C63FF (Indigo Glow) */
+    --sidebar-accent: 0 0% 90%; /* #E5E5E5 (Medium Light Gray) */
+    --sidebar-accent-foreground: 0 0% 0%; /* #000000 (Pure Black) */
+    --sidebar-border: 0 0% 90%; /* #E5E5E5 (Light Gray Border) */
+    --sidebar-ring: 0 0% 0%; /* #000000 (Black Ring) */
 
     /* Optional UI Colors */
-    --success: 142 76% 36%; /* #2ECC71 (Success) */
-    --warning: 42 89% 61%; /* #F5B041 (Warning) */
-    --error: 6 78% 57%; /* #E74C3C (Error) */
+    --success: 142 76% 36%; /* #16A34A (Success Green) */
+    --warning: 42 89% 61%; /* #F59E0B (Warning Yellow) */
+    --error: 0 84% 60%; /* #DC2626 (Error Red) */
   }
 
   .dark {
-    --background: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
-    --foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
+    --background: 0 0% 0%; /* #000000 (Pure Black) */
+    --foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
 
-    --card: 240 20% 12%; /* #1C1F2B (Dark Graphite Blue) */
-    --card-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
+    --card: 0 0% 10%; /* #1A1A1A (Dark Gray) */
+    --card-foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
 
-    --popover: 240 20% 12%; /* #1C1F2B (Dark Graphite Blue) */
-    --popover-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
+    --popover: 0 0% 10%; /* #1A1A1A (Dark Gray) */
+    --popover-foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
 
-    --primary: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
-    --primary-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
+    --primary: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --primary-foreground: 0 0% 0%; /* #000000 (Pure Black) */
 
-    --secondary: 240 20% 16%; /* #1C1F2B (Dark Graphite Blue) */
-    --secondary-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
+    --secondary: 0 0% 15%; /* #262626 (Medium Dark Gray) */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
 
-    --muted: 240 20% 16%; /* #1C1F2B (Dark Graphite Blue) */
-    --muted-foreground: 240 100% 90%; /* #E8EBFF (Gentle Light - more readable) */
+    --muted: 0 0% 15%; /* #262626 (Medium Dark Gray) */
+    --muted-foreground: 0 0% 65%; /* #A6A6A6 (Light Gray) */
 
-    --accent: 180 100% 75%; /* #7DE8F5 (Muted Icy Mint) */
-    --accent-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
+    --accent: 0 0% 20%; /* #333333 (Medium Gray) */
+    --accent-foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
 
-    --destructive: 0 84% 60%; /* #EB5757 (Error) */
-    --destructive-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
+    --destructive: 0 84% 60%; /* #DC2626 (Red) */
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
 
-    --border: 240 20% 25%; /* #2E3340 (Border) */
-    --input: 240 20% 25%; /* #2E3340 (Border) */
-    --ring: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
+    --border: 0 0% 20%; /* #333333 (Medium Gray Border) */
+    --input: 0 0% 20%; /* #333333 (Medium Gray Input) */
+    --ring: 0 0% 100%; /* #FFFFFF (White Ring) */
     
-    --sidebar-background: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
-    --sidebar-foreground: 240 100% 98%; /* #F2F4FF (Gentle Light) */
-    --sidebar-primary: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
-    --sidebar-primary-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
-    --sidebar-accent: 180 100% 75%; /* #7DE8F5 (Muted Icy Mint) */
-    --sidebar-accent-foreground: 240 20% 8%; /* #0E101A (Deep Twilight Navy) */
-    --sidebar-border: 240 20% 25%; /* #2E3340 (Border) */
-    --sidebar-ring: 240 100% 78%; /* #A8A1FF (Softened Indigo Glow) */
+    --sidebar-background: 0 0% 0%; /* #000000 (Pure Black) */
+    --sidebar-foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --sidebar-primary: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --sidebar-primary-foreground: 0 0% 0%; /* #000000 (Pure Black) */
+    --sidebar-accent: 0 0% 20%; /* #333333 (Medium Gray) */
+    --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF (Pure White) */
+    --sidebar-border: 0 0% 20%; /* #333333 (Medium Gray Border) */
+    --sidebar-ring: 0 0% 100%; /* #FFFFFF (White Ring) */
 
     /* Optional UI Colors */
-    --success: 142 76% 60%; /* #6FCF97 (Success) */
-    --warning: 42 89% 65%; /* #F2C94C (Warning) */
-    --error: 0 84% 60%; /* #EB5757 (Error) */
+    --success: 142 76% 60%; /* #22C55E (Success Green) */
+    --warning: 42 89% 65%; /* #F59E0B (Warning Yellow) */
+    --error: 0 84% 60%; /* #DC2626 (Error Red) */
   }
 }
 
@@ -213,4 +213,44 @@ All colors MUST be HSL.
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Smooth transition classes for newsletter builder */
+.fade-out {
+  opacity: 0 !important;
+  transform: scale(0.95) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+/* Enhanced page transition */
+.page-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.page-exit {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Universal page transition system */
+.page-transition-wrapper {
+  transition: all 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform;
+}
+
+.page-hidden {
+  transform: translateX(30px);
+  opacity: 0.7;
+}
+
+.page-visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Smooth exit animation for navigation */
+.page-exiting {
+  transform: translateX(-30px);
+  opacity: 0.7;
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }

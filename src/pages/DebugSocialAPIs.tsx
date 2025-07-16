@@ -236,7 +236,7 @@ const DebugSocialAPIs: React.FC = () => {
   const RAPIDAPI_KEY = configManager.getRapidAPIKey();
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-background py-12 px-2 md:px-4">
+          <div className="min-h-screen flex flex-col items-center bg-white py-12 px-2 md:px-4">
       <Card className="max-w-xl w-full p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Debug Social API Integrations</h2>
         {/* --- Hardcoded LinkedIn API Test Button --- */}
@@ -256,7 +256,7 @@ const DebugSocialAPIs: React.FC = () => {
           <div>
             <label className="block text-foreground text-sm mb-1">Platform</label>
             <select
-              className="border border-border rounded px-3 py-2 text-base bg-background text-foreground"
+              className="border border-gray-300 rounded px-3 py-2 text-base bg-white text-black"
               value={platform}
               onChange={e => setPlatform(e.target.value)}
               disabled={loading}

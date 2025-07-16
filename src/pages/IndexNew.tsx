@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser, UserButton } from '@clerk/clerk-react';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Sparkles, Zap, Users, Menu, X } from 'lucide-react';
+import useSmoothNavigate from '@/hooks/useSmoothNavigate';
 
 const IndexNew = () => {
   const [text, setText] = useState('');
@@ -6,7 +11,10 @@ const IndexNew = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const [showBriefly, setShowBriefly] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+  const smoothNavigate = useSmoothNavigate();
+  const { isSignedIn } = useUser();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [reactiveDots, setReactiveDots] = useState('');
@@ -137,7 +145,7 @@ const IndexNew = () => {
   }, [currentIndex, fullText, isTyping]);
 
   const buttons = [
-    { id: 'auth', label: isLoggedIn ? 'Sign Out' : 'Sign In', delay: 100, size: 'small' },
+    { id: 'auth', label: isSignedIn ? 'Profile' : 'Sign In', delay: 100, size: 'small' },
     { id: 'generate', label: 'Generate Newsletter', delay: 150, size: 'large' },
     { id: 'pricing', label: 'Pricing', delay: 200, size: 'small' },
     { id: 'support', label: 'Support', delay: 250, size: 'small' }
@@ -192,7 +200,7 @@ const IndexNew = () => {
         {/* Left side content */}
         <div className="ml-16 md:ml-24 relative z-10">
           <div 
-            className={`text-6xl md:text-8xl font-bold text-black mb-4 transition-all duration-1000 ${
+            className={`text-6xl md:text-8xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
               showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
             }`}
             style={{
@@ -219,20 +227,43 @@ const IndexNew = () => {
         <div className="mr-16 md:mr-24 relative z-10">
           <div className="grid grid-cols-2 gap-4 w-80 h-80">
             {/* Top row */}
-            <button
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-              }`}
-              style={{
-                animationDelay: '100ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              {isLoggedIn ? 'Sign Out' : 'Sign In'}
-            </button>
+            {isSignedIn ? (
+              <div
+                className={`flex items-center justify-center ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '100ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-[130px] h-[130px] ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate('/signin')}
+                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '100ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                Sign In
+              </button>
+            )}
             
             <button
+              onClick={() => smoothNavigate('/newsletter-builder')}
               className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
                 showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
               }`}
@@ -247,6 +278,7 @@ const IndexNew = () => {
 
             {/* Bottom row */}
             <button
+              onClick={() => navigate('/pricing')}
               className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
                 showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
               }`}
@@ -260,6 +292,7 @@ const IndexNew = () => {
             </button>
             
             <button
+              onClick={() => navigate('/support')}
               className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
                 showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
               }`}
@@ -275,8 +308,37 @@ const IndexNew = () => {
         </div>
       </div>
 
+      {/* Scroll Indicator */}
+      <div 
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
+        style={{
+          opacity: Math.max(0, 1 - scrollY / 300),
+          transform: `translate(-50%, ${Math.max(-20, -scrollY * 0.1)}px)`
+        }}
+      >
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-xs text-gray-600 font-medium">Scroll to generate sample</span>
+          <div className="w-4 h-4 animate-bounce">
+            <svg 
+              className="w-4 h-4 text-gray-600" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M19 14l-7 7m0 0l-7-7m7 7V3" 
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
       {/* Newsletter Generation Section */}
       <div 
+        id="how-it-works"
         className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center relative newsletter-section"
         style={{
           backgroundImage: newsletterDots,
@@ -336,9 +398,12 @@ const IndexNew = () => {
               />
             </div>
 
-            <button className="w-full bg-black text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+            <Button 
+              onClick={() => smoothNavigate('/newsletter-builder')}
+              className="w-full bg-black text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            >
               Generate Newsletter
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -350,7 +415,40 @@ const IndexNew = () => {
             51%, 100% { opacity: 0; }
           }
           
-          /* Remove the pseudo-element approach since we're using JavaScript now */
+          .briefly-hover {
+            transition: letter-spacing 0.4s ease-out;
+            will-change: letter-spacing;
+            animation: brieflyReturn 0.4s ease-out;
+          }
+          
+          .briefly-hover:hover {
+            letter-spacing: 0.15em;
+            animation: brieflyHover 0.5s ease-out forwards;
+          }
+          
+          @keyframes brieflyHover {
+            0% {
+              letter-spacing: 0.02em;
+            }
+            30% {
+              letter-spacing: 0.08em;
+            }
+            60% {
+              letter-spacing: 0.12em;
+            }
+            100% {
+              letter-spacing: 0.15em;
+            }
+          }
+          
+          @keyframes brieflyReturn {
+            0% {
+              letter-spacing: 0.15em;
+            }
+            100% {
+              letter-spacing: 0em;
+            }
+          }
         `
       }} />
     </div>

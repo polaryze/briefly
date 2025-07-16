@@ -36,7 +36,7 @@ const TopNav = () => {
     <>
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled 
-          ? 'bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-lg' 
+          ? 'bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-lg' 
           : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,8 +47,8 @@ const TopNav = () => {
               onClick={() => navigate('/')}
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-600 rounded-xl blur-sm opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
-                <div className="relative bg-gradient-to-r from-primary to-purple-600 p-2.5 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-r from-black to-gray-700 rounded-xl blur-sm opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+                <div className="relative bg-gradient-to-r from-black to-gray-700 p-2.5 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -106,7 +106,7 @@ const TopNav = () => {
                   </Button>
                   <Button
                     onClick={() => navigate('/newsletter-builder')}
-                    className="group bg-gradient-to-r from-primary to-purple-600 hover:from-purple-600 hover:to-primary text-white font-medium px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300"
+                    className="group bg-gradient-to-r from-black to-gray-700 hover:from-gray-700 hover:to-black text-white font-medium px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300"
                   >
                     Start Free
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -135,7 +135,7 @@ const TopNav = () => {
             ? 'max-h-96 opacity-100' 
             : 'max-h-0 opacity-0'
         }`}>
-          <div className="bg-background/95 backdrop-blur-xl border-t border-border/50 px-4 py-6 space-y-4">
+          <div className="bg-white/95 backdrop-blur-xl border-t border-gray-200 px-4 py-6 space-y-4">
             {/* Mobile Navigation Items */}
             {navItems.map((item) => (
               <button
@@ -189,7 +189,7 @@ const TopNav = () => {
                       navigate('/newsletter-builder');
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-purple-600 hover:to-primary text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full bg-gradient-to-r from-black to-gray-700 hover:from-gray-700 hover:to-black text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     Start Free Trial
                     <ArrowRight className="ml-2 w-4 h-4" />
@@ -204,7 +204,7 @@ const TopNav = () => {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-background/20 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

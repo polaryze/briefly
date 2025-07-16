@@ -35,7 +35,7 @@ const StickyFooter = () => {
       id="pricing"
       className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-fade-in"
     >
-      <div className="bg-background/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl max-w-md mx-auto border border-border/50">
+              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl max-w-md mx-auto border border-gray-200">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
             <p className="font-semibold text-foreground mb-1">

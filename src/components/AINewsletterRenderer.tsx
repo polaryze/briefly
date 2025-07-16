@@ -62,21 +62,7 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
         .trim();
       
       return (
-        <div className="min-h-screen flex flex-col bg-background">
-          {/* Minimal Navigation Bar - Outside the iframe */}
-          <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border p-4">
-            <div className="max-w-6xl mx-auto flex items-center justify-between">
-              <Button 
-                onClick={handleBackToGenerator}
-                variant="outline"
-                size="sm"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Generator
-              </Button>
-            </div>
-          </div>
-          
+        <div className="min-h-screen flex flex-col bg-white">
           {/* Completely Isolated HTML Renderer */}
           <div className="flex-1 flex justify-center items-start" style={{ padding: '0', margin: '0' }}>
             <div className="w-[640px] h-[1000px] rounded-lg overflow-hidden" style={{ padding: '0', margin: '0' }}>
@@ -104,21 +90,7 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
     } else {
       // For partial HTML content, render in a minimal container with no styling conflicts
       return (
-        <div className="min-h-screen flex flex-col bg-background">
-          {/* Minimal Navigation Bar */}
-          <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border p-4">
-            <div className="max-w-6xl mx-auto flex items-center justify-between">
-              <Button 
-                onClick={handleBackToGenerator}
-                variant="outline"
-                size="sm"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Generator
-              </Button>
-            </div>
-          </div>
-          
+        <div className="min-h-screen flex flex-col bg-white">
           {/* Minimal Content Renderer - No styling conflicts */}
           <div className="flex-1 flex justify-center items-start" style={{ padding: '0', margin: '0' }}>
             <div 
@@ -162,19 +134,9 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
     logger.error('Newsletter renderer displaying error', new Error(newsletterData.error));
     
     return (
-      <div className="min-h-screen flex flex-col items-center bg-background py-8 px-4">
+      <div className="min-h-screen flex flex-col items-center bg-white py-8 px-4">
         <div className="w-full max-w-4xl">
-          <div className="mb-6">
-            <Button 
-              onClick={handleBackToGenerator}
-              variant="outline"
-              className="mb-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Generator
-            </Button>
-          </div>
-          <div className="bg-card rounded-lg p-8 shadow-lg border border-border">
+          <div className="bg-white rounded-lg p-8 shadow-lg border border-gray-200">
             <h2 className="text-2xl font-bold mb-4 text-destructive">Newsletter Generation Failed</h2>
             <p className="text-muted-foreground">{newsletterData.error}</p>
           </div>
@@ -192,18 +154,7 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   return (
     <div className="min-h-screen flex flex-col items-center bg-background py-8 px-4">
       <div className="w-full max-w-4xl">
-        <div className="mb-6">
-          <Button 
-            onClick={handleBackToGenerator}
-            variant="outline"
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Generator
-          </Button>
-        </div>
-
-        <div className="bg-card rounded-lg p-8 shadow-lg border border-border">
+        <div className="bg-white rounded-lg p-8 shadow-lg border border-gray-200">
           <header className="mb-8 pb-6 border-b border-border">
             <h1 className="text-3xl font-bold mb-2">Your Weekly Newsletter</h1>
             <p className="text-muted-foreground">Generated from your social media content and YouTube videos</p>

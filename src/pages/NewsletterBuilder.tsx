@@ -3,46 +3,49 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Loader2 } from "lucide-react";
+import { ArrowLeft, Play, Loader2, Home } from "lucide-react";
 import AINewsletterRenderer from "@/components/AINewsletterRenderer";
 import { logger } from "@/lib/logger";
 import { validateSocialMediaUrl, validateRequired } from "@/lib/validation";
 import { LoadingButton } from "@/components/ui/loading";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { configManager } from "@/lib/config";
+import useSmoothNavigate from "@/hooks/useSmoothNavigate";
 
 const SOCIALS = [
-  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username (public profile)", disabled: false },
-  { key: "twitter", label: "X", placeholder: "@yourhandle or https://x.com/yourhandle", disabled: false },
-  { key: "instagram", label: "Instagram", placeholder: "username or https://instagram.com/username", disabled: false },
-  { key: "youtube", label: "YouTube", placeholder: "Channel ID (e.g., UCg6gPGh8HU2U01vaFCAsvmQ)", disabled: false },
+  { 
+    key: "linkedin", 
+    label: "LinkedIn", 
+    placeholder: "nyassin", 
+    disabled: false,
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z'/%3E%3C/svg%3E",
+    color: "#000000"
+  },
+  { 
+    key: "twitter", 
+    label: "X", 
+    placeholder: "nasdaily", 
+    disabled: false,
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'/%3E%3C/svg%3E",
+    color: "#000000"
+  },
+  { 
+    key: "instagram", 
+    label: "Instagram", 
+    placeholder: "nasdaily", 
+    disabled: false,
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z'/%3E%3C/svg%3E",
+    color: "#000000"
+  },
+  { 
+    key: "youtube", 
+    label: "YouTube", 
+    placeholder: "UCJsUvAqDzczYv2UpFmu4PcA", 
+    disabled: false,
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z'/%3E%3C/svg%3E",
+    color: "#000000"
+  }
 ];
-
-// Custom Switch Component
-const Switch = ({ checked, onChange, disabled }: { checked: boolean; onChange: () => void; disabled?: boolean }) => (
-  <button
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    disabled={disabled}
-    onClick={onChange}
-    className={`
-      relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-      ${checked 
-        ? 'bg-primary hover:bg-primary/90' 
-        : 'bg-muted hover:bg-muted/80'
-      }
-      ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-    `}
-  >
-    <span
-      className={`
-        inline-block h-4 w-4 transform rounded-full bg-background shadow-lg transition-transform duration-300 ease-in-out
-        ${checked ? 'translate-x-6' : 'translate-x-1'}
-      `}
-    />
-  </button>
-);
 
 // Temporary data storage during newsletter generation
 interface TempData {
@@ -1544,6 +1547,14 @@ function cleanOpenAIHtml(html: string): string {
   html = html.replace(/^```html\s*/g, '');
   html = html.replace(/\s*```$/g, '');
   
+  // Remove unwanted explanatory text patterns
+  html = html.replace(/^Here's a stunning[^]*?```html\s*/gi, '');
+  html = html.replace(/```\s*###\s*Key Features[^]*$/gi, '');
+  html = html.replace(/Thank you for reading![^]*?Best,\s*Your Name[^]*?(?=<|$)/gi, '');
+  html = html.replace(/###\s*Key Features:[^]*$/gi, '');
+  html = html.replace(/This newsletter is designed[^]*$/gi, '');
+  html = html.replace(/^[^<]*?(?=<html|<!DOCTYPE)/gi, '');
+  
   // If the HTML already has complete structure, return it as-is
   if (html.includes('<html') && html.includes('<body')) {
     return html.trim();
@@ -1560,30 +1571,106 @@ function cleanOpenAIHtml(html: string): string {
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           html { 
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            background: #fafafa;
           }
           body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.7;
+            color: #2d3748;
             max-width: 640px;
             margin: 0 auto;
-            padding: 0;
-            background: #101118;
-            border: 0;
-            outline: 0;
-            height: 100%;
-            width: 100%;
+            padding: 20px;
+            background: #ffffff;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
           }
-          h1, h2, h3 { color: #ffffff; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-          p { margin-bottom: 1rem; color: #ffffff; }
-          a { color: #60a5fa; text-decoration: none; }
-          a:hover { text-decoration: underline; }
-          .header { text-align: center; margin-bottom: 2rem; }
-          .footer { text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #374151; }
+          h1 { 
+            font-family: Futura, Arial, Helvetica, sans-serif;
+            color: #1a202c; 
+            font-size: 2.5rem; 
+            font-weight: 700;
+            margin: 1.5rem 0 1rem 0;
+            line-height: 1.2;
+          }
+          h2 { 
+            font-family: Futura, Arial, Helvetica, sans-serif;
+            color: #2d3748; 
+            font-size: 1.875rem; 
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            line-height: 1.3;
+          }
+          h3 { 
+            font-family: Futura, Arial, Helvetica, sans-serif;
+            color: #4a5568; 
+            font-size: 1.25rem; 
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem 0;
+          }
+          p { 
+            margin-bottom: 1.25rem; 
+            color: #4a5568;
+            font-size: 1rem;
+            line-height: 1.7;
+          }
+          a { 
+            color: #3182ce; 
+            text-decoration: none; 
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+          }
+          a:hover { 
+            border-bottom-color: #3182ce;
+          }
+          img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 1rem 0;
+          }
+          .header { 
+            text-align: center; 
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+          }
+          .footer { 
+            text-align: center; 
+            margin-top: 3rem; 
+            padding-top: 2rem; 
+            border-top: 2px solid #e2e8f0;
+            color: #718096;
+            font-size: 0.875rem;
+          }
+          .section {
+            margin: 2.5rem 0;
+            padding: 1.5rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #3182ce;
+          }
+          .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+          }
+          .quote {
+            background: #edf2f7;
+            border-left: 4px solid #4299e1;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #2d3748;
+          }
+          @media (max-width: 600px) {
+            body { padding: 10px; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .section { padding: 1rem; }
+          }
         </style>
       </head>
       <body>
@@ -1598,6 +1685,7 @@ function cleanOpenAIHtml(html: string): string {
 
 export default function NewsletterBuilder() {
   const navigate = useNavigate();
+  const smoothNavigate = useSmoothNavigate();
   const [selected, setSelected] = useState({
     linkedin: false,
     twitter: false,
@@ -1706,11 +1794,24 @@ export default function NewsletterBuilder() {
   };
 
   const handleBackToBuilder = () => {
+    // Add a subtle fade transition before clearing the newsletter
+    const container = document.querySelector('.newsletter-container');
+    if (container) {
+      container.classList.add('fade-out');
+      setTimeout(() => {
     setNewsletter(null);
     setNewsletterData(null);
     setError(null);
     setValidationErrors({});
     setTempData({}); // Clear temp data when going back
+      }, 150); // Short delay for smooth transition
+    } else {
+      setNewsletter(null);
+      setNewsletterData(null);
+      setError(null);
+      setValidationErrors({});
+      setTempData({}); // Clear temp data when going back
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1819,50 +1920,72 @@ export default function NewsletterBuilder() {
         ).join('\n') || '';
         
         const prompt = `
-        Generate a complete HTML newsletter from the following posts and images from multiple social media platforms. Create a professional, clean newsletter with proper HTML structure including <html>, <head>, <body> tags and embedded CSS styling. 
-        
-        IMPORTANT: The data below contains posts from multiple platforms (LinkedIn, Twitter/X, Instagram, YouTube). Each post is prefixed with [Platform] to indicate its source.
-        
-        Requirements:
-        - keep your max width to 640px.
-        - make a carousel or collage out of the instagram images. make its size moderate not too big.
-        - REMOVE any SINGLE WORDS that are not part of the text.
-        - REMOVE any text that may have been mistakenly added by the scrapers BE CAREFUL.
-        - all the images should have a border radius of 12px.
-        - keep all the headings bold.
-        - keep ALL text dark in color. including in links and lists.
-        - keep one heading image and rest all should be smaller images. they can be either placed at the right left or <center className=""></center>
-        - Just reply with what is asked, nothing else.
-        - Use all the text to make a newsletter about the updates, post, etc. that are present about the person.
-        - Write in a first person perspective.
-        - Write very short paragraphs for quick updates and keep things clean.
-        - Use headings to divide everything in neat areas and return everything in html code as it needs to be embedded in mails later on.
-        - Make sure the response is in plain text but html code. add emojis to make it a lot more engaging. 
-        - shorten the length of all paragraphs.
-        - Use complete HTML structure with <html>, <head>, <body> tags
-        - Include embedded CSS in <style> tag for professional styling
-        - Write in first-person perspective as if the person is writing their own newsletter
-        - Organize content with clear headings and sections
-        - Use a clean, modern design with good typography
-        - Include responsive design for mobile devices
-        - Add proper spacing, colors, and visual hierarchy
-        - Make it look like a professional email newsletter
-        - Include the provided images in the newsletter layout where appropriate
-        - Use the image URLs provided to display images in the newsletter
-        - Ensure images are properly sized and responsive
-        - Organize content by platform or theme as appropriate
-        - Combine content from different platforms into cohesive sections
-        - Maintain the professional tone while incorporating the casual nature of social media posts
+        Generate ONLY the HTML newsletter content. Do not include any explanatory text, descriptions, or meta-commentary. Return only the complete HTML document.
+
+        DESIGN & VISUAL REQUIREMENTS:
+        - Create a **premium magazine-style layout** with modern typography and elegant spacing
+        - Use a **maximum width of 640px** for optimal email client compatibility
+        - Implement **beautiful visual hierarchy** with varied font sizes, weights, and spacing
+        - Add **subtle shadows, rounded corners (12px), and modern card-based layouts**
+        - Create **engaging image layouts**: hero image at top, then mix of side-by-side images, centered images
+        - For Instagram images ONLY: Create an **elegant carousel or photo grid layout** (2-3 images per row)
+        - For other platforms: Display images individually without carousels
+        - Use **sophisticated color palette**: whites, light grays, and strategic accent colors
+        - Add **modern UI elements**: subtle borders, elegant dividers, and beautiful spacing
+        - Implement **responsive design** that looks perfect on mobile and desktop
+
+        TYPOGRAPHY & CONTENT:
+        - Use **professional font stack**: Arial, Helvetica, sans-serif for all text; Futura or Arial for headlines
+        - Create **engaging headlines** with proper hierarchy (H1 for main title, H2 for sections, H3 for subsections)
+        - Write in **first-person narrative style** as if the person is personally sharing their week
+        - Keep paragraphs **concise and scannable** (2-3 lines max)
+        - Add **strategic emojis** for visual interest and personality
+        - Use **pull quotes** or highlighted text boxes for key insights
+        - Include **platform badges** or subtle indicators for content sources
+
+        IMAGE HANDLING:
+        - **Never repeat the same image twice**
+        - **Never crop images** - only resize maintaining aspect ratio by scaling equally from all sides
+        - Use proper width/height attributes to maintain aspect ratio
+        - For Instagram: Use carousel/grid layout only
+        - For other platforms: Display images individually
+
+        LAYOUT STRUCTURE:
+        - **Header section**: Elegant title, date, and personal greeting
+        - **Hero image**: One impactful image with overlay text or caption
+        - **Content sections**: Organize by themes (projects, learnings, social highlights, etc.)
+        - **Image placements**: Mix of full-width, side-by-side, and wrapped text layouts
+        - **Footer**: Professional closing with personal touch (no generic signatures)
+
+        TECHNICAL REQUIREMENTS:
+        - Complete HTML structure with <html>, <head>, <body> tags
+        - Embedded CSS in <style> tag (no external stylesheets)
+        - Email-client compatible CSS (use tables for complex layouts if needed)
+        - Responsive design with mobile-first approach
+        - All images with proper alt tags and fallbacks
+        - Clean, semantic HTML structure
+        - Remove any scraper artifacts or single-word errors
+        - Ensure all text is dark and readable
+        - Professional email newsletter standards
+
+        CONTENT PROCESSING:
+        - Filter and clean all scraped content
+        - Combine posts from different platforms into cohesive narrative
+        - Create engaging section headers that group related content
+        - Transform social media posts into newsletter-worthy prose
+        - Maintain authentic voice while elevating the presentation
+
+        CRITICAL: Return ONLY the HTML content. No explanatory text, no feature descriptions, no commentary. Start with <html> and end with </html>.
 
 DATA SUMMARY:
 - Total posts: ${dataSummary.totalPosts}
 - Total images: ${dataSummary.totalImages}
 - Platforms with data: ${dataSummary.platformsWithData.join(', ')}
 
-FORMATTED DATA FILE:
+        FORMATTED DATA:
 ${tempData.dataFile}
 
-RAW POSTS FOR PROCESSING:
+        RAW POSTS:
 ${formattedText}
 
 IMAGES TO INCLUDE:
@@ -1871,10 +1994,10 @@ ${imageData}`;
         const body = {
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: "You are a professional newsletter writer." },
+            { role: "system", content: "You are an expert newsletter designer and writer who creates visually stunning, magazine-quality publications. You excel at transforming social media content into sophisticated, engaging newsletters that readers love to receive and share." },
             { role: "user", content: prompt }
           ],
-          max_tokens: 1200,
+          max_tokens: 2000,
           temperature: 0.7
         };
         
@@ -1940,65 +2063,119 @@ ${imageData}`;
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-background py-12 px-2 md:px-4">
-      <div className="w-full max-w-6xl mb-6">
+    <div className="min-h-screen bg-white relative page-transition">
+      {newsletter && (
+        <div className="absolute top-6 left-6 z-10">
         <Button 
-          variant="ghost" 
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            variant="outline" 
+            onClick={handleBackToBuilder}
+            className="flex items-center gap-2 text-white hover:text-white border-gray-300 hover:border-gray-400 transition-all duration-300 ease-in-out transform hover:scale-105"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Home
+            Back to Generator
+          </Button>
+        </div>
+      )}
+      <div className="absolute top-6 right-6 z-10">
+        <Button 
+          variant="outline" 
+          onClick={() => smoothNavigate('/')}
+          size="icon"
+          className="border-gray-300 hover:border-gray-400 transition-all duration-300 ease-in-out transform hover:scale-105"
+        >
+          <Home className="w-4 h-4" />
         </Button>
       </div>
       
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 transition-all duration-500 ease-in-out">
       {!newsletter ? (
-      <Card className="max-w-2xl w-full p-8 mb-8">
-        <h2 className="text-2xl font-bold mb-4">Build Your Weekly Newsletter</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <Card className="max-w-2xl w-full p-8 bg-white border-gray-200 shadow-xl transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-bottom-4">
+          <h2 className="text-2xl font-bold mb-4 text-gray-900 text-center">Build Your Weekly Newsletter</h2>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div>
-              <label className="block text-foreground text-sm mb-1">Select Social Platforms</label>
-            <div className="grid grid-cols-2 gap-4">
+                <label className="block text-gray-700 text-sm font-medium mb-3 text-center">Select Social Platforms</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {SOCIALS.map((s) => (
-                <label key={s.key} className={`flex items-center gap-3 cursor-pointer ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  <Switch
-                    checked={selected[s.key as keyof typeof selected]}
-                    onChange={() => handleCheck(s.key)}
-                    disabled={loading || s.disabled}
-                  />
-                    <span className={`text-foreground capitalize ${s.disabled ? 'text-muted-foreground' : ''}`}>{s.label}</span>
-                </label>
+                  <div
+                    key={s.key}
+                    onClick={() => !s.disabled && !loading && handleCheck(s.key)}
+                    className={`
+                      relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ease-in-out group transform hover:scale-105 active:scale-95
+                      ${selected[s.key as keyof typeof selected] 
+                        ? 'border-black bg-gray-50 shadow-md scale-105' 
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
+                      }
+                      ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                      ${loading ? 'cursor-not-allowed' : ''}
+                    `}
+                  >
+                    {/* Selection indicator */}
+                    <div className={`absolute -top-2 -right-2 w-6 h-6 bg-black rounded-full flex items-center justify-center transition-opacity duration-300 ease-in-out
+                      ${selected[s.key as keyof typeof selected] ? 'opacity-100' : 'opacity-0'}
+                    `}>
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    
+                    {/* Platform icon */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-white p-2 shadow-sm border border-gray-100">
+                        <img 
+                          src={s.icon} 
+                          alt={s.label}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            // Fallback to text if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="hidden w-full h-full flex items-center justify-center text-xs font-bold text-gray-600">
+                          {s.label.charAt(0).toUpperCase()}
+                        </div>
+                      </div>
+                      <span className={`text-xs font-medium text-center ${selected[s.key as keyof typeof selected] ? 'text-black' : 'text-gray-600'}`}>
+                        {s.label}
+                      </span>
+                    </div>
+                  </div>
               ))}
             </div>
           </div>
             
           {/* Show input for each checked social */}
-          <div className="space-y-2">
+            <div className="space-y-1">
             {SOCIALS.map((s) =>
-              selected[s.key as keyof typeof selected] && (
-                <div key={s.key} className="flex flex-col md:flex-row gap-2 items-center">
-                    <label className="block text-muted-foreground text-xs md:w-32 capitalize">{s.label}:</label>
+                <div 
+                  key={s.key}
+                  className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                    selected[s.key as keyof typeof selected] ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row gap-2 items-center pt-3">
+                      <label className="block text-gray-600 text-xs font-medium md:w-32 capitalize">{s.label}:</label>
                     <div className="flex-1">
                   <Input
                     type="text"
-                        className={validationErrors[s.key] ? 'border-destructive' : ''}
+                            className={`${validationErrors[s.key] ? 'border-gray-800' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500`}
                     value={inputs[s.key as keyof typeof inputs]}
                     onChange={e => handleInput(s.key, e.target.value)}
                     placeholder={s.placeholder}
                     disabled={loading}
                   />
                       {validationErrors[s.key] && (
-                        <p className="text-xs text-destructive mt-1">{validationErrors[s.key]}</p>
+                            <p className="text-xs text-gray-800 mt-1">{validationErrors[s.key]}</p>
                         )}
                       </div>
                   </div>
-                )
+                  </div>
                                   )}
                                 </div>
 
             {validationErrors.general && (
-              <Alert variant="destructive">
-                <AlertDescription>{validationErrors.general}</AlertDescription>
+                <Alert variant="destructive" className="bg-gray-50 border-gray-200 text-gray-800">
+                  <AlertDescription className="text-gray-700">{validationErrors.general}</AlertDescription>
               </Alert>
             )}
 
@@ -2007,23 +2184,25 @@ ${imageData}`;
               loading={loading}
               loadingText="Generating Newsletter..."
               disabled={loading}
-              className="mt-2"
+                className="mt-2 bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 w-full"
             >
               Generate Newsletter
             </LoadingButton>
           </form>
           {error && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertDescription>{error}</AlertDescription>
+              <Alert variant="destructive" className="mt-4 bg-gray-50 border-gray-200 text-gray-800">
+                <AlertDescription className="text-gray-700">{error}</AlertDescription>
             </Alert>
           )}
         </Card>
       ) : (
+        <div className="newsletter-container w-full max-w-4xl border-2 border-gray-400 rounded-lg overflow-hidden shadow-lg transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-right-4">
         <AINewsletterRenderer 
           newsletterData={newsletter} 
           posts={newsletterData} 
           onBackToBuilder={handleBackToBuilder}
         />
+        </div>
       )}
       {newsletter && openAIDebug && (
         <Card className="max-w-2xl w-full p-4 mt-8 text-xs text-muted-foreground">
@@ -2031,6 +2210,7 @@ ${imageData}`;
           <pre className="bg-muted rounded p-2 text-xs overflow-x-auto max-h-64 whitespace-pre-wrap">{JSON.stringify(openAIDebug, null, 2)}</pre>
       </Card>
       )}
+      </div>
     </div>
   );
 } 
