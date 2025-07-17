@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, UserButton } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Zap, Users, Menu, X } from 'lucide-react';
-import useSmoothNavigate from '@/hooks/useSmoothNavigate';
+import { ArrowRight, Sparkles, Zap, Users, Menu, X, LogIn, DollarSign, HelpCircle, Wand2 } from 'lucide-react';
+import { useSmoothNavigate } from '../hooks/useSmoothNavigate';
+import StyledButton from '../components/StyledButton';
 
 const IndexNew = () => {
   const [text, setText] = useState('');
@@ -29,7 +30,6 @@ const IndexNew = () => {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      console.log('Mouse moved:', e.clientX, e.clientY); // Debug log
       setMousePosition({ x: e.clientX, y: e.clientY });
       setMouseX(e.clientX);
       setMouseY(e.clientY);
@@ -197,6 +197,32 @@ const IndexNew = () => {
           transition: 'background-image 0.2s ease-out'
         }}
       >
+        {/* Scroll Indicator */}
+        <div 
+          className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
+          style={{
+            opacity: scrollY < 200 ? 1 : 0
+          }}
+        >
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-sm text-gray-600 font-medium">Scroll to generate sample</span>
+            <div className="w-5 h-5 animate-bounce">
+              <svg 
+                className="w-5 h-5 text-gray-600" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M19 14l-7 7m0 0l-7-7m7 7V3" 
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
         {/* Left side content */}
         <div className="ml-16 md:ml-24 relative z-10">
           <div 
@@ -249,7 +275,7 @@ const IndexNew = () => {
             ) : (
               <button
                 onClick={() => navigate('/signin')}
-                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
@@ -258,13 +284,12 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                Sign In
+                <LogIn className="w-6 h-6 group-hover:translate-x-0.5 transition-transform duration-200" />
               </button>
             )}
             
-            <button
-              onClick={() => smoothNavigate('/newsletter-builder')}
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+            <div
+              className={`flex items-center justify-center ${
                 showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
               }`}
               style={{
@@ -273,13 +298,13 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              Generate Newsletter
-            </button>
+              <StyledButton />
+            </div>
 
             {/* Bottom row */}
             <button
               onClick={() => navigate('/pricing')}
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+              className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
                 showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
               }`}
               style={{
@@ -288,12 +313,12 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              Pricing
+              <DollarSign className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
             </button>
             
             <button
               onClick={() => navigate('/support')}
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+              className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
                 showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
               }`}
               style={{
@@ -302,39 +327,13 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              Support
+              <HelpCircle className="w-6 h-6 group-hover:rotate-6 transition-transform duration-200" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div 
-        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
-        style={{
-          opacity: Math.max(0, 1 - scrollY / 300),
-          transform: `translate(-50%, ${Math.max(-20, -scrollY * 0.1)}px)`
-        }}
-      >
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-xs text-gray-600 font-medium">Scroll to generate sample</span>
-          <div className="w-4 h-4 animate-bounce">
-            <svg 
-              className="w-4 h-4 text-gray-600" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M19 14l-7 7m0 0l-7-7m7 7V3" 
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
+
 
       {/* Newsletter Generation Section */}
       <div 
