@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&h=200&fit=crop') center/cover;
+            opacity: 0.3;
+        }
+        .header h1 {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .header p {
+            position: relative;
+            z-index: 1;
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .social-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .social-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&h=200&fit=crop') center/cover;
+            opacity: 0.1;
+        }
+        .social-section h2 {
+            position: relative;
+            z-index: 1;
+            margin: 0 0 15px 0;
+            font-size: 1.8em;
+        }
+        .post {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .post h3 {
+            color: #667eea;
+            margin: 0 0 10px 0;
+            font-size: 1.3em;
+        }
+        .engagement {
+            color: #666;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        .engagement span {
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 15px;
+            margin-right: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #333;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .footer p {
+            margin: 0;
+            font-size: 1.1em;
+        }
+        .social-icons {
+            margin-top: 20px;
+        }
+        .social-icons a {
+            display: inline-block;
+            margin: 0 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .social-icons a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Social Media Highlights</h1>
+            <p>Your weekly social media recap</p>
+        </div>
+        
+        <div class="content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">89</div>
+                    <div>Likes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">32</div>
+                    <div>Comments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">15</div>
+                    <div>Shares</div>
+                </div>
+            </div>
+            
+            <div class="social-section">
+                <h2>LinkedIn Updates</h2>
+                <div class="post">
+                    <h3>Brand name</h3>
+                    <p class="engagement">Aug 25, 12:20</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    <div class="engagement">
+                        <span>👍 89</span>
+                        <span>💬 32</span>
+                        <span>📤 15</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="social-section">
+                <h2>Twitter Updates</h2>
+                <div class="post">
+                    <h3>Brand name</h3>
+                    <p class="engagement">Aug 27, 11:34</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    <div class="engagement">
+                        <span>👍 89</span>
+                        <span>💬 32</span>
+                        <span>📤 15</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Thanks for reading! Follow us on social media for more updates.</p>
+            <div class="social-icons">
+                <a href="#" title="Facebook">📘</a>
+                <a href="#" title="Twitter">🐦</a>
+                <a href="#" title="LinkedIn">💼</a>
+                <a href="#" title="Instagram">📷</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

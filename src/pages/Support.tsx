@@ -99,11 +99,7 @@ const Support = () => {
       {/* Header */}
       <div className="pt-20 pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <HelpCircle className="w-4 h-4" />
-            Support Center
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-black">
             We're Here to <span className="bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">Help</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -129,7 +125,7 @@ const Support = () => {
                       <IconComponent className="w-8 h-8 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2">{option.title}</h3>
+                      <h3 className="text-xl font-bold mb-2 text-black">{option.title}</h3>
                       <p className="text-gray-600 mb-4">{option.description}</p>
                       <div className="flex items-center gap-2 text-black font-medium group-hover:gap-3 transition-all duration-200">
                         <span>{option.action}</span>
@@ -146,7 +142,7 @@ const Support = () => {
         {/* Contact Section */}
         <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-3xl p-8 mb-20">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4">Get in Touch</h2>
+            <h2 className="text-3xl font-bold mb-4 text-black">Get in Touch</h2>
             <p className="text-gray-600">Can't find what you're looking for? Reach out to our team.</p>
           </div>
           
@@ -155,7 +151,7 @@ const Support = () => {
               <div className="bg-gray-100 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Mail className="w-8 h-8 text-gray-700" />
               </div>
-              <h3 className="font-semibold mb-2">Email Support</h3>
+              <h3 className="font-semibold mb-2 text-black">Email Support</h3>
               <p className="text-gray-600 mb-4">Get help via email</p>
               <a 
                 href="mailto:hello@briefly.ai" 
@@ -169,7 +165,7 @@ const Support = () => {
               <div className="bg-gray-100 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <MessageCircle className="w-8 h-8 text-gray-700" />
               </div>
-              <h3 className="font-semibold mb-2">Live Chat</h3>
+              <h3 className="font-semibold mb-2 text-black">Live Chat</h3>
               <p className="text-gray-600 mb-4">Instant support</p>
               <Button variant="outline" className="font-medium">
                 Start Chat
@@ -180,7 +176,7 @@ const Support = () => {
               <div className="bg-gray-100 p-4 rounded-2xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Phone className="w-8 h-8 text-gray-700" />
               </div>
-              <h3 className="font-semibold mb-2">Phone Support</h3>
+              <h3 className="font-semibold mb-2 text-black">Phone Support</h3>
               <p className="text-gray-600 mb-4">For enterprise customers</p>
               <a 
                 href="tel:+1-555-0123" 
@@ -195,14 +191,14 @@ const Support = () => {
         {/* FAQ Section */}
         <div className="mb-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+            <h2 className="text-3xl font-bold mb-4 text-black">Frequently Asked Questions</h2>
             <p className="text-gray-600">Find answers to common questions</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {faqs.map((faq, index) => (
               <div key={index} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-semibold mb-3 text-lg">{faq.question}</h3>
+                <h3 className="font-semibold mb-3 text-lg text-black">{faq.question}</h3>
                 <p className="text-gray-600">{faq.answer}</p>
               </div>
             ))}
@@ -211,9 +207,9 @@ const Support = () => {
 
         {/* CTA Section */}
         <div className="text-center">
-          <div className="bg-gradient-to-r from-gray-100 to-gray-200 backdrop-blur-sm border border-gray-300 rounded-3xl p-8">
+          <div className="bg-white backdrop-blur-sm border border-gray-200 rounded-3xl p-8">
             <Sparkles className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-4">Ready to Get Started?</h2>
+            <h2 className="text-2xl font-bold mb-4 text-black">Ready to Get Started?</h2>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               Join thousands of creators who are already using Briefly to transform their content.
             </p>

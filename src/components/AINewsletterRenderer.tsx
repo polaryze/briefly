@@ -31,9 +31,9 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   };
 
   const Section = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-    <section className="mb-8 bg-card rounded-lg p-6 shadow-sm border border-border">
-      <h2 className="flex items-center gap-2 text-xl font-bold mb-4">
-        <span className="text-2xl">{icon}</span> {title}
+    <section className="mb-6 bg-card rounded-lg p-4 shadow-sm border border-border">
+      <h2 className="flex items-center gap-2 text-lg font-bold mb-3">
+        <span className="text-xl">{icon}</span> {title}
       </h2>
       {children}
     </section>
@@ -62,13 +62,13 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
         .trim();
       
       return (
-        <div className="min-h-screen flex flex-col bg-white">
+        <div className="w-full h-full bg-white max-w-[640px] flex flex-col min-h-0">
           {/* Completely Isolated HTML Renderer */}
-          <div className="flex-1 flex justify-center items-start" style={{ padding: '0', margin: '0' }}>
-            <div className="w-[640px] h-[1000px] rounded-lg overflow-hidden" style={{ padding: '0', margin: '0' }}>
+          <div className="flex-1 flex justify-center min-h-0" style={{ padding: '0', margin: '0' }}>
+            <div className="w-full max-w-[640px] h-full min-h-0" style={{ padding: '0', margin: '0' }}>
               <iframe
                 srcDoc={cleanHtmlContent}
-                className="w-full h-full border-0 rounded-lg"
+                className="w-full h-full border-0 min-h-0"
                 title="Newsletter Preview"
                 sandbox="allow-same-origin allow-scripts allow-forms"
                 style={{ 
@@ -80,7 +80,14 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
                   display: 'block',
                   padding: '0',
                   margin: '0',
-                  borderRadius: '8px'
+                  maxWidth: '640px',
+                  minHeight: '0',
+                  // Ensure no black bars
+                  backgroundColor: 'white',
+                  color: 'inherit',
+                  // Additional isolation
+                  isolation: 'isolate',
+                  contain: 'layout style paint'
                 }}
               />
             </div>
@@ -90,22 +97,26 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
     } else {
       // For partial HTML content, render in a minimal container with no styling conflicts
       return (
-        <div className="min-h-screen flex flex-col bg-white">
+        <div className="w-full h-full bg-white max-w-[640px] flex flex-col min-h-0">
           {/* Minimal Content Renderer - No styling conflicts */}
-          <div className="flex-1 flex justify-center items-start" style={{ padding: '0', margin: '0' }}>
+          <div className="flex-1 flex justify-center min-h-0" style={{ padding: '0', margin: '0' }}>
             <div 
-              className="w-[640px] h-[1000px] overflow-y-auto rounded-lg"
+              className="w-full max-w-[640px] h-full overflow-y-auto min-h-0"
               style={{
                 // Reset all styles to avoid conflicts
                 all: 'unset',
                 display: 'block',
-                width: '640px',
-                height: '1000px',
+                width: '100%',
+                height: '100%',
+                maxWidth: '640px',
                 backgroundColor: 'white',
                 overflowY: 'auto',
                 padding: '0',
                 margin: '0',
-                borderRadius: '8px'
+                minHeight: '0',
+                // Additional isolation
+                isolation: 'isolate',
+                contain: 'layout style paint'
               }}
             >
               <div 
@@ -119,7 +130,12 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
                   lineHeight: 'inherit',
                   color: 'inherit',
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  maxWidth: '640px',
+                  backgroundColor: 'white',
+                  // Additional isolation
+                  isolation: 'isolate',
+                  contain: 'layout style paint'
                 }}
               />
             </div>
@@ -134,8 +150,8 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
     logger.error('Newsletter renderer displaying error', new Error(newsletterData.error));
     
     return (
-      <div className="min-h-screen flex flex-col items-center bg-white py-8 px-4">
-        <div className="w-full max-w-4xl">
+      <div className="h-full flex flex-col items-center justify-center bg-white">
+        <div className="w-full max-w-2xl p-8">
           <div className="bg-white rounded-lg p-8 shadow-lg border border-gray-200">
             <h2 className="text-2xl font-bold mb-4 text-destructive">Newsletter Generation Failed</h2>
             <p className="text-muted-foreground">{newsletterData.error}</p>
@@ -152,15 +168,15 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   });
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-background py-8 px-4">
-      <div className="w-full max-w-4xl">
-        <div className="bg-white rounded-lg p-8 shadow-lg border border-gray-200">
-          <header className="mb-8 pb-6 border-b border-border">
-            <h1 className="text-3xl font-bold mb-2">Your Weekly Newsletter</h1>
+    <div className="w-full h-full bg-white max-w-[640px] flex flex-col min-h-0">
+      <div className="flex-1 flex justify-center min-h-0">
+        <div className="bg-white h-full overflow-y-auto max-w-[640px] w-full min-h-0">
+          <header className="mb-6 pb-4 border-b border-border p-6">
+            <h1 className="text-2xl font-bold mb-2">Your Weekly Newsletter</h1>
             <p className="text-muted-foreground">Generated from your social media content and YouTube videos</p>
           </header>
           
-          <main className="space-y-8">
+          <main className="space-y-6 p-6">
             {/* AI Generated Content */}
             {newsletterData.sections && newsletterData.sections.length > 0 && (
               <Section title="AI Generated Content" icon="🤖">
@@ -244,7 +260,7 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
             {(!newsletterData.sections || newsletterData.sections.length === 0) && 
              (!newsletterData.youtubeSummaries || Object.keys(newsletterData.youtubeSummaries).length === 0) && 
              (!posts || posts.length === 0) && (
-              <div className="text-center py-12">
+              <div className="text-center py-8">
                 <p className="text-muted-foreground">No content available to display in your newsletter.</p>
                 <p className="text-sm text-muted-foreground mt-2">Try adding more social media links or YouTube videos.</p>
               </div>
