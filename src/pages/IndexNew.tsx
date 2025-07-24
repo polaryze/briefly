@@ -295,6 +295,14 @@ const IndexNew = () => {
 
   // Update reactive dots when mouse position changes - optimized version
   useEffect(() => {
+    // Disable dot effects on mobile devices
+    const isMobile = window.innerWidth < 1024; // lg breakpoint
+    if (isMobile) {
+      setHeroDots('');
+      setNewsletterDots('');
+      return;
+    }
+
     const updateHeroDots = () => {
       const baseDot = `radial-gradient(circle at 15px 15px, rgba(0,0,0,0.08) 2px, transparent 0)`;
       const reactiveDots = [];
@@ -436,9 +444,12 @@ const IndexNew = () => {
     <div className="relative">
       {/* Hero Section */}
       <div 
-        className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden"
+        className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden"
         style={{
-          backgroundImage: `radial-gradient(circle at ${mouseX}px ${mouseY}px, rgba(59, 130, 246, 0.1) 0%, transparent 50%)`,
+          backgroundImage: heroDots,
+          transform: `translate3d(0, ${scrollY * 0.3}px, 0)`,
+          opacity: Math.max(0, 1 - scrollY / 500),
+          willChange: 'transform, opacity',
           transition: 'background-image 0.2s ease-out'
         }}
       >
@@ -634,7 +645,7 @@ const IndexNew = () => {
                 <UserButton 
                   appearance={{
                     elements: {
-                      avatarBox: "w-12 h-12 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
+                      avatarBox: "w-14 h-14 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
                     }
                   }}
                 />
@@ -642,7 +653,7 @@ const IndexNew = () => {
             ) : (
               <button
                 onClick={() => navigate('/signin')}
-                className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+                className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
                   showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
                 }`}
                 style={{
@@ -651,7 +662,7 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                <LogIn className="w-5 h-5 text-gray-700 group-hover:translate-x-0.5 transition-transform duration-200" />
+                <LogIn className="w-6 h-6 text-gray-700 group-hover:translate-x-0.5 transition-transform duration-200" />
               </button>
             )}
             
@@ -667,7 +678,7 @@ const IndexNew = () => {
             >
               <button
                 onClick={() => navigate('/newsletter-builder')}
-                className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+                className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
                   showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
                 }`}
                 style={{
@@ -676,13 +687,13 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                <Wand2 className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
+                <Wand2 className="w-6 h-6 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
               </button>
             </div>
 
             <button
               onClick={() => navigate('/pricing')}
-              className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -691,12 +702,12 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <DollarSign className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
+              <DollarSign className="w-6 h-6 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
             </button>
             
             <button
               onClick={() => navigate('/support')}
-              className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -705,7 +716,7 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <HelpCircle className="w-5 h-5 text-gray-700 group-hover:rotate-6 transition-transform duration-200" />
+              <HelpCircle className="w-6 h-6 text-gray-700 group-hover:rotate-6 transition-transform duration-200" />
             </button>
           </div>
         </div>
@@ -716,16 +727,18 @@ const IndexNew = () => {
       {/* Newsletter Generation Section */}
       <div 
         id="how-it-works"
-        className="min-h-screen bg-black flex flex-col items-center justify-center relative newsletter-section"
+        className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center relative newsletter-section"
         style={{
+          backgroundImage: newsletterDots,
           opacity: Math.max(0, (scrollY - 400) / 400),
           transform: `translate3d(0, ${Math.max(0, scrollY - 400) * 0.2}px, 0)`,
-          willChange: 'transform, opacity'
+          willChange: 'transform, opacity',
+          transition: 'background-image 0.2s ease-out'
         }}
       >
         <div className="text-center mb-32 sm:mb-64 px-4">
           <h2 
-            className="text-3xl sm:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-8"
+            className="text-3xl sm:text-5xl lg:text-7xl font-bold text-gray-800 mb-4 sm:mb-8"
             style={{
               transform: `translate3d(0, ${Math.max(0, scrollY - 500) * 0.3}px, 0)`,
               marginTop: '-50px sm:-100px',
