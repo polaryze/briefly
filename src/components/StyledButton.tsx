@@ -28,7 +28,7 @@ const Button = () => {
 
 const StyledWrapper = styled.div`
   .body {
-    --global--size: clamp(2rem, 3em, 5rem);
+    --global--size: clamp(1.625rem, 2.625em, 4.625rem);
     --anim--hover-time: 400ms;
     --anim--hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
   }
@@ -47,7 +47,6 @@ const StyledWrapper = styled.div`
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden;
   }
 
   /* ========== BUTTON ========== */

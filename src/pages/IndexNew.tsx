@@ -371,8 +371,13 @@ const IndexNew = () => {
       setNewsletterDots(`${baseDot}, ${reactiveDots.join(', ')}`);
     };
 
-    updateHeroDots();
-    updateNewsletterDots();
+    // Use requestAnimationFrame for better performance without throttling
+    const animationId = requestAnimationFrame(() => {
+      updateHeroDots();
+      updateNewsletterDots();
+    });
+
+    return () => cancelAnimationFrame(animationId);
   }, [mousePosition]);
 
   useEffect(() => {
@@ -445,7 +450,7 @@ const IndexNew = () => {
     <div className="relative">
       {/* Hero Section */}
       <div 
-        className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden"
+        className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden pb-16"
         style={{
           backgroundImage: heroDots,
           transform: `translate3d(0, ${scrollY * 0.3}px, 0)`,
@@ -511,7 +516,7 @@ const IndexNew = () => {
 
           {/* Right side bento grid */}
           <div className="relative z-10">
-            <div className="grid grid-cols-2 gap-4 w-80 h-80">
+            <div className="grid grid-cols-2 gap-4 w-80 h-80 p-4">
               {/* Top row */}
               {isSignedIn ? (
                 <div
@@ -540,8 +545,9 @@ const IndexNew = () => {
                   }`}
                   style={{
                     animationDelay: '100ms',
-                    transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                    willChange: 'transform'
+                    transform: `translate3d(0, ${scrollY * 0.1}px, 0) translateY(36px)`,
+                    willChange: 'transform',
+                    height: '112px'
                   }}
                 >
                   <LogIn className="w-6 h-6 group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -554,7 +560,7 @@ const IndexNew = () => {
                 }`}
                 style={{
                   animationDelay: '150ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0) translateY(8px)`,
                   willChange: 'transform'
                 }}
               >
@@ -715,7 +721,7 @@ const IndexNew = () => {
       {/* Newsletter Generation Section */}
       <div 
         id="how-it-works"
-        className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center relative newsletter-section"
+        className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center relative newsletter-section pb-16"
         style={{
           backgroundImage: newsletterDots,
           opacity: Math.max(0, (scrollY - 400) / 400),
@@ -748,38 +754,16 @@ const IndexNew = () => {
           }
           
           .briefly-hover {
-            transition: letter-spacing 0.4s ease-out;
-            will-change: letter-spacing;
-            animation: brieflyReturn 0.4s ease-out;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: letter-spacing, transform;
+            letter-spacing: 0em;
+            transform: translateZ(0);
           }
           
           .briefly-hover:hover {
-            letter-spacing: 0.15em;
-            animation: brieflyHover 0.5s ease-out forwards;
-          }
-          
-          @keyframes brieflyHover {
-            0% {
-              letter-spacing: 0.02em;
-            }
-            30% {
-              letter-spacing: 0.08em;
-            }
-            60% {
-              letter-spacing: 0.12em;
-            }
-            100% {
-              letter-spacing: 0.15em;
-            }
-          }
-          
-          @keyframes brieflyReturn {
-            0% {
-              letter-spacing: 0.15em;
-            }
-            100% {
-              letter-spacing: 0em;
-            }
+            letter-spacing: 0.12em;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateZ(0);
           }
         `
       }} />
