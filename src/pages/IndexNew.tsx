@@ -455,7 +455,7 @@ const IndexNew = () => {
       >
         {/* Scroll Indicator */}
         <div 
-          className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
+          className="absolute bottom-16 sm:bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
           style={{
             opacity: scrollY < 200 ? 1 : 0
           }}
@@ -594,8 +594,8 @@ const IndexNew = () => {
 
         {/* Mobile Layout - New Design */}
         <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen">
-          {/* Center content with fade-in animation */}
-          <div className="flex flex-col items-center justify-center flex-1">
+          {/* Center content with fade-in animation - moved up by 16px total */}
+          <div className="flex flex-col items-center justify-center flex-1" style={{ marginTop: '-16px' }}>
             <div 
               className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
@@ -629,8 +629,8 @@ const IndexNew = () => {
             </div>
           </div>
 
-          {/* Bottom circular buttons */}
-          <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
+          {/* Bottom circular buttons - moved up even higher to avoid iOS search bar */}
+          <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
             {isSignedIn ? (
               <div
                 className={`flex items-center justify-center ${
@@ -645,7 +645,7 @@ const IndexNew = () => {
                 <UserButton 
                   appearance={{
                     elements: {
-                      avatarBox: "w-14 h-14 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
+                      avatarBox: "w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105"
                     }
                   }}
                 />
@@ -653,7 +653,7 @@ const IndexNew = () => {
             ) : (
               <button
                 onClick={() => navigate('/signin')}
-                className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+                className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
                   showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
                 }`}
                 style={{
@@ -662,12 +662,13 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                <LogIn className="w-6 h-6 text-gray-700 group-hover:translate-x-0.5 transition-transform duration-200" />
+                <LogIn className="w-6 h-6 text-gray-800 group-hover:translate-x-0.5 transition-transform duration-200" />
               </button>
             )}
             
-            <div
-              className={`flex items-center justify-center ${
+            <button
+              onClick={() => navigate('/newsletter-builder')}
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -676,24 +677,12 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <button
-                onClick={() => navigate('/newsletter-builder')}
-                className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
-                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-                }`}
-                style={{
-                  animationDelay: '450ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                <Wand2 className="w-6 h-6 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
-              </button>
-            </div>
+              <Wand2 className="w-6 h-6 text-gray-800 group-hover:scale-110 transition-transform duration-200" />
+            </button>
 
             <button
               onClick={() => navigate('/pricing')}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -702,12 +691,12 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <DollarSign className="w-6 h-6 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
+              <DollarSign className="w-6 h-6 text-gray-800 group-hover:scale-110 transition-transform duration-200" />
             </button>
             
             <button
               onClick={() => navigate('/support')}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -716,7 +705,7 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <HelpCircle className="w-6 h-6 text-gray-700 group-hover:rotate-6 transition-transform duration-200" />
+              <HelpCircle className="w-6 h-6 text-gray-800 group-hover:rotate-6 transition-transform duration-200" />
             </button>
           </div>
         </div>
