@@ -42,6 +42,15 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     style: 'minimal', 
     preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&h=200&fit=crop',
     htmlPath: '/example_newsletters/newslettersample4/4.html'
+  },
+  
+  {
+    id: 'sample5',
+    name: 'Sectioned Newsletter',
+    description: 'Advanced template with 5 distinct sections for targeted content generation',
+    style: 'modern',
+    preview: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=300&h=200&fit=crop',
+    htmlPath: '/example_newsletters/newslettersample5/5.html'
   }
 ];
 
