@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowRight, Sparkles, Zap, Users, Menu, X, LogIn, DollarSign, HelpCircle, Wand2 } from 'lucide-react';
 import { useSmoothNavigate } from '../hooks/useSmoothNavigate';
 import StyledButton from '../components/StyledButton';
+import ScrollToGenerate from '../components/ScrollToGenerate';
 
 const SOCIALS = [
   { key: "twitter", label: "Twitter", placeholder: "@alexkumar", default: "@alexkumar" },
@@ -455,7 +456,7 @@ const IndexNew = () => {
       >
         {/* Scroll Indicator */}
         <div 
-          className="absolute bottom-16 sm:bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
+          className="absolute bottom-24 sm:bottom-12 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
           style={{
             opacity: scrollY < 200 ? 1 : 0
           }}
@@ -710,8 +711,6 @@ const IndexNew = () => {
           </div>
         </div>
       </div>
-
-
 
       {/* Newsletter Generation Section */}
       <div 
