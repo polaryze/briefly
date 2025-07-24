@@ -586,7 +586,7 @@ const IndexNew = () => {
           {/* Center content with fade-in animation */}
           <div className="flex flex-col items-center justify-center flex-1">
             <div 
-              className={`text-4xl sm:text-5xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
+              className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -619,7 +619,7 @@ const IndexNew = () => {
           </div>
 
           {/* Bottom circular buttons */}
-          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
+          <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
             {isSignedIn ? (
               <div
                 className={`flex items-center justify-center ${
