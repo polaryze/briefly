@@ -2875,24 +2875,24 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
         <Loader progress={generationProgress} step={generationStep} />
       ) : showTemplateSelection ? (
         // Template Selection Phase - Hide form, show only template selection
-        <div className="min-h-screen bg-white animate-in fade-in duration-500">
+        <div className="min-h-screen bg-white animate-in fade-in duration-500 p-4 sm:p-6 lg:p-8">
 
-          <Card className="max-w-6xl w-full p-8 bg-white border-gray-200 shadow-xl mx-auto mt-8 animate-in slide-in-from-bottom-4 duration-700">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4 text-gray-900">Choose Your Newsletter Template</h2>
-              <p className="text-gray-600">Select a design from the templates below. We'll populate it with your social media content.</p>
+          <Card className="max-w-6xl w-full p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-xl mx-auto mt-4 sm:mt-8 animate-in slide-in-from-bottom-4 duration-700">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">Choose Your Newsletter Template</h2>
+              <p className="text-sm sm:text-base text-gray-600 px-2">Select a design from the templates below. We'll populate it with your social media content.</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {NEWSLETTER_TEMPLATES.map((template) => (
                 <div
                   key={template.id}
                   onClick={() => setSelectedTemplate(template.id)}
-                                      className={`cursor-pointer group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
-                      selectedTemplate === template.id
-                        ? 'border-black bg-gray-50 shadow-xl scale-105'
-                        : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
-                    }`}
+                  className={`cursor-pointer group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
+                    selectedTemplate === template.id
+                      ? 'border-black bg-gray-50 shadow-xl scale-105'
+                      : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
+                  }`}
                 >
                   <div className="aspect-[4/3] bg-white relative overflow-hidden">
                     <iframe 
@@ -2902,20 +2902,20 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                       title={template.name}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out backdrop-blur-sm">
-                      <span className="text-white font-bold text-lg transform group-hover:scale-110 transition-transform duration-300">Select Template</span>
+                      <span className="text-white font-bold text-base sm:text-lg transform group-hover:scale-110 transition-transform duration-300">Select Template</span>
                     </div>
-                                      {selectedTemplate === template.id && (
-                                         <div className="absolute top-3 right-3 w-6 h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
+                    {selectedTemplate === template.id && (
+                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-lg mb-2">{template.name}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                  <div className="p-3 sm:p-4">
+                    <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{template.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">{template.description}</p>
+                    <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
                       template.style === 'modern' ? 'bg-blue-100 text-blue-800' :
                       template.style === 'classic' ? 'bg-green-100 text-green-800' :
                       template.style === 'minimal' ? 'bg-gray-100 text-gray-800' :
@@ -2928,22 +2928,22 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               ))}
             </div>
             
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-              {/* Debug info */}
-              <div className="text-xs text-gray-500">
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 gap-4 sm:gap-0">
+              {/* Debug info - hidden on mobile */}
+              <div className="text-xs text-gray-500 hidden sm:block">
                 Template: {selectedTemplate || 'None'} | 
                 Loading: {loading ? 'Yes' : 'No'} | 
                 Data: {Object.keys(collectedData).length} keys
               </div>
               
-        <Button 
-            variant="outline" 
+              <Button 
+                variant="outline" 
                 onClick={() => {
                   setShowTemplateSelection(false);
                   setCollectedData({});
                   setSelectedTemplate(null);
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 ← Back
               </Button>
@@ -2974,24 +2974,24 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                 loading={loading}
                 loadingText="Generating Newsletter..."
                 disabled={!selectedTemplate || loading}
-                className="font-medium py-3 px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 bg-black hover:bg-gray-800 text-white"
+                className="font-medium py-3 px-6 sm:px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 bg-black hover:bg-gray-800 text-white w-full sm:w-auto"
               >
                 Generate Newsletter →
               </LoadingButton>
-        </div>
+            </div>
           </Card>
         </div>
       ) : newsletter ? (
         // Newsletter & Chat Display Phase - Side by side windows
-        <div className="bg-gray-50 p-6 animate-in fade-in duration-700">
-          <div className="flex justify-center items-start gap-6">
+        <div className="bg-gray-50 p-3 sm:p-6 animate-in fade-in duration-700">
+          <div className="flex flex-col lg:flex-row justify-center items-start gap-4 sm:gap-6">
             
             {/* Newsletter Window */}
-            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden animate-in slide-in-from-left-6 duration-800" 
-                 style={{ width: '640px', height: '90vh' }}>
+            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden animate-in slide-in-from-left-6 duration-800 w-full lg:w-auto" 
+                 style={{ width: '100%', maxWidth: '640px', height: '70vh', minHeight: '500px' }}>
               
               {/* Newsletter Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-white">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700">Newsletter Preview</span>
                 </div>
@@ -3003,7 +3003,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                       variant="outline"
                       size="sm"
                       onClick={() => setShowDebugModal(true)}
-                      className="flex items-center gap-2 text-xs"
+                      className="flex items-center gap-2 text-xs hidden sm:flex"
                     >
                       🔍 Debug
                     </Button>
@@ -3022,7 +3022,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                     className="flex items-center gap-2 text-xs"
                   >
                     <ArrowLeft className="w-3 h-3" />
-                    Back
+                    <span className="hidden sm:inline">Back</span>
                   </Button>
                 </div>
               </div>
@@ -3046,21 +3046,21 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               
               {/* Section Editing Interface */}
               {newsletter && availableSections.length > 0 && (
-                <div className="border-t border-gray-200 bg-gray-50 p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Edit Newsletter Sections</h3>
+                <div className="border-t border-gray-200 bg-gray-50 p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800">Edit Newsletter Sections</h3>
                     <Button
                       onClick={() => setShowSectionEditor(!showSectionEditor)}
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 w-full sm:w-auto"
                     >
                       {showSectionEditor ? 'Hide Editor' : 'Edit Sections'}
                     </Button>
                   </div>
                   
                   {showSectionEditor && (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {/* Section Selection Dropdown */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3120,17 +3120,17 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
             </div>
 
             {/* Chat Window */}
-            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden animate-in slide-in-from-right-6 duration-800" 
-                 style={{ width: '400px', height: '90vh' }}>
+            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden animate-in slide-in-from-right-6 duration-800 w-full lg:w-auto" 
+                 style={{ width: '100%', maxWidth: '400px', height: '70vh', minHeight: '500px' }}>
               
               {/* Chat Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-white">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700">AI Editor</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                  <span className="text-xs text-gray-500">Online</span>
+                  <span className="text-xs text-gray-500 hidden sm:inline">Online</span>
                 </div>
               </div>
               
@@ -3214,172 +3214,172 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
         </div>
       ) : (
         // Newsletter Builder Form - Only show when NOT selecting templates
-        <div className="min-h-screen flex flex-col items-center justify-center px-4 transition-all duration-500 ease-in-out">
-      <div className="absolute top-6 right-6 z-10">
-        <Button 
-          variant="outline" 
-          onClick={() => smoothNavigate('/')}
-          size="icon"
-          className="border-gray-300 hover:border-gray-400 transition-all duration-300 ease-in-out transform hover:scale-105"
-        >
-          <Home className="w-4 h-4" />
-        </Button>
-      </div>
-      
-          <Card className="max-w-2xl w-full p-8 bg-white border-gray-200 shadow-xl transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-bottom-4 hover:shadow-2xl">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900 text-center">Build Your Weekly Newsletter</h2>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div>
+        <div className="min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 transition-all duration-500 ease-in-out">
+          <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-10">
+            <Button 
+              variant="outline" 
+              onClick={() => smoothNavigate('/')}
+              size="icon"
+              className="border-gray-300 hover:border-gray-400 transition-all duration-300 ease-in-out transform hover:scale-105"
+            >
+              <Home className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <Card className="max-w-2xl w-full p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-xl transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-bottom-4 hover:shadow-2xl">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900 text-center">Build Your Weekly Newsletter</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
+              <div>
                 <label className="block text-gray-700 text-sm font-medium mb-3 text-center">Select Social Platforms</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {SOCIALS.map((s) => (
-                  <div
-                    key={s.key}
-                    onClick={() => !s.disabled && !loading && handleCheck(s.key)}
-                    className={`
-                          relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-500 ease-in-out group transform hover:scale-105 hover:-translate-y-1 active:scale-95
-                      ${selected[s.key as keyof typeof selected] 
-                            ? 'border-black bg-gray-50 shadow-lg scale-105' 
-                            : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-xl'
-                      }
-                      ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                          ${loading ? 'cursor-not-allowed opacity-75' : ''}
-                    `}
-                  >
-                    {/* Selection indicator */}
-                                                                                     <div className={`absolute -top-2 -right-2 w-6 h-6 bg-black rounded-full flex items-center justify-center transition-all duration-500 ease-in-out transform
-                       ${selected[s.key as keyof typeof selected] ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}
-                    `}>
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                  {SOCIALS.map((s) => (
+                    <div
+                      key={s.key}
+                      onClick={() => !s.disabled && !loading && handleCheck(s.key)}
+                      className={`
+                        relative p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-500 ease-in-out group transform hover:scale-105 hover:-translate-y-1 active:scale-95
+                        ${selected[s.key as keyof typeof selected] 
+                          ? 'border-black bg-gray-50 shadow-lg scale-105' 
+                          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-xl'
+                        }
+                        ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                        ${loading ? 'cursor-not-allowed opacity-75' : ''}
+                      `}
+                    >
+                      {/* Selection indicator */}
+                      <div className={`absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center transition-all duration-500 ease-in-out transform
+                        ${selected[s.key as keyof typeof selected] ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}
+                      `}>
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       </div>
-                    
-                    {/* Platform icon */}
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-12 h-12 rounded-lg bg-white p-2 shadow-sm border border-gray-100">
-                        <img 
-                          src={s.icon} 
-                          alt={s.label}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            // Fallback to text if image fails to load
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                          }}
-                        />
-                        <div className="hidden w-full h-full flex items-center justify-center text-xs font-bold text-gray-600">
-                          {s.label.charAt(0).toUpperCase()}
+                      
+                      {/* Platform icon */}
+                      <div className="flex flex-col items-center gap-1 sm:gap-2">
+                        <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg bg-white p-1 sm:p-2 shadow-sm border border-gray-100">
+                          <img 
+                            src={s.icon} 
+                            alt={s.label}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              // Fallback to text if image fails to load
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                          <div className="hidden w-full h-full flex items-center justify-center text-xs font-bold text-gray-600">
+                            {s.label.charAt(0).toUpperCase()}
+                          </div>
                         </div>
+                        <span className={`text-xs font-medium text-center ${selected[s.key as keyof typeof selected] ? 'text-black' : 'text-gray-600'}`}>
+                          {s.label}
+                        </span>
                       </div>
-                      <span className={`text-xs font-medium text-center ${selected[s.key as keyof typeof selected] ? 'text-black' : 'text-gray-600'}`}>
-                        {s.label}
-                      </span>
                     </div>
-                  </div>
-              ))}
-            </div>
-          </div>
-            
-          {/* Show input for each checked social */}
-            <div className="space-y-1">
-            {SOCIALS.map((s) =>
-                <div 
-                  key={s.key}
-                  className={`transition-all duration-500 ease-in-out overflow-hidden ${
-                    selected[s.key as keyof typeof selected] ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                    <div className="flex flex-col md:flex-row gap-2 items-center pt-3">
-                        <label className="block text-gray-600 text-xs font-medium md:w-32 capitalize">{s.label}:</label>
-                    <div className="flex-1">
-                  <Input
-                    type="text"
-                            className={`${validationErrors[s.key] ? 'border-gray-800' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500`}
-                    value={inputs[s.key as keyof typeof inputs]}
-                    onChange={e => handleInput(s.key, e.target.value)}
-                    placeholder={s.placeholder}
-                    disabled={loading}
-                  />
-                      {validationErrors[s.key] && (
-                              <p className="text-xs text-gray-800 mt-1">{validationErrors[s.key]}</p>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Show input for each checked social */}
+              <div className="space-y-1">
+                {SOCIALS.map((s) =>
+                  <div 
+                    key={s.key}
+                    className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                      selected[s.key as keyof typeof selected] ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center pt-3">
+                      <label className="block text-gray-600 text-xs font-medium sm:w-32 capitalize">{s.label}:</label>
+                      <div className="flex-1 w-full">
+                        <Input
+                          type="text"
+                          className={`${validationErrors[s.key] ? 'border-gray-800' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 w-full`}
+                          value={inputs[s.key as keyof typeof inputs]}
+                          onChange={e => handleInput(s.key, e.target.value)}
+                          placeholder={s.placeholder}
+                          disabled={loading}
+                        />
+                        {validationErrors[s.key] && (
+                          <p className="text-red-500 text-xs mt-1">{validationErrors[s.key]}</p>
                         )}
                       </div>
+                    </div>
                   </div>
-                  </div>
-                                  )}
-                                </div>
+                )}
+              </div>
 
-            {validationErrors.general && (
+              {validationErrors.general && (
                 <Alert variant="destructive" className="bg-gray-50 border-gray-200 text-gray-800">
                   <AlertDescription className="text-gray-700">{validationErrors.general}</AlertDescription>
               </Alert>
-            )}
+              )}
 
-            <LoadingButton
-              type="submit"
-              loading={loading && !isTemplateSelectionPhase}
-              loadingText="Generating Newsletter..."
-              disabled={loading}
-                  className="mt-2 bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 w-full"
-            >
-              {selectedTemplate ? "Generate Newsletter" : "Select Template"}
-            </LoadingButton>
-          </form>
-          
-          {/* Rotating circular icon for template selection loading */}
-          {loading && isTemplateSelectionPhase && (
-            <div className="flex flex-col items-center justify-center mt-6 space-y-3">
-              <div className="relative">
-                <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
+              <LoadingButton
+                type="submit"
+                loading={loading && !isTemplateSelectionPhase}
+                loadingText="Generating Newsletter..."
+                disabled={loading}
+                className="mt-2 bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 w-full"
+              >
+                {selectedTemplate ? "Generate Newsletter" : "Select Template"}
+              </LoadingButton>
+            </form>
+            
+            {/* Rotating circular icon for template selection loading */}
+            {loading && isTemplateSelectionPhase && (
+              <div className="flex flex-col items-center justify-center mt-4 sm:mt-6 space-y-2 sm:space-y-3">
+                <div className="relative">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-600 font-medium text-center">Collecting your social media data...</p>
               </div>
-              <p className="text-sm text-gray-600 font-medium">Collecting your social media data...</p>
-            </div>
-          )}
-          
-          {error && (
+            )}
+            
+            {error && (
               <Alert variant="destructive" className="mt-4 bg-gray-50 border-gray-200 text-gray-800">
                 <AlertDescription className="text-gray-700">{error}</AlertDescription>
-            </Alert>
-          )}
-        </Card>
-                </div>
-              )}
+              </Alert>
+            )}
+          </Card>
+        </div>
+      )}
       
       {/* Floating OpenAI Debug Modal */}
       {showDebugModal && openAIDebug && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-in fade-in duration-300">
-          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden shadow-2xl animate-in zoom-in duration-500 ease-out">
-            <div className="flex justify-between items-center p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">OpenAI Debug Information</h3>
-          <Button
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-in fade-in duration-300 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full mx-auto max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in duration-500 ease-out">
+            <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-200">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">OpenAI Debug Information</h3>
+              <Button
                 variant="outline"
-                  size="sm"
+                size="sm"
                 onClick={() => setShowDebugModal(false)}
                 className="flex items-center gap-2"
-                >
+              >
                 ✕ Close
-                </Button>
-              </div>
-            <div className="p-4 overflow-y-auto max-h-[calc(80vh-80px)]">
+              </Button>
+            </div>
+            <div className="p-3 sm:p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
               <div className="text-xs text-gray-600 font-mono">
                 <div className="mb-4">
                   <h4 className="font-semibold text-gray-900 mb-2">Request:</h4>
-                  <pre className="bg-gray-100 rounded p-3 text-xs overflow-x-auto whitespace-pre-wrap">
+                  <pre className="bg-gray-100 rounded p-2 sm:p-3 text-xs overflow-x-auto whitespace-pre-wrap">
                     {JSON.stringify(openAIDebug?.request || {}, null, 2)}
                   </pre>
-            </div>
+                </div>
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Response:</h4>
-                  <pre className="bg-gray-100 rounded p-3 text-xs overflow-x-auto whitespace-pre-wrap">
+                  <pre className="bg-gray-100 rounded p-2 sm:p-3 text-xs overflow-x-auto whitespace-pre-wrap">
                     {JSON.stringify(openAIDebug?.response || openAIDebug, null, 2)}
                   </pre>
-        </div>
-      </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-             )}
+      )}
     </div>
   );
 } 

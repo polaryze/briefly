@@ -31,9 +31,9 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   };
 
   const Section = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-    <section className="mb-6 bg-card rounded-lg p-4 shadow-sm border border-border">
-      <h2 className="flex items-center gap-2 text-lg font-bold mb-3">
-        <span className="text-xl">{icon}</span> {title}
+    <section className="mb-4 sm:mb-6 bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
+      <h2 className="flex items-center gap-2 text-base sm:text-lg font-bold mb-2 sm:mb-3">
+        <span className="text-lg sm:text-xl">{icon}</span> {title}
       </h2>
       {children}
     </section>
@@ -171,22 +171,22 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
     <div className="w-full h-full bg-white max-w-[640px] flex flex-col min-h-0">
       <div className="flex-1 flex justify-center min-h-0">
         <div className="bg-white h-full overflow-y-auto max-w-[640px] w-full min-h-0">
-          <header className="mb-6 pb-4 border-b border-border p-6">
-            <h1 className="text-2xl font-bold mb-2">Your Weekly Newsletter</h1>
-            <p className="text-muted-foreground">Generated from your social media content and YouTube videos</p>
+          <header className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border p-4 sm:p-6">
+            <h1 className="text-xl sm:text-2xl font-bold mb-2">Your Weekly Newsletter</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Generated from your social media content and YouTube videos</p>
           </header>
           
-          <main className="space-y-6 p-6">
+          <main className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             {/* AI Generated Content */}
             {newsletterData.sections && newsletterData.sections.length > 0 && (
               <Section title="AI Generated Content" icon="🤖">
                 {newsletterData.sections.map((section, index) => (
-                  <div key={index} className="mb-6 last:mb-0">
-                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <div key={index} className="mb-4 sm:mb-6 last:mb-0">
+                    <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center gap-2">
                       <span>{section.icon}</span> {section.title}
                     </h3>
                     <div 
-                      className="text-foreground prose prose-neutral max-w-none"
+                      className="text-foreground prose prose-neutral max-w-none text-sm sm:text-base"
                       dangerouslySetInnerHTML={{ __html: section.content }}
                     />
                   </div>
@@ -197,22 +197,22 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
             {/* YouTube Video Summaries */}
             {newsletterData.youtubeSummaries && Object.keys(newsletterData.youtubeSummaries).length > 0 && (
               <Section title="YouTube Video Summaries" icon="📺">
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {Object.entries(newsletterData.youtubeSummaries).map(([videoUrl, summary], index) => (
-                    <div key={index} className="p-4 bg-muted rounded-lg">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Play className="w-4 h-4 text-muted-foreground" />
+                    <div key={index} className="p-3 sm:p-4 bg-muted rounded-lg">
+                      <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                        <Play className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
                         <a 
                           href={videoUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1"
+                          className="text-xs sm:text-sm text-primary hover:underline flex items-center gap-1"
                         >
                           Watch Video
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="w-2 h-2 sm:w-3 sm:h-3" />
                         </a>
                       </div>
-                      <div className="text-sm text-foreground leading-relaxed">
+                      <div className="text-xs sm:text-sm text-foreground leading-relaxed">
                         {summary}
                       </div>
                     </div>
@@ -224,14 +224,14 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
             {/* Social Media Posts */}
             {posts && posts.length > 0 && (
               <Section title="Social Media Highlights" icon="📱">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {posts.slice(0, 8).map((post: any, index: number) => (
                     <div key={index} className="relative group">
                       {post.thumbnail ? (
                         <img 
                           src={post.thumbnail} 
                           alt={post.title || "Social media post"}
-                          className="w-full h-24 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                          className="w-full h-16 sm:h-20 lg:h-24 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
                           onError={(e) => {
                             logger.warn('Failed to load post thumbnail', { 
                               postIndex: index,
@@ -242,13 +242,13 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
                           }}
                         />
                       ) : (
-                        <div className="w-full h-24 bg-muted rounded-lg flex items-center justify-center">
+                        <div className="w-full h-16 sm:h-20 lg:h-24 bg-muted rounded-lg flex items-center justify-center">
                           <span className="text-xs text-muted-foreground">{post.platform}</span>
                         </div>
                       )}
-                      <div className="mt-2">
+                      <div className="mt-1 sm:mt-2">
                         <div className="text-xs font-medium text-muted-foreground">{post.platform}</div>
-                        <div className="text-sm line-clamp-2">{post.title}</div>
+                        <div className="text-xs sm:text-sm line-clamp-2">{post.title}</div>
                       </div>
                     </div>
                   ))}
@@ -260,9 +260,9 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
             {(!newsletterData.sections || newsletterData.sections.length === 0) && 
              (!newsletterData.youtubeSummaries || Object.keys(newsletterData.youtubeSummaries).length === 0) && 
              (!posts || posts.length === 0) && (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No content available to display in your newsletter.</p>
-                <p className="text-sm text-muted-foreground mt-2">Try adding more social media links or YouTube videos.</p>
+              <div className="text-center py-6 sm:py-8">
+                <p className="text-sm sm:text-base text-muted-foreground">No content available to display in your newsletter.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">Try adding more social media links or YouTube videos.</p>
               </div>
             )}
           </main>

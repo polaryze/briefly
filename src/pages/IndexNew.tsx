@@ -23,61 +23,61 @@ const TIME_RANGES = [
 // Newsletter Example Component
 const NewsletterExample = () => {
   const Section = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-    <section className="mb-10 bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
-      <h2 className="flex items-center gap-2 text-2xl font-bold mb-4 tracking-tight">
-        <span className="text-3xl">{icon}</span> {title}
+    <section className="mb-6 sm:mb-10 bg-gray-50 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
+      <h2 className="flex items-center gap-2 text-lg sm:text-2xl font-bold mb-3 sm:mb-4 tracking-tight">
+        <span className="text-xl sm:text-3xl">{icon}</span> {title}
       </h2>
       {children}
     </section>
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-[#f7f7fa] py-12 px-2 md:px-4">
-      <article className="prose prose-neutral max-w-2xl w-full bg-white rounded-3xl shadow-2xl border border-gray-200 notion-style overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center bg-[#f7f7fa] py-6 sm:py-12 px-2 sm:px-4">
+      <article className="prose prose-neutral max-w-2xl w-full bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200 notion-style overflow-hidden">
         {/* Header */}
-        <header className="bg-white px-8 py-8 flex flex-col gap-2 border-b border-gray-200">
-          <h1 className="mb-2 text-4xl font-extrabold tracking-tight leading-tight text-gray-900">Alex's Weekly Recap <span className="text-2xl font-normal text-gray-500">(July 7, 2025)</span></h1>
-          <div className="flex items-center gap-4 text-base text-gray-700 opacity-90 mb-2">
-            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Alex Kumar" className="w-10 h-10 rounded-full border-2 border-gray-200" />
+        <header className="bg-white px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-2 border-b border-gray-200">
+          <h1 className="mb-2 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-gray-900">Alex's Weekly Recap <span className="text-lg sm:text-xl lg:text-2xl font-normal text-gray-500">(July 7, 2025)</span></h1>
+          <div className="flex items-center gap-3 sm:gap-4 text-sm sm:text-base text-gray-700 opacity-90 mb-2">
+            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Alex Kumar" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200" />
             <span className="font-medium">by Alex Kumar</span>
             <span className="opacity-60">·</span>
             <span className="opacity-80">Week 27, 2025</span>
           </div>
-          <div className="text-lg mt-1 opacity-90 font-light text-gray-700">Hey friends! Here's what I've been up to this week as a creator, entrepreneur, and engineer. Thanks for following along on my journey!</div>
+          <div className="text-base sm:text-lg mt-1 opacity-90 font-light text-gray-700">Hey friends! Here's what I've been up to this week as a creator, entrepreneur, and engineer. Thanks for following along on my journey!</div>
         </header>
         
         {/* Hero Image */}
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Newsletter Hero" className="w-full h-60 object-cover" />
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Newsletter Hero" className="w-full h-40 sm:h-60 object-cover" />
         
-        <main className="px-6 md:px-10 py-10">
+        <main className="px-4 sm:px-6 lg:px-10 py-6 sm:py-10">
           <Section title="New Project: IndieHub" icon="🚀">
-            <div className="flex flex-col md:flex-row gap-6 items-center">
-              <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=200&q=80" alt="IndieHub" className="w-32 h-32 object-cover rounded-xl shadow" />
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
+              <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=200&q=80" alt="IndieHub" className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl shadow" />
               <div>
-                <p className="text-gray-700 mb-2">This week I launched <span className="font-bold text-blue-700">IndieHub</span>, a platform for indie makers to share their projects and get feedback. We hit <b>120 signups</b> in the first 3 days! 🎉</p>
-                <code className="block bg-gray-100 text-gray-700 rounded px-2 py-1 text-sm mb-1">Built with Next.js, Supabase, and Tailwind CSS</code>
+                <p className="text-sm sm:text-base text-gray-700 mb-2">This week I launched <span className="font-bold text-blue-700">IndieHub</span>, a platform for indie makers to share their projects and get feedback. We hit <b>120 signups</b> in the first 3 days! 🎉</p>
+                <code className="block bg-gray-100 text-gray-700 rounded px-2 py-1 text-xs sm:text-sm mb-1">Built with Next.js, Supabase, and Tailwind CSS</code>
               </div>
             </div>
           </Section>
           
           <Section title="Social Growth" icon="📈">
-            <div className="flex gap-8 justify-center mb-2">
+            <div className="flex gap-4 sm:gap-8 justify-center mb-2">
               <div className="flex flex-col items-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" className="w-10 h-10 mb-1" />
-                <span className="font-bold text-xl">+320</span>
+                <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" className="w-8 h-8 sm:w-10 sm:h-10 mb-1" />
+                <span className="font-bold text-lg sm:text-xl">+320</span>
                 <span className="text-xs text-gray-500">New X Followers</span>
               </div>
               <div className="flex flex-col items-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="Instagram" className="w-10 h-10 mb-1" />
-                <span className="font-bold text-xl">+210</span>
+                <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="Instagram" className="w-8 h-8 sm:w-10 sm:h-10 mb-1" />
+                <span className="font-bold text-lg sm:text-xl">+210</span>
                 <span className="text-xs text-gray-500">New IG Followers</span>
               </div>
             </div>
           </Section>
 
           {/* Footer CTA */}
-          <div className="text-center mt-8 mb-2">
-            <a href="#" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition">Reply & let me know what you're working on! →</a>
+          <div className="text-center mt-6 sm:mt-8 mb-2">
+            <a href="#" className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition text-sm sm:text-base">Reply & let me know what you're working on! →</a>
           </div>
           <div className="text-center text-xs text-gray-400 mb-2">© 2025 Alex Kumar. Thanks for reading!</div>
         </main>
@@ -138,16 +138,16 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center px-4">
       <Card 
-        className="max-w-xl w-full p-8 mb-8"
+        className="max-w-xl w-full p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8"
         style={{
           transform: `translate3d(0, ${Math.max(0, scrollY - 700) * 0.1}px, 0)`,
           willChange: 'transform'
         }}
       >
-        <h2 className="text-2xl font-bold mb-4">Build Your Weekly Newsletter</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Build Your Weekly Newsletter</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4">
           <div>
             <label className="block text-gray-700 text-sm mb-1">Your Name</label>
             <Input
@@ -160,7 +160,7 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
           </div>
           <div>
             <label className="block text-gray-700 text-sm mb-1">Socials to include</label>
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-3 sm:gap-4 flex-wrap">
               {SOCIALS.map((s) => (
                 <label key={s.key} className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -170,7 +170,7 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
                     disabled={loading}
                     className="accent-pink-400 w-4 h-4 rounded focus:ring-2 focus:ring-pink-400"
                   />
-                  <span className="text-gray-800 capitalize">{s.label}</span>
+                  <span className="text-sm sm:text-base text-gray-800 capitalize">{s.label}</span>
                 </label>
               ))}
             </div>
@@ -179,11 +179,11 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
           <div className="space-y-2">
             {SOCIALS.map((s) =>
               socials[s.key as keyof typeof socials] && (
-                <div key={s.key} className="flex flex-col md:flex-row gap-2 items-center">
-                  <label className="block text-gray-600 text-xs md:w-32 capitalize">{s.label}:</label>
+                <div key={s.key} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                  <label className="block text-gray-600 text-xs sm:text-sm sm:w-32 capitalize">{s.label}:</label>
                   <Input
                     type="text"
-                    className="flex-1"
+                    className="flex-1 w-full"
                     value={socialInputs[s.key as keyof typeof socialInputs]}
                     onChange={e => handleInputChange(s.key, e.target.value)}
                     placeholder={s.placeholder}
@@ -196,65 +196,60 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
           <div>
             <label className="block text-gray-700 text-sm mb-1">How far back?</label>
             <select
-              className="border rounded px-3 py-2 text-base w-full"
+              className="border rounded px-3 py-2 text-sm sm:text-base w-full"
               value={timeRange}
               onChange={e => setTimeRange(e.target.value)}
               disabled={loading}
             >
-              {TIME_RANGES.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              {TIME_RANGES.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
               ))}
             </select>
           </div>
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500 via-pink-500 to-cyan-400 text-white font-bold text-base shadow-lg hover:scale-105 transition-transform disabled:opacity-60"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className="tracking-wider">Analyzing</span>
-                  <span className="animate-pulse ml-1">...</span>
-                </>
-              ) : (
-                <>
-                  Generate Newsletter
-                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                </>
-              )}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95"
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Generating Newsletter...
+              </div>
+            ) : (
+              'Generate Newsletter'
+            )}
+          </Button>
         </form>
-      </Card>
-      
-      <Card 
-        className="max-w-2xl w-full p-8 min-h-[300px] flex items-center justify-center bg-white shadow-xl"
-        style={{
-          transform: `translate3d(0, ${Math.max(0, scrollY - 700) * 0.1}px, 0)`,
-          boxShadow: `0 20px 40px rgba(0,0,0,${0.1 + Math.max(0, scrollY - 700) * 0.0001})`,
-          willChange: 'transform'
-        }}
-      >
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12 w-full">
-            {/* Progress Bar */}
-            <div className="w-full max-w-md h-3 bg-gray-200 rounded-full overflow-hidden mb-6">
-              <div
-                className="h-full bg-gradient-to-r from-indigo-400 via-pink-400 to-cyan-400 animate-pulse"
-                style={{ width: `${progress}%`, transition: 'width 0.3s' }}
+        
+        {/* Progress bar */}
+        {loading && (
+          <div className="mt-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
               />
             </div>
-            <svg className="animate-spin h-8 w-8 text-cyan-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
-            <span className="text-cyan-200 text-lg font-medium animate-pulse">AI is generating your newsletter…</span>
-            <span className="text-gray-500 mt-2">This may take a few seconds</span>
+            <p className="text-xs sm:text-sm text-gray-600 mt-2 text-center">Generating your newsletter...</p>
           </div>
-        ) : showGeneration ? (
-          <NewsletterExample />
-        ) : (
-          <span className="text-gray-400">Your generated newsletter will appear here.</span>
         )}
       </Card>
+
+      {/* Generated Newsletter */}
+      {showGeneration && (
+        <div 
+          className="w-full max-w-2xl"
+          style={{
+            transform: `translate3d(0, ${Math.max(0, scrollY - 800) * 0.1}px, 0)`,
+            willChange: 'transform'
+          }}
+        >
+          <NewsletterExample />
+        </div>
+      )}
     </div>
   );
 };
@@ -441,27 +436,24 @@ const IndexNew = () => {
     <div className="relative">
       {/* Hero Section */}
       <div 
-        className="min-h-screen bg-white flex items-center justify-between relative hero-section"
+        className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden"
         style={{
-          backgroundImage: heroDots,
-          transform: `translate3d(0, ${scrollY * 0.3}px, 0)`,
-          opacity: Math.max(0, 1 - scrollY / 500),
-          willChange: 'transform, opacity',
+          backgroundImage: `radial-gradient(circle at ${mouseX}px ${mouseY}px, rgba(59, 130, 246, 0.1) 0%, transparent 50%)`,
           transition: 'background-image 0.2s ease-out'
         }}
       >
         {/* Scroll Indicator */}
         <div 
-          className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
+          className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
           style={{
             opacity: scrollY < 200 ? 1 : 0
           }}
         >
           <div className="flex flex-col items-center gap-2">
-            <span className="text-sm text-gray-600 font-medium">Scroll to generate sample</span>
-            <div className="w-5 h-5 animate-bounce">
+            <span className="text-xs sm:text-sm text-gray-600 font-medium">Scroll to generate sample</span>
+            <div className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce">
               <svg 
-                className="w-5 h-5 text-gray-600" 
+                className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -476,43 +468,165 @@ const IndexNew = () => {
             </div>
           </div>
         </div>
-        {/* Left side content */}
-        <div className="ml-16 md:ml-24 relative z-10">
-          <div 
-            className={`text-6xl md:text-8xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
-              showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
-            }`}
-            style={{
-              transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
-              willChange: 'transform'
-            }}
-          >
-            Briefly
-          </div>
-          <div className="text-2xl md:text-4xl font-light text-gray-600">
-            {text}
-            <span 
-              className="inline-block w-0.5 text-2xl md:text-4xl font-light ml-1"
+        
+        {/* Desktop Layout - Unchanged */}
+        <div className="hidden lg:flex flex-row items-center justify-between w-full px-16 xl:px-24 gap-0">
+          {/* Left side content */}
+          <div className="relative z-10 text-left">
+            <div 
+              className={`text-6xl xl:text-8xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
+                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
+              }`}
               style={{
-                animation: 'blink 1s infinite'
+                transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
+                willChange: 'transform'
               }}
             >
-              |
-            </span>
+              Briefly
+            </div>
+            <div className="text-2xl xl:text-4xl font-light text-gray-600">
+              {text}
+              <span 
+                className="inline-block w-0.5 text-2xl xl:text-4xl font-light ml-1"
+                style={{
+                  animation: 'blink 1s infinite'
+                }}
+              >
+                |
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Right side bento grid */}
-        <div className="mr-16 md:mr-24 relative z-10">
-          <div className="grid grid-cols-2 gap-4 w-80 h-80">
-            {/* Top row */}
-            {isSignedIn ? (
+          {/* Right side bento grid */}
+          <div className="relative z-10">
+            <div className="grid grid-cols-2 gap-4 w-80 h-80">
+              {/* Top row */}
+              {isSignedIn ? (
+                <div
+                  className={`flex items-center justify-center ${
+                    showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                  }`}
+                  style={{
+                    animationDelay: '100ms',
+                    transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                    willChange: 'transform'
+                  }}
+                >
+                  <UserButton 
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-[130px] h-[130px] ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => navigate('/signin')}
+                  className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
+                    showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                  }`}
+                  style={{
+                    animationDelay: '100ms',
+                    transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                    willChange: 'transform'
+                  }}
+                >
+                  <LogIn className="w-6 h-6 group-hover:translate-x-0.5 transition-transform duration-200" />
+                </button>
+              )}
+              
               <div
                 className={`flex items-center justify-center ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
-                  animationDelay: '100ms',
+                  animationDelay: '150ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                <StyledButton />
+              </div>
+
+              {/* Bottom row */}
+              <button
+                onClick={() => navigate('/pricing')}
+                className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '200ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                <DollarSign className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
+              </button>
+              
+              <button
+                onClick={() => navigate('/support')}
+                className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '250ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                <HelpCircle className="w-6 h-6 group-hover:rotate-6 transition-transform duration-200" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout - New Design */}
+        <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen">
+          {/* Center content with fade-in animation */}
+          <div className="flex flex-col items-center justify-center flex-1">
+            <div 
+              className={`text-4xl sm:text-5xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+              }`}
+              style={{
+                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                willChange: 'transform'
+              }}
+            >
+              Briefly
+            </div>
+            <div 
+              className={`text-lg sm:text-xl font-light text-gray-600 transition-all duration-1000 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+              }`}
+              style={{
+                animationDelay: '300ms',
+                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                willChange: 'transform'
+              }}
+            >
+              {text}
+              <span 
+                className="inline-block w-0.5 text-lg sm:text-xl font-light ml-1"
+                style={{
+                  animation: 'blink 1s infinite'
+                }}
+              >
+                |
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom circular buttons */}
+          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
+            {isSignedIn ? (
+              <div
+                className={`flex items-center justify-center ${
+                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+                }`}
+                style={{
+                  animationDelay: '400ms',
                   transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                   willChange: 'transform'
                 }}
@@ -520,7 +634,7 @@ const IndexNew = () => {
                 <UserButton 
                   appearance={{
                     elements: {
-                      avatarBox: "w-[130px] h-[130px] ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
+                      avatarBox: "w-12 h-12 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
                     }
                   }}
                 />
@@ -528,59 +642,70 @@ const IndexNew = () => {
             ) : (
               <button
                 onClick={() => navigate('/signin')}
-                className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
                 }`}
                 style={{
-                  animationDelay: '100ms',
+                  animationDelay: '400ms',
                   transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                   willChange: 'transform'
                 }}
               >
-                <LogIn className="w-6 h-6 group-hover:translate-x-0.5 transition-transform duration-200" />
+                <LogIn className="w-5 h-5 text-gray-700 group-hover:translate-x-0.5 transition-transform duration-200" />
               </button>
             )}
             
             <div
               className={`flex items-center justify-center ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                animationDelay: '150ms',
+                animationDelay: '450ms',
                 transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
-              <StyledButton />
+              <button
+                onClick={() => navigate('/newsletter-builder')}
+                className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+                }`}
+                style={{
+                  animationDelay: '450ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                <Wand2 className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
+              </button>
             </div>
 
-            {/* Bottom row */}
             <button
               onClick={() => navigate('/pricing')}
-              className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+              className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                animationDelay: '200ms',
+                animationDelay: '500ms',
                 transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
-              <DollarSign className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
+              <DollarSign className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform duration-200" />
             </button>
             
             <button
               onClick={() => navigate('/support')}
-              className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+              className={`group flex items-center justify-center w-12 h-12 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 transform hover:scale-105 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                animationDelay: '250ms',
+                animationDelay: '550ms',
                 transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
-              <HelpCircle className="w-6 h-6 group-hover:rotate-6 transition-transform duration-200" />
+              <HelpCircle className="w-5 h-5 text-gray-700 group-hover:rotate-6 transition-transform duration-200" />
             </button>
           </div>
         </div>
@@ -598,12 +723,12 @@ const IndexNew = () => {
           willChange: 'transform, opacity'
         }}
       >
-        <div className="text-center mb-64">
+        <div className="text-center mb-32 sm:mb-64 px-4">
           <h2 
-            className="text-5xl md:text-7xl font-bold text-white mb-8"
+            className="text-3xl sm:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-8"
             style={{
               transform: `translate3d(0, ${Math.max(0, scrollY - 500) * 0.3}px, 0)`,
-              marginTop: '-100px',
+              marginTop: '-50px sm:-100px',
               willChange: 'transform'
             }}
           >
