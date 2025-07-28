@@ -2238,6 +2238,14 @@ const replaceNewsletterSections = (templateHtml: string, summaries: { [platform:
   
   // Replace images section with Instagram collage
   const instagramImages = images.filter(img => img.platform === 'instagram');
+  console.log('📸 All images received:', images.length);
+  console.log('📸 Instagram images filtered:', instagramImages.length);
+  console.log('📸 Instagram image details:', instagramImages.map(img => ({
+    url: img.url,
+    postText: img.postText?.substring(0, 30) + '...',
+    platform: img.platform
+  })));
+  
   if (instagramImages.length > 0) {
     console.log('📸 Creating Instagram collage with:', instagramImages.length, 'images');
     
@@ -2500,10 +2508,19 @@ export default function NewsletterBuilder() {
         
         // Extract images from API content only
         platformData.forEach(post => {
+          console.log(`📸 Processing ${platform} post:`, {
+            hasImages: !!post.images,
+            imagesLength: post.images?.length || 0,
+            images: post.images,
+            text: post.text?.substring(0, 50) + '...'
+          });
+          
           if (post.images && post.images.length > 0) {
             post.images.forEach((image: any) => {
               // Handle both string URLs and image objects
               const imageUrl = typeof image === 'string' ? image : image.url;
+              console.log(`📸 Image object:`, image, `Extracted URL:`, imageUrl);
+              
               if (imageUrl) {
                 images.push({
                   url: imageUrl,
@@ -2513,8 +2530,13 @@ export default function NewsletterBuilder() {
                   likes: post.likes || 0,
                   comments: post.comments || 0
                 });
+                console.log(`✅ Added image to collection:`, imageUrl);
+              } else {
+                console.log(`❌ No valid URL found for image:`, image);
               }
             });
+          } else {
+            console.log(`⚠️ No images found in ${platform} post`);
           }
         });
         
