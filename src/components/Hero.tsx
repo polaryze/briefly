@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { ArrowRight, Sparkles, Zap, Users } from 'lucide-react';
 
 const Hero = () => {
   const navigate = useNavigate();
-  const { isSignedIn } = useUser();
+  const { isAuthenticated } = useAuth0();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-purple-500/5 pt-20">
@@ -54,7 +54,7 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 animate-fade-in">
             <Button 
               size="lg"
-              onClick={() => navigate(isSignedIn ? '/newsletter-builder' : '/signin')}
+              onClick={() => navigate(isAuthenticated ? '/newsletter-builder' : '/signin')}
               className="group bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               Start Building

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser, UserButton } from '@clerk/clerk-react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { ArrowRight, Sparkles, Zap, Users, Menu, X, LogIn, DollarSign, HelpCircle, Wand2 } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, Users, Menu, X, LogIn, DollarSign, HelpCircle, Wand2, LogOut } from 'lucide-react';
 import { CursorWander } from '@/components/ui/cursor-wander';
 import { useSmoothNavigate } from '../hooks/useSmoothNavigate';
 import StyledButton from '../components/StyledButton';
@@ -292,8 +292,9 @@ const IndexNew = () => {
   const [showBriefly, setShowBriefly] = useState(false);
   const navigate = useNavigate();
   const smoothNavigate = useSmoothNavigate();
-  const { isSignedIn } = useUser();
+  const { isAuthenticated, user, logout } = useAuth0();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [reactiveDots, setReactiveDots] = useState('');
@@ -322,6 +323,17 @@ const IndexNew = () => {
       document.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isProfileMenuOpen && !(event.target as Element).closest('.profile-menu')) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileMenuOpen]);
 
   // Update reactive dots when mouse position changes - optimized version
   useEffect(() => {
@@ -436,7 +448,7 @@ const IndexNew = () => {
   }, [currentIndex, fullText, isTyping]);
 
   const buttons = [
-    { id: 'auth', label: isSignedIn ? 'Profile' : 'Sign In', delay: 100, size: 'small' },
+    { id: 'auth', label: isAuthenticated ? 'Profile' : 'Sign In', delay: 100, size: 'small' },
     { id: 'generate', label: 'Generate Newsletter', delay: 150, size: 'large' },
     { id: 'pricing', label: 'Pricing', delay: 200, size: 'small' },
     { id: 'support', label: 'Support', delay: 250, size: 'small' }
@@ -549,9 +561,9 @@ const IndexNew = () => {
           <div className="relative z-10">
             <div className="grid grid-cols-2 gap-4 w-80 h-80 p-4">
               {/* Top row */}
-              {isSignedIn ? (
+              {isAuthenticated ? (
                 <div
-                  className={`flex items-center justify-center ${
+                  className={`flex items-center justify-center profile-menu relative ${
                     showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                   }`}
                   style={{
@@ -560,13 +572,40 @@ const IndexNew = () => {
                     willChange: 'transform'
                   }}
                 >
-                  <UserButton 
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-[130px] h-[130px] ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
-                      }
-                    }}
-                  />
+                  <button
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="w-[130px] h-[130px] ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200 bg-white rounded-full flex items-center justify-center overflow-hidden cursor-pointer"
+                  >
+                    {user?.picture ? (
+                      <img 
+                        src={user.picture} 
+                        alt={user.name || 'User'} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-2xl">👤</span>
+                    )}
+                  </button>
+                  
+                  {/* Profile Dropdown Menu */}
+                  {isProfileMenuOpen && (
+                    <div className="absolute right-full mr-2 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <div className="text-sm font-medium text-gray-900">{user?.name || 'User'}</div>
+                        <div className="text-xs text-gray-500">{user?.email}</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          logout({ logoutParams: { returnTo: window.location.origin } });
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button
@@ -671,9 +710,9 @@ const IndexNew = () => {
 
           {/* Bottom circular buttons - moved up even higher to avoid iOS search bar */}
           <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
-            {isSignedIn ? (
+            {isAuthenticated ? (
               <div
-                className={`flex items-center justify-center ${
+                className={`flex items-center justify-center profile-menu relative ${
                   showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
                 }`}
                 style={{
@@ -682,13 +721,40 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                <UserButton 
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105"
-                    }
-                  }}
-                />
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 flex items-center justify-center overflow-hidden cursor-pointer"
+                >
+                  {user?.picture ? (
+                    <img 
+                      src={user.picture} 
+                      alt={user.name || 'User'} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg">👤</span>
+                  )}
+                </button>
+                
+                {/* Profile Dropdown Menu */}
+                {isProfileMenuOpen && (
+                  <div className="absolute right-full mr-2 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <div className="text-sm font-medium text-gray-900">{user?.name || 'User'}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout({ logoutParams: { returnTo: window.location.origin } });
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <button

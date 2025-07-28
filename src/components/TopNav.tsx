@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useUser, UserButton } from '@clerk/clerk-react';
-import { Menu, X, Sparkles, Zap, ArrowRight } from 'lucide-react';
+import { useAuth0 } from '@auth0/auth0-react';
+import { Menu, X, Sparkles, Zap, ArrowRight, LogOut, User } from 'lucide-react';
 
 const TopNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { isSignedIn } = useUser();
+  const { isAuthenticated, user, logout } = useAuth0();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +20,17 @@ const TopNav = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isProfileMenuOpen && !(event.target as Element).closest('.profile-menu')) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileMenuOpen]);
 
   const navItems = [
     { label: 'Features', href: '#features', icon: Sparkles },
@@ -34,6 +47,27 @@ const TopNav = () => {
 
   return (
     <>
+      {/* Profile Dropdown Menu - Rendered via Portal */}
+      {isProfileMenuOpen && createPortal(
+        <div className="fixed top-20 right-4 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[99999]">
+          <div className="px-4 py-2 border-b border-gray-100">
+            <div className="text-sm font-medium text-gray-900">{user?.name || 'User'}</div>
+            <div className="text-xs text-gray-500">{user?.email}</div>
+          </div>
+          <button
+            onClick={() => {
+              logout({ logoutParams: { returnTo: window.location.origin } });
+              setIsProfileMenuOpen(false);
+            }}
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>,
+        document.body
+      )}
+
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled 
           ? 'bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-lg' 
@@ -78,7 +112,7 @@ const TopNav = () => {
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-4">
-              {isSignedIn ? (
+              {isAuthenticated ? (
                 <div className="flex items-center gap-4">
                   <Button
                     variant="ghost"
@@ -87,13 +121,27 @@ const TopNav = () => {
                   >
                     Dashboard
                   </Button>
-                  <UserButton 
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-10 h-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200"
-                      }
-                    }}
-                  />
+                  <div className="relative profile-menu">
+                    <button
+                      onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                      className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="w-10 h-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                        {user?.picture ? (
+                          <img 
+                            src={user.picture} 
+                            alt={user.name || 'User'} 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-sm">👤</span>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{user?.name || 'User'}</span>
+                    </button>
+                    
+
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -150,7 +198,7 @@ const TopNav = () => {
 
             {/* Mobile CTA */}
             <div className="pt-4 border-t border-border/50 space-y-3">
-              {isSignedIn ? (
+              {isAuthenticated ? (
                 <div className="space-y-3">
                   <Button
                     variant="outline"
@@ -162,14 +210,31 @@ const TopNav = () => {
                   >
                     Dashboard
                   </Button>
-                  <div className="flex justify-center">
-                    <UserButton 
-                      appearance={{
-                        elements: {
-                          avatarBox: "w-10 h-10 ring-2 ring-primary/20"
-                        }
-                      }}
-                    />
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-10 h-10 ring-2 ring-primary/20 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                      {user?.picture ? (
+                        <img 
+                          src={user.picture} 
+                          alt={user.name || 'User'} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-sm">👤</span>
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-900">{user?.name || 'User'}</span>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          logout({ logoutParams: { returnTo: window.location.origin } });
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="text-xs text-gray-600 hover:text-gray-800 p-0 h-auto"
+                      >
+                        Logout
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : (
