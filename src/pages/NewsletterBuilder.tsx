@@ -2824,40 +2824,32 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
             </CardCarousel>
             
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 gap-4 sm:gap-0">
-              {/* Debug info - hidden on mobile */}
-              <div className="text-xs text-gray-500 hidden sm:block">
-                Template: {selectedTemplate || 'None'} | 
-                Loading: {loading ? 'Yes' : 'No'} | 
-                Data: {Object.keys(collectedData).length} keys
-              </div>
+              {/* Back button on left */}
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowTemplateSelection(false);
+                  setCollectedData({});
+                  setSelectedTemplate(null);
+                }}
+                className="flex items-center gap-2 w-full sm:w-auto"
+              >
+                ← Back
+              </Button>
               
-              {/* Mobile: Generate Newsletter first, then Back */}
-              <div className="flex flex-col-reverse sm:flex-row w-full sm:w-auto gap-4 sm:gap-0">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowTemplateSelection(false);
-                    setCollectedData({});
-                    setSelectedTemplate(null);
-                  }}
-                  className="flex items-center gap-2 w-full sm:w-auto"
-                >
-                  ← Back
-                </Button>
-                
-                <LoadingButton
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }}
-                  loading={loading}
-                  loadingText="Generating Newsletter..."
-                  disabled={!selectedTemplate || loading}
-                  className="font-medium py-3 px-6 sm:px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 bg-black hover:bg-gray-800 text-white w-full sm:w-auto"
-                >
-                  Generate Newsletter →
-                </LoadingButton>
-              </div>
+              {/* Generate Newsletter button on right */}
+              <LoadingButton
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }}
+                loading={loading}
+                loadingText="Generating Newsletter..."
+                disabled={!selectedTemplate || loading}
+                className="font-medium py-3 px-6 sm:px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 bg-black hover:bg-gray-800 text-white w-full sm:w-auto"
+              >
+                Generate Newsletter →
+              </LoadingButton>
             </div>
           </Card>
         </div>
