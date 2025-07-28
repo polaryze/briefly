@@ -2823,6 +2823,13 @@ export default function NewsletterBuilder() {
       // Clear temp data after successful generation
       setTempData({});
       
+      // Update loading states to show the newsletter
+      setLoading(false);
+      setShowLoadingPage(false);
+      setShowTemplateSelection(false);
+      setGenerationProgress(0);
+      setGenerationStep('');
+      
       handleNewsletterSuccess(newsletterData);
       
     } catch (error: any) {
