@@ -2755,13 +2755,13 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
   }, []);
 
   return (
-    <div className="min-h-screen bg-white relative page-transition">
+    <div className="h-screen sm:min-h-screen bg-white relative page-transition overflow-hidden">
       {showLoadingPage ? (
         // Loading Page - Show dedicated loading screen with custom loader
         <Loader progress={generationProgress} step={generationStep} />
       ) : showTemplateSelection ? (
         // Template Selection Phase - Hide form, show only template selection
-        <div className="min-h-screen bg-white p-4 sm:p-6 lg:p-8">
+        <div className="h-screen sm:min-h-screen bg-white p-4 sm:p-6 lg:p-8 overflow-y-auto">
 
           <Card className="max-w-6xl w-full p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-xl mx-auto mt-4 sm:mt-8 animate-in slide-in-from-bottom-4 duration-700">
             <div className="text-center mb-6 sm:mb-8">
@@ -2925,7 +2925,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
         </div>
       ) : (
         // Newsletter Builder Form - Only show when NOT selecting templates
-        <div className="min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 transition-all duration-500 ease-in-out">
+        <div className="h-screen sm:min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 transition-all duration-500 ease-in-out overflow-y-auto">
           <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-10">
             <Button 
               variant="outline" 
