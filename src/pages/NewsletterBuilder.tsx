@@ -2081,6 +2081,70 @@ function extractCSSFromTemplate(templateHtml: string): string {
   return styleMatch ? styleMatch[1] : '';
 }
 
+// Function to replace sections in the cleaned newsletter template
+const replaceNewsletterSections = (templateHtml: string, summaries: { [platform: string]: string[] }, images: Array<{url: string, postText: string, postDate: string, platform: string}>): string => {
+  let modifiedHtml = templateHtml;
+  
+  // Replace YouTube section
+  if (summaries.youtube && summaries.youtube.length > 0) {
+    const youtubeContent = summaries.youtube.join('\n\n');
+    modifiedHtml = modifiedHtml.replace(
+      'REPLACE THIS TEXT FOR YOUTUBE SUMMARY',
+      youtubeContent
+    );
+  } else {
+    // Hide YouTube section if no data
+    const youtubeSectionRegex = /<!-- SECTION: YouTube -->[\s\S]*?<!-- SECTION: X \(formerly Twitter\) -->/;
+    modifiedHtml = modifiedHtml.replace(youtubeSectionRegex, '<!-- SECTION: X (formerly Twitter) -->');
+  }
+  
+  // Replace X (Twitter) section
+  if (summaries.twitter && summaries.twitter.length > 0) {
+    const twitterContent = summaries.twitter.join('\n\n');
+    modifiedHtml = modifiedHtml.replace(
+      'REPLACE THIS TEXT FOR X SUMMARY',
+      twitterContent
+    );
+  } else {
+    // Hide X section if no data
+    const xSectionRegex = /<!-- SECTION: X \(formerly Twitter\) -->[\s\S]*?<!-- SECTION: Instagram -->/;
+    modifiedHtml = modifiedHtml.replace(xSectionRegex, '<!-- SECTION: Instagram -->');
+  }
+  
+  // Replace Instagram section
+  if (summaries.instagram && summaries.instagram.length > 0) {
+    const instagramContent = summaries.instagram.join('\n\n');
+    modifiedHtml = modifiedHtml.replace(
+      'REPLACE THIS TEXT FOR INSTAGRAM SUMMARY',
+      instagramContent
+    );
+  } else {
+    // Hide Instagram section if no data
+    const instagramSectionRegex = /<!-- SECTION: Instagram -->[\s\S]*?<!-- SECTION: Content Placeholder -->/;
+    modifiedHtml = modifiedHtml.replace(instagramSectionRegex, '<!-- SECTION: Content Placeholder -->');
+  }
+  
+  // Replace images section
+  if (images.length > 0) {
+    const imageHtml = images.map(image => 
+      `<img src="${image.url}" alt="${image.postText.substring(0, 50)}" style="max-width: 200px; margin: 10px; border-radius: 8px;" />`
+    ).join('');
+    
+    modifiedHtml = modifiedHtml.replace(
+      '<!-- SECTION: IMAGES HERE -->',
+      imageHtml
+    );
+  } else {
+    // Hide images section if no images
+    modifiedHtml = modifiedHtml.replace(
+      '<!-- SECTION: IMAGES HERE -->',
+      '<p style="text-align: center; color: #666;">No images available</p>'
+    );
+  }
+  
+  return modifiedHtml;
+};
+
 export default function NewsletterBuilder() {
 
   const navigate = useNavigate();
@@ -2197,6 +2261,120 @@ export default function NewsletterBuilder() {
   
   // Hidden feature: bypass social media input with "skibidi"
   const [typedKeys, setTypedKeys] = useState('');
+
+  // New function for step-by-step processing
+  const processSocialMediaStepByStep = async (selected: any, inputs: any, timelineOptions?: any): Promise<{
+    summaries: { [platform: string]: string[] };
+    images: Array<{url: string, postText: string, postDate: string, platform: string}>;
+    processingTime: number;
+  }> => {
+    const startTime = Date.now();
+    const summaries: { [platform: string]: string[] } = {};
+    const images: Array<{url: string, postText: string, postDate: string, platform: string}> = [];
+    
+    console.log('🚀 Starting step-by-step social media processing...');
+    
+    // Process each platform one by one
+    const platforms = ['twitter', 'instagram', 'youtube'];
+    
+    for (const platform of platforms) {
+      if (!selected[platform] || !inputs[platform]) {
+        console.log(`⏭️ Skipping ${platform}: not selected or no input`);
+        continue;
+      }
+      
+      console.log(`📱 Processing ${platform}...`);
+      setGenerationStep(`Processing ${platform} data...`);
+      
+      try {
+        let platformData: any[] = [];
+        
+        // Fetch data based on platform
+        switch (platform) {
+          case 'twitter':
+            const twitterData = await fetchXData(inputs.twitter);
+            if (twitterData && twitterData.data) {
+              platformData = twitterData.data;
+            }
+            break;
+            
+          case 'instagram':
+            const instagramData = await fetchInstagramData(inputs.instagram);
+            if (instagramData && instagramData.data) {
+              platformData = instagramData.data;
+            }
+            break;
+            
+          case 'youtube':
+            const youtubeData = await fetchYouTubeData(inputs.youtube);
+            if (youtubeData && youtubeData.data) {
+              platformData = youtubeData.data;
+            }
+            break;
+        }
+        
+        if (platformData.length === 0) {
+          console.log(`⚠️ No data found for ${platform}`);
+          summaries[platform] = [];
+          continue;
+        }
+        
+        // Filter by timeline if specified
+        if (timelineOptions && timelineOptions[platform]) {
+          platformData = filterPostsByTimeline(platformData, platform, timelineOptions[platform]);
+        }
+        
+        console.log(`📊 Found ${platformData.length} posts for ${platform}`);
+        
+        // Extract images
+        platformData.forEach(post => {
+          if (post.images && post.images.length > 0) {
+            post.images.forEach((imageUrl: string) => {
+              images.push({
+                url: imageUrl,
+                postText: post.text || '',
+                postDate: post.posted || '',
+                platform: platform
+              });
+            });
+          }
+        });
+        
+        // Summarize posts one by one
+        setGenerationStep(`Summarizing ${platform} content...`);
+        const platformSummaries: string[] = [];
+        
+        for (let i = 0; i < platformData.length; i++) {
+          const post = platformData[i];
+          if (post.text && post.text.trim().length > 10) {
+            try {
+              const summary = await summarizeText(post.text);
+              platformSummaries.push(summary);
+              console.log(`✅ Summarized ${platform} post ${i + 1}/${platformData.length}`);
+            } catch (error) {
+              console.error(`❌ Failed to summarize ${platform} post ${i + 1}:`, error);
+              platformSummaries.push(post.text); // Use original text as fallback
+            }
+          } else {
+            platformSummaries.push(post.text || '');
+          }
+        }
+        
+        summaries[platform] = platformSummaries;
+        console.log(`✅ Completed ${platform}: ${platformSummaries.length} summaries`);
+        
+      } catch (error) {
+        console.error(`❌ Error processing ${platform}:`, error);
+        summaries[platform] = [];
+      }
+    }
+    
+    const processingTime = Date.now() - startTime;
+    console.log(`⏱️ Total processing time: ${processingTime}ms`);
+    console.log(`📊 Final summaries:`, Object.keys(summaries).map(p => `${p}: ${summaries[p].length}`));
+    
+    return { summaries, images, processingTime };
+  };
   
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -2384,25 +2562,36 @@ export default function NewsletterBuilder() {
       setTempData({}); // Clear previous temp data
 
       try {
-        // Process all selected platforms and collect data
-        logger.info('Processing all platforms', { selected });
-  const tempData = await processAllPlatforms(selected, inputs, timelineOptions);
-        setTempData(tempData); // Store temp data
-
-        console.log('Data collected successfully:', {
-          platforms: Object.keys(selected).filter(key => selected[key]),
-          totalText: tempData.allText?.length || 0,
-          totalImages: tempData.allImages?.length || 0
+        // Use new step-by-step processing
+        console.log('🚀 Starting step-by-step processing...');
+        setGenerationProgress(5);
+        setGenerationStep('Initializing data collection...');
+        
+        const { summaries, images, processingTime } = await processSocialMediaStepByStep(selected, inputs, timelineOptions);
+        
+        console.log('✅ Step-by-step processing completed:', {
+          platforms: Object.keys(summaries).filter(p => summaries[p].length > 0),
+          totalSummaries: Object.values(summaries).flat().length,
+          totalImages: images.length,
+          processingTime: `${processingTime}ms`
         });
-
-        // Store collected data and show template selection  
+        
+        // Create temp data structure for compatibility
+        const tempData: TempData = {
+          allImages: images,
+          allText: Object.values(summaries).flat().join('\n\n'),
+          twitter: summaries.twitter || [],
+          instagram: summaries.instagram || [],
+          youtube: summaries.youtube || []
+        };
+        
+        setTempData(tempData);
         setCollectedData(tempData);
         setShowTemplateSelection(true);
         setLoading(false);
         setIsTemplateSelectionPhase(false);
-        console.log('🔄 Loading state reset to false');
         
-        console.log('🎯 Template selection should now be visible!');
+        console.log('🎯 Template selection ready!');
         console.log('showTemplateSelection:', true);
         console.log('collectedData keys:', Object.keys(tempData));
 
@@ -2527,10 +2716,24 @@ export default function NewsletterBuilder() {
       }
       
       setGenerationProgress(60);
-      setGenerationStep('Generating newsletter content...');
+      setGenerationStep('Replacing newsletter sections...');
       
-      // Generate newsletter content with enhanced processing
-      const newsletterContent = await generateEnhancedNewsletterContent(templateHtml, processedData, template);
+      // Use new section replacement logic for cleaned newsletter
+      let newsletterContent;
+      if (templateId === 'cleaned_newsletter') {
+        // Convert data to summaries format
+        const summaries = {
+          twitter: processedData.twitter || [],
+          instagram: processedData.instagram || [],
+          youtube: processedData.youtube || []
+        };
+        
+        newsletterContent = replaceNewsletterSections(templateHtml, summaries, processedData.allImages || []);
+        console.log('✅ Sections replaced for cleaned newsletter');
+      } else {
+        // Fallback to old method for other templates
+        newsletterContent = await generateEnhancedNewsletterContent(templateHtml, processedData, template);
+      }
       
       setGenerationProgress(80);
       setGenerationStep('Applying styling and formatting...');
@@ -3067,8 +3270,9 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
             
                         <CardCarousel className="mb-6 px-4 py-4">
               {(() => {
-                console.log('📋 Rendering templates:', NEWSLETTER_TEMPLATES.length, 'templates available');
-                return NEWSLETTER_TEMPLATES.map((template) => (
+                const enabledTemplates = NEWSLETTER_TEMPLATES.filter(t => t.enabled);
+                console.log('📋 Rendering templates:', enabledTemplates.length, 'enabled templates available');
+                return enabledTemplates.map((template) => (
                 <div
                   key={template.id}
                   onClick={() => setSelectedTemplate(template.id)}
@@ -3113,6 +3317,25 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                 ));
               })()}
             </CardCarousel>
+            
+            {/* Coming Soon Templates */}
+            <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">More Templates Coming Soon</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {NEWSLETTER_TEMPLATES.filter(t => !t.enabled).map((template) => (
+                  <div key={template.id} className="p-4 bg-white rounded-lg border border-gray-200 opacity-60">
+                    <div className="aspect-[4/3] bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
+                      <span className="text-gray-500 text-sm">Preview</span>
+                    </div>
+                    <h4 className="font-medium text-gray-700 mb-1">{template.name}</h4>
+                    <p className="text-xs text-gray-500 mb-2">{template.description}</p>
+                    <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      Coming Soon
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
             
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 gap-4 sm:gap-0">
               {/* Back button on left */}

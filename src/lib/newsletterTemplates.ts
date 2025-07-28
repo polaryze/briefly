@@ -5,16 +5,28 @@ export interface NewsletterTemplate {
   preview: string;
   htmlPath: string;
   style: 'modern' | 'classic' | 'minimal' | 'creative';
+  enabled: boolean;
 }
 
 export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
+  {
+    id: 'cleaned_newsletter',
+    name: 'Cleaned Newsletter',
+    description: 'Modern newsletter template with dedicated sections for YouTube, X, Instagram, and image collage',
+    style: 'modern',
+    preview: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
+    htmlPath: '/example_newsletters/newslettersample6/cleaned_newsletter.html',
+    enabled: true
+  },
+  
   {
     id: 'sample1',
     name: 'Professional Business',
     description: 'Clean, professional design perfect for business newsletters with social media integration',
     style: 'classic',
     preview: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample1/1.html'
+    htmlPath: '/example_newsletters/newslettersample1/1.html',
+    enabled: false
   },
   
   {
@@ -23,7 +35,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     description: 'Contemporary design with clean typography ideal for tech and startup newsletters',
     style: 'modern',
     preview: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample2/2.html'
+    htmlPath: '/example_newsletters/newslettersample2/2.html',
+    enabled: false
   },
   
   {
@@ -32,7 +45,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     description: 'Vibrant, engaging design perfect for lifestyle and creative industry newsletters',
     style: 'creative',
     preview: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample3/3.html'
+    htmlPath: '/example_newsletters/newslettersample3/3.html',
+    enabled: false
   },
   
   {
@@ -41,7 +55,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     description: 'Clean, minimal design with elegant typography for sophisticated content',
     style: 'minimal', 
     preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample4/4.html'
+    htmlPath: '/example_newsletters/newslettersample4/4.html',
+    enabled: false
   },
   
   {
@@ -50,7 +65,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     description: 'Advanced template with 5 distinct sections for targeted content generation',
     style: 'modern',
     preview: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample5/5.html'
+    htmlPath: '/example_newsletters/newslettersample5/5.html',
+    enabled: false
   }
 ];
 
@@ -62,9 +78,14 @@ export function getTemplateById(id: string): NewsletterTemplate | undefined {
   return template;
 }
 
+// Helper function to get enabled templates only
+export function getEnabledTemplates(): NewsletterTemplate[] {
+  return NEWSLETTER_TEMPLATES.filter(template => template.enabled);
+}
+
 // Helper function to get templates by style
 export function getTemplatesByStyle(style: string): NewsletterTemplate[] {
-  return NEWSLETTER_TEMPLATES.filter(template => template.style === style);
+  return NEWSLETTER_TEMPLATES.filter(template => template.style === style && template.enabled);
 }
 
 // Function to load template HTML content
