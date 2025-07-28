@@ -127,7 +127,15 @@ export function GmailSender({ newsletterHtml, onSendComplete }: GmailSenderProps
             <AlertDescription>
               {sendResult.success 
                 ? `Newsletter sent successfully! Message ID: ${sendResult.messageId}`
-                : `Failed to send newsletter: ${sendResult.error}`
+                : (
+                  <div>
+                    <p className="font-medium mb-2">Failed to send newsletter: {sendResult.error}</p>
+                    <p className="text-sm text-gray-600">
+                      To enable Gmail sending, you need to configure Google OAuth2 in your Auth0 application. 
+                      This requires setting up Google API credentials and configuring Auth0 to work with Google APIs.
+                    </p>
+                  </div>
+                )
               }
             </AlertDescription>
           </Alert>
