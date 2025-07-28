@@ -723,7 +723,7 @@ async function fetchInstagramData(profileOrUrl: string) {
   }
 }
 
-async function fetchYouTubeData(channelId: string) {
+async function fetchYouTubeData(channelName: string) {
   // Check if API key is available
   const rapidApiValidation = configManager.validateRapidAPIKey();
   if (!rapidApiValidation.isValid) {
@@ -733,17 +733,72 @@ async function fetchYouTubeData(channelId: string) {
   
   const RAPIDAPI_KEY = configManager.getRapidAPIKey();
   
-  // Clean the channel ID - remove @ if present
-  let cleanChannelId = channelId;
-  if (channelId.startsWith('@')) {
-    cleanChannelId = channelId.substring(1);
+  // Clean the channel name - remove @ if present and extract from various formats
+  let channelNameClean = channelName;
+  if (channelName.startsWith('@')) {
+    channelNameClean = channelName.substring(1);
+  } else if (channelName.includes('youtube.com/')) {
+    // Extract from YouTube URL
+    const urlMatch = channelName.match(/youtube\.com\/(?:channel\/|c\/|@)?([^\/\?]+)/);
+    if (urlMatch) {
+      channelNameClean = urlMatch[1];
+    }
   }
   
-  console.log('YouTube: Processing channel ID:', cleanChannelId);
+  console.log('YouTube: Processing channel name:', channelNameClean);
   
   try {
-    // Step 1: Get videos directly from channel ID
-    const videosUrl = `https://youtube-v2.p.rapidapi.com/channel/videos?channel_id=${cleanChannelId}`;
+    // Step 1: Get channel ID from channel name
+    const channelUrl = `https://youtube-v2.p.rapidapi.com/channel/id?channel_name=${encodeURIComponent(channelNameClean)}`;
+    const channelOptions = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': RAPIDAPI_KEY,
+        'x-rapidapi-host': 'youtube-v2.p.rapidapi.com'
+      }
+    };
+    
+    console.log('YouTube: Fetching channel ID for:', channelNameClean);
+    console.log('YouTube Channel ID API URL:', channelUrl);
+    
+    const channelResponse = await fetch(channelUrl, channelOptions);
+    const channelResult = await channelResponse.text();
+    console.log('YouTube Channel ID API Response:', channelResult);
+    
+    let channelData;
+    try {
+      channelData = JSON.parse(channelResult);
+      console.log('YouTube channelData parsed successfully');
+    } catch (parseError) {
+      console.error('Failed to parse YouTube channel API response:', parseError);
+      throw new Error('Failed to get channel data');
+    }
+    
+    console.log('YouTube channel data structure:', channelData);
+    console.log('YouTube channel data keys:', Object.keys(channelData || {}));
+    
+    // Check if the API returned an error
+    if (channelData.detail) {
+      console.error('YouTube channel API error:', channelData.detail);
+      throw new Error(`Channel not found: ${channelData.detail}`);
+    }
+    
+    // Extract channel ID
+    const channelId = channelData.channel_id;
+    if (!channelId) {
+      console.error('No channel_id found in channel response:', channelData);
+      throw new Error('No channel_id found in channel response');
+    }
+    
+    // Log the full channel data for debugging
+    console.log('YouTube full channel data:', JSON.stringify(channelData, null, 2));
+    
+    console.log('YouTube extracted channel_id:', channelId);
+    console.log('YouTube channel_id type:', typeof channelId);
+    console.log('YouTube channel_id length:', channelId.length);
+    
+    // Step 2: Get videos using the channel ID
+    const videosUrl = `https://youtube-v2.p.rapidapi.com/channel/videos?channel_id=${channelId}`;
     const videosOptions = {
       method: 'GET',
       headers: {
@@ -752,7 +807,8 @@ async function fetchYouTubeData(channelId: string) {
       }
     };
     
-    console.log('YouTube: Fetching videos for channel ID:', cleanChannelId);
+    console.log('YouTube: Fetching videos for channel ID:', channelId);
+    console.log('YouTube Videos API URL:', videosUrl);
     
     const videosResponse = await fetch(videosUrl, videosOptions);
     const videosResult = await videosResponse.text();
@@ -769,6 +825,12 @@ async function fetchYouTubeData(channelId: string) {
     
     console.log('YouTube videos data structure:', videosData);
     console.log('YouTube videos data keys:', Object.keys(videosData || {}));
+    
+    // Check if the videos API returned an error
+    if (videosData.detail) {
+      console.error('YouTube videos API error:', videosData.detail);
+      throw new Error(`Failed to fetch videos: ${videosData.detail}`);
+    }
     
     // Extract the first video (index 0)
     if (!videosData.videos || !Array.isArray(videosData.videos) || videosData.videos.length === 0) {
@@ -941,7 +1003,7 @@ async function fetchYouTubeData(channelId: string) {
     console.log('YouTube API error details:', {
       message: error.message,
       stack: error.stack,
-      channelId: channelId
+      channelName: channelName
     });
     
     // Fallback to mock data if API fails
@@ -2337,7 +2399,7 @@ export default function NewsletterBuilder() {
         
         console.log(`📊 Found ${platformData.length} posts for ${platform}`);
         
-        // Extract images
+        // Extract images from API content only
         platformData.forEach(post => {
           if (post.images && post.images.length > 0) {
             post.images.forEach((imageUrl: string) => {
@@ -2492,10 +2554,14 @@ export default function NewsletterBuilder() {
               isValid = false;
             }
           } else if (social.key === 'youtube') {
-            // Validate YouTube channel ID format
-            const channelIdPattern = /^UC[a-zA-Z0-9_-]{22}$/;
-            if (!channelIdPattern.test(input.trim())) {
-              errors[social.key] = 'Enter a valid YouTube channel ID (starts with UC and 24 characters total)';
+            // Validate YouTube channel name format - accept @username, username, or YouTube URLs
+            const cleanInput = input.trim();
+            const isChannelName = /^[a-zA-Z0-9._-]+$/.test(cleanInput.replace('@', ''));
+            const isYouTubeUrl = cleanInput.includes('youtube.com/');
+            const hasAtSymbol = cleanInput.startsWith('@');
+            
+            if (!isChannelName && !isYouTubeUrl && !hasAtSymbol) {
+              errors[social.key] = 'Enter a valid YouTube channel name (e.g., @username, username, or YouTube URL)';
               isValid = false;
             }
           } else if (social.key === 'instagram') {
@@ -2592,9 +2658,9 @@ export default function NewsletterBuilder() {
         const tempData: TempData = {
           allImages: images,
           allText: Object.values(summaries).flat().join('\n\n'),
-          twitter: summaries.twitter || [],
-          instagram: summaries.instagram || [],
-          youtube: summaries.youtube || []
+          twitter: (summaries.twitter || []).map(text => ({ text })),
+          instagram: (summaries.instagram || []).map(text => ({ text })),
+          youtube: (summaries.youtube || []).map(text => ({ text }))
         };
         
         setTempData(tempData);
