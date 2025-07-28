@@ -1,20 +1,29 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignInPage() {
-  const { loginWithRedirect, isAuthenticated, isLoading, error } = useAuth0();
+  const { loginWithRedirect, isAuthenticated, isLoading, error, user } = useAuth0();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Debug logging
-    console.log('SignIn Page - Auth0 State:', { isAuthenticated, isLoading, error });
+    console.log('SignIn Page - Auth0 State:', { isAuthenticated, isLoading, error, user: user?.email });
+    
+    // If already authenticated, redirect to homepage
+    if (isAuthenticated && user) {
+      console.log('User is already authenticated, redirecting to homepage...');
+      navigate('/');
+      return;
+    }
     
     // Automatically trigger login if not already authenticated and not loading
     if (!isAuthenticated && !isLoading) {
       console.log('Auto-triggering Auth0 login...');
       loginWithRedirect();
     }
-  }, [isAuthenticated, isLoading, error, loginWithRedirect]);
+  }, [isAuthenticated, isLoading, error, loginWithRedirect, user, navigate]);
 
   const handleLogin = async () => {
     try {
@@ -24,6 +33,18 @@ export default function SignInPage() {
       console.error('Login error:', err);
     }
   };
+
+  // If already authenticated, show loading
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black mx-auto"></div>
+          <p className="text-sm text-gray-600 mt-2">Redirecting to homepage...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">

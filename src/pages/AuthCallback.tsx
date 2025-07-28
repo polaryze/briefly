@@ -1,26 +1,39 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
-  const { isAuthenticated, isLoading, error } = useAuth0()
+  const { isAuthenticated, isLoading, error, user } = useAuth0()
+  const [hasRedirected, setHasRedirected] = useState(false)
 
   useEffect(() => {
-    console.log('AuthCallback - Auth0 State:', { isAuthenticated, isLoading, error });
+    console.log('AuthCallback - Auth0 State:', { 
+      isAuthenticated, 
+      isLoading, 
+      error: error?.message,
+      user: user?.email,
+      hasRedirected 
+    });
     
-    if (!isLoading) {
-      if (isAuthenticated) {
+    if (!isLoading && !hasRedirected) {
+      if (isAuthenticated && user) {
         console.log('User is authenticated, redirecting to homepage...');
-        // Redirect to homepage after successful auth
+        setHasRedirected(true);
         navigate('/')
-      } else {
-        console.log('User is not authenticated, redirecting to signin...');
-        // Redirect to sign in if authentication failed
-        navigate('/signin')
+      } else if (error) {
+        console.log('Authentication error, redirecting to homepage with error...');
+        setHasRedirected(true);
+        // Instead of redirecting to signin, go to homepage and show error
+        navigate('/?auth_error=true')
+      } else if (!isAuthenticated) {
+        console.log('User is not authenticated, redirecting to homepage...');
+        setHasRedirected(true);
+        // Instead of redirecting to signin, go to homepage
+        navigate('/')
       }
     }
-  }, [isAuthenticated, isLoading, navigate, error])
+  }, [isAuthenticated, isLoading, navigate, error, user, hasRedirected])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -33,7 +46,7 @@ export default function AuthCallback() {
           </div>
         )}
         <div className="mt-2 text-sm text-gray-500">
-          Loading: {isLoading ? 'Yes' : 'No'} | Authenticated: {isAuthenticated ? 'Yes' : 'No'}
+          Loading: {isLoading ? 'Yes' : 'No'} | Authenticated: {isAuthenticated ? 'Yes' : 'No'} | User: {user?.email || 'None'}
         </div>
       </div>
     </div>

@@ -296,6 +296,7 @@ const IndexNew = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [reactiveDots, setReactiveDots] = useState('');
   const [mouseX, setMouseX] = useState(0);
@@ -334,6 +335,17 @@ const IndexNew = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isProfileMenuOpen]);
+
+  // Check for auth error in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('auth_error');
+    if (error) {
+      setAuthError('Authentication failed. Please try signing in again.');
+      // Clear the error from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   // Update reactive dots when mouse position changes - optimized version
   useEffect(() => {
@@ -489,6 +501,21 @@ const IndexNew = () => {
 
   return (
     <div className="relative">
+      {/* Auth Error Banner */}
+      {authError && (
+        <div className="fixed top-0 left-0 right-0 z-[99999] bg-red-500 text-white p-3 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <span>⚠️ {authError}</span>
+            <button 
+              onClick={() => setAuthError(null)}
+              className="ml-2 text-white hover:text-gray-200"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Hero Section */}
       <div 
         className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden pb-16"

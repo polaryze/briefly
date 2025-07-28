@@ -24,10 +24,10 @@ const auth0Config = {
   domain: import.meta.env.VITE_AUTH0_DOMAIN || '',
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || '',
   authorizationParams: {
-    redirect_uri: window.location.origin,
+    redirect_uri: `${window.location.origin}/auth/callback`,
     scope: 'openid profile email',
   },
-  // Additional configuration for better compatibility
+  // SPA configuration - no client secret
   cacheLocation: 'localstorage' as const,
   useRefreshTokens: true,
 };
@@ -38,6 +38,8 @@ console.log('Auth0 Config:', {
   clientId: auth0Config.clientId,
   redirect_uri: auth0Config.authorizationParams.redirect_uri,
   scope: auth0Config.authorizationParams.scope,
+  currentOrigin: window.location.origin,
+  currentHref: window.location.href,
 });
 
 const App = () => (
@@ -51,6 +53,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<PageTransition><IndexNew /></PageTransition>} />
               <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
+              <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
               <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
               <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
               <Route 
