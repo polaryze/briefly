@@ -52,6 +52,7 @@ interface TempData {
   allImages?: Array<{url: string, postText: string, postDate: string, platform: string}>;
   allText?: string;
   dataFile?: string; // Virtual file containing all formatted data
+  youtubeSummaries?: {[key: string]: string};
 }
 
 interface ValidationErrors {
@@ -1643,6 +1644,142 @@ function cleanOpenAIHtml(html: string): string {
   return html.trim();
 }
 
+// Helper functions for enhanced newsletter generation
+async function processNewsletterData(data: TempData): Promise<TempData> {
+  console.log('🔄 Processing newsletter data...');
+  
+  const processedData = { ...data };
+  
+  // Process Twitter data
+  if (processedData.twitter?.length > 0) {
+    processedData.twitter = processedData.twitter.map(post => ({
+      ...post,
+      processed: true,
+      summary: post.text?.substring(0, 200) + (post.text?.length > 200 ? '...' : '')
+    }));
+  }
+  
+  // Process Instagram data
+  if (processedData.instagram?.length > 0) {
+    processedData.instagram = processedData.instagram.map(post => ({
+      ...post,
+      processed: true,
+      summary: post.text?.substring(0, 200) + (post.text?.length > 200 ? '...' : '')
+    }));
+  }
+  
+  // Process YouTube data
+  if (processedData.youtube?.length > 0) {
+    processedData.youtube = processedData.youtube.map(video => ({
+      ...video,
+      processed: true,
+      summary: video.text?.substring(0, 200) + (video.text?.length > 200 ? '...' : '')
+    }));
+  }
+  
+  console.log('✅ Newsletter data processed');
+  return processedData;
+}
+
+function createEnhancedFallbackTemplate(templateName: string, data: TempData): string {
+  const totalPosts = (data.twitter?.length || 0) + (data.instagram?.length || 0) + (data.youtube?.length || 0);
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${templateName} - Newsletter</title>
+      <style>
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+          margin: 0; 
+          padding: 20px; 
+          line-height: 1.6;
+          color: #333;
+        }
+        .header { 
+          text-align: center; 
+          margin-bottom: 30px; 
+          padding: 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 10px;
+        }
+        .content { 
+          max-width: 600px; 
+          margin: 0 auto; 
+          background: white;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 { 
+          color: #2d3748; 
+          margin-bottom: 20px;
+        }
+        .stats {
+          background: #f7fafc;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .platform {
+          display: inline-block;
+          margin: 5px;
+          padding: 5px 10px;
+          background: #e2e8f0;
+          border-radius: 15px;
+          font-size: 0.9em;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>${templateName}</h1>
+        <p>Your personalized newsletter</p>
+      </div>
+      <div class="content">
+        <h2>📊 Content Summary</h2>
+        <div class="stats">
+          <p><strong>${totalPosts}</strong> posts processed</p>
+          ${data.twitter?.length ? `<span class="platform">Twitter: ${data.twitter.length}</span>` : ''}
+          ${data.instagram?.length ? `<span class="platform">Instagram: ${data.instagram.length}</span>` : ''}
+          ${data.youtube?.length ? `<span class="platform">YouTube: ${data.youtube.length}</span>` : ''}
+        </div>
+        <p>This is an enhanced fallback template for ${templateName}.</p>
+        <p>The original template file could not be loaded, but your content has been processed successfully.</p>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+async function generateEnhancedNewsletterContent(templateHtml: string, data: TempData, template: any): Promise<string> {
+  console.log('🔄 Generating enhanced newsletter content...');
+  
+  // For now, return the template HTML as-is
+  // In the future, this could integrate with OpenAI for content generation
+  let content = templateHtml;
+  
+  // Replace placeholder content if it exists
+  if (data.allText) {
+    const placeholderText = data.allText.substring(0, 1000); // Limit text length
+    content = content.replace(/Lorem ipsum dolor sit amet/g, placeholderText);
+  }
+  
+  console.log('✅ Enhanced newsletter content generated');
+  return content;
+}
+
+function extractCSSFromTemplate(templateHtml: string): string {
+  // Extract CSS from <style> tags
+  const styleMatch = templateHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+  return styleMatch ? styleMatch[1] : '';
+}
+
 export default function NewsletterBuilder() {
 
   const navigate = useNavigate();
@@ -1951,273 +2088,68 @@ export default function NewsletterBuilder() {
     }
   };
 
-
-
-
-  // OLD IMPLEMENTATION - TO BE REMOVED
-  const handleSubmitOLD = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateInputs()) {
-      return;
-    }
-    setLoading(true);
-    setNewsletter(null);
-    setError(null);
-    setValidationErrors({});
-    setTempData({}); // Clear previous temp data
+  // Enhanced success handling
+  const handleNewsletterSuccess = (newsletterData: any) => {
+    console.log('🎉 Newsletter generated successfully!');
     
-    try {
-      // Process all selected platforms and collect data
-      logger.info('Processing all platforms', { selected });
-              const tempData = await processAllPlatforms(selected, inputs);
-      setTempData(tempData); // Store temp data
-      
-      // Debug logging to see what data was collected
-      console.log('Temp data after processing:', {
-        allText: tempData.allText,
-        allTextLength: tempData.allText?.length,
-        allTextTrimmed: tempData.allText?.trim(),
-        allTextTrimmedLength: tempData.allText?.trim().length,
-        platforms: Object.keys(selected).filter(key => selected[key]),
-        dataKeys: Object.keys(tempData),
-        platformData: {
-          twitter: tempData.twitter?.length || 0,
-          instagram: tempData.instagram?.length || 0,
-          youtube: tempData.youtube?.length || 0
-        }
-      });
-      
-      // Check if we have any content from any platform
-      const hasAnyContent = tempData.allText && tempData.allText.trim().length > 0;
-      const hasAnyPosts = Object.values(tempData).some(value => Array.isArray(value) && value.length > 0);
-      
-      console.log('Content validation:', {
-        hasAnyContent,
-        hasAnyPosts,
-        allTextLength: tempData.allText?.length || 0,
-        allTextTrimmedLength: tempData.allText?.trim().length || 0
-      });
-      
-      if (!tempData.allText || tempData.allText.trim() === '') {
-        console.error('No content found from any platform. Temp data:', tempData);
-        console.error('Platform breakdown:', {
-          selected: Object.keys(selected).filter(key => selected[key]),
-          twitterPosts: tempData.twitter?.length || 0,
-          instagramPosts: tempData.instagram?.length || 0,
-          youtubePosts: tempData.youtube?.length || 0
-        });
-        
-        // Final fallback: create some basic content based on selected platforms
-        console.log('Creating fallback content for selected platforms');
-        const fallbackContent = Object.keys(selected)
-          .filter(key => selected[key])
-          .map(platform => {
-            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-            return `[${platformName}] This is a sample post from ${platformName}. The API might be temporarily unavailable, but here's some example content to generate your newsletter.`;
-          })
-          .join('\n\n');
-        
-        tempData.allText = fallbackContent;
-        console.log('Fallback content created:', fallbackContent);
-      }
-      
-      // Debug logging
-      console.log('Temp data collected:', tempData);
-      console.log('Total text length:', tempData.allText?.length);
-      console.log('Total images:', tempData.allImages?.length);
-      
-      // Format data more cleanly for ChatGPT
-      const formattedText = tempData.allText || '';
-      const formattedImages = tempData.allImages || [];
-      
-      // Create a structured summary for debugging
-      const dataSummary = {
-        platforms: Object.keys(selected).filter(key => selected[key]),
-        totalPosts: Object.values(tempData).filter(Array.isArray).flat().length,
-        totalImages: formattedImages.length,
-        textLength: formattedText.length,
-        platformsWithData: Object.keys(tempData).filter(key => tempData[key] && Array.isArray(tempData[key]) && tempData[key].length > 0)
-      };
-      console.log('Data summary for ChatGPT:', dataSummary);
-      
-      // Generate unified newsletter using all collected data
-      let aiSummaryRawResponse: any = null;
-      let aiSummary = '';
-      
-      // Validate OpenAI API key before making the request
-      const openaiValidation = configManager.validateOpenAIKey();
-      if (!openaiValidation.isValid) {
-        console.error('OpenAI API key validation failed:', openaiValidation.error);
-        throw new Error(openaiValidation.error);
-      }
-      
-      const OPENAI_API_KEY = configManager.getOpenAIKey();
-      
-      try {
-        const imageData = tempData.allImages?.map(img => 
-          `Image URL: ${img.url} | Associated Text: ${img.postText} | Platform: ${img.platform}`
-        ).join('\n') || '';
-        
-        const prompt = `
-        Generate ONLY the HTML newsletter content. Do not include any explanatory text, descriptions, or meta-commentary. Return only the complete HTML document.
+    // Show success message
+    const successMessage = `Newsletter generated successfully! Processed ${newsletterData.metadata?.totalPosts || 0} posts from ${newsletterData.metadata?.platforms?.length || 0} platforms.`;
+    
+    // You can add a toast notification here if you have a toast system
+    console.log(successMessage);
+    
+    // Log analytics
+    logger.info('Newsletter generation completed successfully', {
+      template: newsletterData.metadata?.template,
+      platforms: newsletterData.metadata?.platforms,
+      totalPosts: newsletterData.metadata?.totalPosts,
+      contentLength: newsletterData.rawContent?.length || 0
+    });
+  };
 
-        DESIGN & VISUAL REQUIREMENTS:
-        - Create a **premium magazine-style layout** with modern typography and elegant spacing
-        - Use a **maximum width of 640px** for optimal email client compatibility
-        - Implement **beautiful visual hierarchy** with varied font sizes, weights, and spacing
-        - Add **subtle shadows, rounded corners (12px), and modern card-based layouts**
-        - Create **engaging image layouts**: hero image at top, then mix of side-by-side images, centered images
-        - For Instagram images ONLY: Create an **elegant carousel or photo grid layout** (2-3 images per row)
-        - For other platforms: Display images individually without carousels
-        - Use **sophisticated color palette**: whites, light grays, and strategic accent colors
-        - Add **modern UI elements**: subtle borders, elegant dividers, and beautiful spacing
-        - Implement **responsive design** that looks perfect on mobile and desktop
-
-        TYPOGRAPHY & CONTENT:
-        - Use **professional font stack**: Arial, Helvetica, sans-serif for all text; Futura or Arial for headlines
-        - Create **engaging headlines** with proper hierarchy (H1 for main title, H2 for sections, H3 for subsections)
-        - Write in **first-person narrative style** as if the person is personally sharing their week
-        - Keep paragraphs **concise and scannable** (2-3 lines max)
-        - Add **strategic emojis** for visual interest and personality
-        - Use **pull quotes** or highlighted text boxes for key insights
-        - Include **platform badges** or subtle indicators for content sources
-
-        IMAGE HANDLING:
-        - **Never repeat the same image twice**
-        - **Never crop images** - only resize maintaining aspect ratio by scaling equally from all sides
-        - Use proper width/height attributes to maintain aspect ratio
-        - For Instagram: Use carousel/grid layout only
-        - For other platforms: Display images individually
-
-        LAYOUT STRUCTURE:
-        - **Header section**: Elegant title, date, and personal greeting
-        - **Hero image**: One impactful image with overlay text or caption
-        - **Content sections**: Organize by themes (projects, learnings, social highlights, etc.)
-        - **Image placements**: Mix of full-width, side-by-side, and wrapped text layouts
-        - **Footer**: Professional closing with personal touch (no generic signatures)
-
-        TECHNICAL REQUIREMENTS:
-        - Complete HTML structure with <html>, <head>, <body> tags
-        - Embedded CSS in <style> tag (no external stylesheets)
-        - Email-client compatible CSS (use tables for complex layouts if needed)
-        - Responsive design with mobile-first approach
-        - All images with proper alt tags and fallbacks
-        - Clean, semantic HTML structure
-        - Remove any scraper artifacts or single-word errors
-        - Ensure all text is dark and readable
-        - Professional email newsletter standards
-
-        CONTENT PROCESSING:
-        - Filter and clean all scraped content
-        - Combine posts from different platforms into cohesive narrative
-        - Create engaging section headers that group related content
-        - Transform social media posts into newsletter-worthy prose
-        - Maintain authentic voice while elevating the presentation
-
-        CRITICAL: Return ONLY the HTML content. No explanatory text, no feature descriptions, no commentary. Start with <html> and end with </html>.
-
-DATA SUMMARY:
-- Total posts: ${dataSummary.totalPosts}
-- Total images: ${dataSummary.totalImages}
-- Platforms with data: ${dataSummary.platformsWithData.join(', ')}
-
-        FORMATTED DATA:
-${tempData.dataFile}
-
-        RAW POSTS:
-${formattedText}
-
-IMAGES TO INCLUDE:
-${imageData}`;
-        
-        const body = {
-          model: "gpt-4o",
-          messages: [
-            { role: "system", content: "You are an expert newsletter designer and writer who creates visually stunning, magazine-quality publications. You excel at transforming social media content into sophisticated, engaging newsletters that readers love to receive and share." },
-            { role: "user", content: prompt }
-          ],
-          max_tokens: 2000,
-          temperature: 0.7
-        };
-        
-        const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${OPENAI_API_KEY}`
-          },
-          body: JSON.stringify(body)
-      });
-      
-        aiSummaryRawResponse = await resp.json();
-        console.log('OpenAI Raw Response:', aiSummaryRawResponse);
-        console.log('OpenAI Response Status:', resp.status);
-        console.log('OpenAI Response OK:', resp.ok);
-      
-        if (!resp.ok) {
-          console.error('OpenAI API Error:', aiSummaryRawResponse);
-          throw new Error(`OpenAI API error: ${aiSummaryRawResponse.error?.message || 'Unknown error'}`);
-        }
-        
-        aiSummary = aiSummaryRawResponse.choices?.[0]?.message?.content?.trim() || '';
-        console.log('Raw AI Summary before cleaning:', aiSummary);
-        console.log('AI Summary length before cleaning:', aiSummary.length);
-      } catch (err) {
-        console.error('OpenAI API call failed:', err);
-        aiSummary = '';
-      }
-      
-      setOpenAIDebug(aiSummaryRawResponse);
-      aiSummary = cleanOpenAIHtml(aiSummary);
-      logger.info('AI summary for newsletter', { aiSummary });
-      
-      // Debug logging
-      console.log('Cleaned AI Summary:', aiSummary);
-      console.log('AI Summary length:', aiSummary.length);
-      
-      // Compose newsletter HTML
-      const newsletterHtml = aiSummary;
-      
-      console.log('Final Newsletter HTML:', newsletterHtml);
-      console.log('Newsletter HTML length:', newsletterHtml.length);
-      
-      setNewsletter({ rawContent: newsletterHtml });
-      setNewsletterData(tempData); // Pass temp data instead of just posts
-      logger.info('Newsletter generated successfully', {
-        platformsUsed: Object.keys(selected).filter(key => selected[key]),
-        totalPosts: Object.values(tempData).filter(Array.isArray).flat().length
-      });
-      
-      // Clear temp data after successful generation
-      setTempData({});
-      
-    } catch (err: any) {
-      logger.error('Newsletter generation failed', err);
-      setError(err.message || "Unknown error");
-      // Clear temp data on error
-      setTempData({});
-    } finally {
-      setLoading(false);
-      }
+  // Enhanced error handling
+  const handleNewsletterError = (error: any) => {
+    console.error('❌ Newsletter generation failed:', error);
+    
+    // Enhanced error messages
+    let userFriendlyError = "Something went wrong while generating your newsletter.";
+    
+    if (error.message?.includes('network') || error.message?.includes('fetch')) {
+      userFriendlyError = "Network connection issue. Please check your internet and try again.";
+    } else if (error.message?.includes('template')) {
+      userFriendlyError = "Template loading failed. Please try a different template.";
+    } else if (error.message?.includes('API')) {
+      userFriendlyError = "API service temporarily unavailable. Please try again in a few minutes.";
+    } else if (error.message?.includes('rate limit')) {
+      userFriendlyError = "Too many requests. Please wait a moment and try again.";
+    }
+    
+    setError(userFriendlyError);
+    
+         // Log error for debugging
+     console.error('Newsletter generation failed:', {
+       errorMessage: error.message,
+       stack: error.stack
+     });
   };
 
   // Function to generate newsletter with OpenAI after template selection
   // TEMPORARY DEVELOPMENT FUNCTION: Uses templates directly without OpenAI
   // This bypasses OpenAI API calls and loads template HTML exactly as-is
   const generateNewsletterWithTemplate = async (templateId: string, data: TempData) => {
-    console.log('🚀 Starting newsletter generation with template directly...');
+    console.log('🚀 Starting newsletter generation with template...');
     console.log('📊 Template ID:', templateId);
     console.log('📊 Data keys:', Object.keys(data));
     
     try {
-      // Progress steps to show loading
-      setGenerationProgress(10);
-      setGenerationStep('Initializing...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Enhanced progress tracking
+      setGenerationProgress(5);
+      setGenerationStep('Initializing newsletter generation...');
+      await new Promise(resolve => setTimeout(resolve, 300));
       
-      setGenerationProgress(30);
+      setGenerationProgress(15);
       setGenerationStep('Loading template...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 400));
       
       // Get the template
       const template = NEWSLETTER_TEMPLATES.find(t => t.id === templateId);
@@ -2226,104 +2158,119 @@ ${imageData}`;
       }
       
       console.log('📄 Template found:', template.name);
-      console.log('📄 Template path:', template.htmlPath);
+      
+      setGenerationProgress(25);
+      setGenerationStep('Processing social media data...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Process and enhance the data
+      const processedData = await processNewsletterData(data);
+      
+      setGenerationProgress(40);
+      setGenerationStep('Loading template HTML...');
+      await new Promise(resolve => setTimeout(resolve, 400));
       
       // Load template HTML
-      console.log('🔄 Attempting to load template HTML...');
       let templateHtml;
       try {
         templateHtml = await loadTemplateHTML(template);
         console.log('📄 Template HTML loaded successfully, length:', templateHtml.length);
       } catch (loadError) {
         console.error('❌ Failed to load template HTML:', loadError);
-        // Fallback: create a simple HTML template
-        templateHtml = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Newsletter Template</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-              h1 { color: #333; }
-              p { line-height: 1.6; }
-            </style>
-          </head>
-          <body>
-            <h1>${template.name}</h1>
-            <p>This is a fallback template for ${template.name}.</p>
-            <p>The original template file could not be loaded.</p>
-          </body>
-          </html>
-        `;
-        console.log('📄 Using fallback template HTML');
+        // Enhanced fallback template
+        templateHtml = createEnhancedFallbackTemplate(template.name, processedData);
+        console.log('📄 Using enhanced fallback template');
       }
       
-      console.log('🔗 Template contains images:', templateHtml.includes('<img'));
-      console.log('🔗 Template contains links:', templateHtml.includes('<a href'));
-      console.log('📄 First 200 chars of template:', templateHtml.substring(0, 200));
+      setGenerationProgress(60);
+      setGenerationStep('Generating newsletter content...');
+      await new Promise(resolve => setTimeout(resolve, 600));
       
-      // Complete immediately
-      setGenerationProgress(100);
-      setGenerationStep('Complete!');
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Longer delay to show loading page
+      // Generate newsletter content with enhanced processing
+      const newsletterContent = await generateEnhancedNewsletterContent(templateHtml, processedData, template);
       
-      // TEMPORARY DEVELOPMENT: Use template HTML directly without any cleaning
-      // This ensures ALL template content is preserved exactly as-is
-      // TODO: Remove this bypass when ready to use OpenAI again
-      let templateContent = templateHtml;
+      setGenerationProgress(80);
+      setGenerationStep('Finalizing newsletter...');
+      await new Promise(resolve => setTimeout(resolve, 400));
       
-
-      
-      // Create newsletter data structure
+      // Create enhanced newsletter data structure
       const newsletterData = {
         sections: [
           {
-            title: "Template Content",
-            icon: "📄",
-            content: templateContent
+            title: "Newsletter Content",
+            icon: "📰",
+            content: newsletterContent
           }
         ],
-        rawContent: templateContent,
-        editedContent: templateContent,
-        css: "", // Template CSS is already included in the HTML
+        rawContent: newsletterContent,
+        editedContent: newsletterContent,
+        css: extractCSSFromTemplate(templateHtml),
         error: undefined,
-        youtubeSummaries: {}
+        youtubeSummaries: processedData.youtubeSummaries || {},
+        metadata: {
+          template: template.name,
+          generatedAt: new Date().toISOString(),
+          platforms: Object.keys(processedData).filter(key => 
+            ['twitter', 'instagram', 'youtube'].includes(key) && processedData[key]?.length > 0
+          ),
+          totalPosts: (processedData.twitter?.length || 0) + 
+                     (processedData.instagram?.length || 0) + 
+                     (processedData.youtube?.length || 0)
+        }
       };
       
-      console.log('✅ Newsletter generated successfully with template');
-      console.log('📄 Final HTML length:', templateContent.length);
+      setGenerationProgress(100);
+      setGenerationStep('Complete!');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      console.log('✅ Newsletter generated successfully');
+      console.log('📊 Metadata:', newsletterData.metadata);
       
       // Set the newsletter data
-      console.log('🔄 Setting newsletter state:', newsletterData);
       setNewsletter(newsletterData);
-      setNewsletterData(data);
-      setLoading(false);
-      setShowLoadingPage(false);
-      setShowTemplateSelection(false); // Hide template selection when newsletter is ready
-      setGenerationProgress(0);
-      setGenerationStep('');
-      console.log('🔄 Newsletter state set, should show newsletter now');
-      console.log('🔄 showLoadingPage set to false');
-      console.log('🔄 showTemplateSelection set to false');
+      setNewsletterData(processedData);
+      logger.info('Newsletter generated successfully', {
+        platformsUsed: Object.keys(selected).filter(key => selected[key]),
+        totalPosts: Object.values(processedData).filter(Array.isArray).flat().length
+      });
       
-      // Small delay to ensure state updates are processed
-      await new Promise(resolve => setTimeout(resolve, 50));
+      // Clear temp data after successful generation
+      setTempData({});
+      
+      handleNewsletterSuccess(newsletterData);
       
     } catch (error: any) {
       console.error('❌ Newsletter generation error:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
+      
+      // Enhanced error handling
+      const errorMessage = error.message || "Failed to generate newsletter";
+      const isNetworkError = error.message?.includes('fetch') || error.message?.includes('network');
+      const isTemplateError = error.message?.includes('template');
+      
+      let userFriendlyError = "Something went wrong while generating your newsletter.";
+      
+      if (isNetworkError) {
+        userFriendlyError = "Network connection issue. Please check your internet and try again.";
+      } else if (isTemplateError) {
+        userFriendlyError = "Template loading failed. Please try a different template.";
+      } else if (error.message?.includes('API')) {
+        userFriendlyError = "API service temporarily unavailable. Please try again in a few minutes.";
+      }
+      
+      setError(userFriendlyError);
+      setLoading(false);
+      setShowLoadingPage(false);
+      setGenerationProgress(0);
+      setGenerationStep('');
+      
+      console.error('Newsletter generation failed:', {
+        errorMessage: error.message,
         stack: error.stack,
         templateId,
         dataKeys: Object.keys(data)
       });
-      setError(error.message || "Failed to generate newsletter");
-      setLoading(false);
-      setShowLoadingPage(false);
-      setGenerationProgress(0);
-      setGenerationStep('');
+      
+      handleNewsletterError(error);
     }
   };
 

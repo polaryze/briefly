@@ -8,8 +8,9 @@ interface LoaderProps {
 
 const Loader = ({ progress, step }: LoaderProps) => {
   const [currentJokeIndex, setCurrentJokeIndex] = useState(0);
+  const [showTips, setShowTips] = useState(false);
   
-  // Jokes to display during loading
+  // Enhanced jokes and tips
   const jokes = [
     "Why did the newsletter go to therapy? It had too many issues! 😄",
     "What do you call a newsletter that's always late? A procrasti-letter! 📰",
@@ -18,19 +19,50 @@ const Loader = ({ progress, step }: LoaderProps) => {
     "Why did the social media post feel lonely? It had no followers! 😂",
     "What do you call a newsletter that's always positive? An optimi-letter! ✨",
     "Why did the template feel confident? It had great structure! 🏗️",
-    "What's a newsletter's favorite movie? The Content Matrix! 🎬"
+    "What's a newsletter's favorite movie? The Content Matrix! 🎬",
+    "Why did the hashtag go to the gym? To get more #fits! 💪",
+    "What do you call a newsletter that's always on time? A punctual-letter! ⏰"
   ];
 
-  // Change joke every 6 seconds, independent of progress
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentJokeIndex((prevIndex) => (prevIndex + 1) % jokes.length);
-    }, 6000);
+  const tips = [
+    "💡 Pro tip: The more social media platforms you connect, the richer your newsletter content!",
+    "💡 Pro tip: You can edit your newsletter after generation to add personal touches!",
+    "💡 Pro tip: Different templates work best for different types of content!",
+    "💡 Pro tip: Your newsletter will be mobile-friendly and email-ready!",
+    "💡 Pro tip: You can share your newsletter directly from the platform!",
+    "💡 Pro tip: The AI analyzes your content to create engaging summaries!",
+    "💡 Pro tip: You can customize colors and branding in the editor!",
+    "💡 Pro tip: Save your favorite templates for quick access!",
+    "💡 Pro tip: The newsletter includes analytics to track engagement!",
+    "💡 Pro tip: You can schedule newsletters for automatic sending!"
+  ];
 
-    return () => clearInterval(interval);
+  // Change joke every 8 seconds, tip every 12 seconds
+  useEffect(() => {
+    const jokeInterval = setInterval(() => {
+      setCurrentJokeIndex((prevIndex) => (prevIndex + 1) % jokes.length);
+    }, 8000);
+
+    const tipInterval = setInterval(() => {
+      setShowTips(prev => !prev);
+    }, 12000);
+
+    return () => {
+      clearInterval(jokeInterval);
+      clearInterval(tipInterval);
+    };
   }, [jokes.length]);
 
   const currentJoke = jokes[currentJokeIndex];
+  const currentTip = tips[currentJokeIndex % tips.length];
+
+  // Enhanced progress bar with gradient
+  const getProgressColor = (progress: number) => {
+    if (progress < 30) return '#ef4444'; // Red
+    if (progress < 60) return '#f59e0b'; // Yellow
+    if (progress < 90) return '#3b82f6'; // Blue
+    return '#10b981'; // Green
+  };
 
   return (
     <StyledWrapper>
@@ -49,7 +81,10 @@ const Loader = ({ progress, step }: LoaderProps) => {
           <div className="progress-bar">
             <div 
               className="progress-fill"
-              style={{ width: `${progress}%` }}
+              style={{ 
+                width: `${progress}%`,
+                background: `linear-gradient(90deg, ${getProgressColor(progress)} 0%, ${getProgressColor(progress + 10)} 100%)`
+              }}
             ></div>
           </div>
           <div className="progress-text">
@@ -58,8 +93,26 @@ const Loader = ({ progress, step }: LoaderProps) => {
           </div>
         </div>
 
-        <div className="joke-container">
-          <p className="joke-text">{currentJoke}</p>
+        <div className="content-container">
+          <div className="joke-container">
+            <p className="joke-text">{currentJoke}</p>
+          </div>
+          
+          {showTips && (
+            <div className="tip-container">
+              <p className="tip-text">{currentTip}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="status-indicator">
+          <div className="status-dot"></div>
+          <span className="status-text">
+            {progress < 30 ? 'Collecting data...' : 
+             progress < 60 ? 'Processing content...' : 
+             progress < 90 ? 'Generating newsletter...' : 
+             'Finalizing...'}
+          </span>
         </div>
       </div>
     </StyledWrapper>
@@ -137,6 +190,15 @@ const StyledWrapper = styled.div`
     font-weight: 600;
   }
 
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 500px;
+    padding: 0 2rem;
+  }
+
   .joke-container {
     max-width: 500px;
     text-align: center;
@@ -149,6 +211,39 @@ const StyledWrapper = styled.div`
     font-style: italic;
     line-height: 1.5;
     animation: fadeInOut 3s ease-in-out infinite;
+  }
+
+  .tip-container {
+    max-width: 500px;
+    text-align: center;
+    padding: 0 2rem;
+  }
+
+  .tip-text {
+    color: #4b5563;
+    font-size: 0.875rem;
+    font-style: italic;
+    line-height: 1.5;
+    background-color: #f3f4f6;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4b5563;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+
+  .status-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background-color: #4b5563;
   }
 
   @keyframes fadeInOut {
