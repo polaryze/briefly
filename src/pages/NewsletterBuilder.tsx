@@ -1055,6 +1055,22 @@ async function summarizeYouTubeContent(text: string): Promise<string> {
 async function summarizeSocialMediaPosts(posts: any[], platform: string): Promise<any[]> {
   console.log(`🤖 Starting AI summarization for ${platform} posts...`);
   
+  // Skip AI summarization for very few posts or when posts are already concise
+  const totalPosts = posts.length;
+  const averagePostLength = posts.reduce((sum, post) => sum + (post.text?.length || 0), 0) / totalPosts;
+  
+  // Skip AI summarization if:
+  // 1. Only 1-2 posts (minimal data scenario)
+  // 2. Average post length is already short (< 50 characters)
+  // 3. No posts need summarization
+  if (totalPosts <= 2 || averagePostLength < 50) {
+    console.log(`⏭️ Skipping AI summarization for ${platform}: ${totalPosts} posts, avg length: ${averagePostLength.toFixed(1)} chars`);
+    return posts.map(post => ({
+      ...post,
+      aiSummarized: false
+    }));
+  }
+  
   // Batch processing for better performance
   const postsToSummarize = posts.filter(post => {
     const textToSummarize = post.text || '';
@@ -1065,6 +1081,15 @@ async function summarizeSocialMediaPosts(posts: any[], platform: string): Promis
     const textToSummarize = post.text || '';
     return textToSummarize.length <= 10;
   });
+  
+  // Skip if no posts need summarization
+  if (postsToSummarize.length === 0) {
+    console.log(`⏭️ No posts need summarization for ${platform}`);
+    return posts.map(post => ({
+      ...post,
+      aiSummarized: false
+    }));
+  }
   
   // Batch summarize all posts at once
   if (postsToSummarize.length > 0) {
@@ -1210,21 +1235,28 @@ function filterPostsByTimeline(posts: any[], platform: string, timelineOptions?:
 
 // Function to process all platforms and collect data
 async function processAllPlatforms(selected: any, inputs: any, timelineOptions?: any): Promise<TempData> {
+  // Simple cache to avoid re-processing the same data
+  const cacheKey = JSON.stringify({ selected, inputs, timelineOptions });
+  if ((processAllPlatforms as any).cache && (processAllPlatforms as any).cache[cacheKey]) {
+    console.log('🚀 Using cached data for platforms');
+    return (processAllPlatforms as any).cache[cacheKey];
+  }
+  
   const tempData: TempData = {
     allImages: [],
     allText: ''
   };
+  
+  // Initialize cache if it doesn't exist
+  if (!(processAllPlatforms as any).cache) {
+    (processAllPlatforms as any).cache = {};
+  }
   
   const platformProcessors = {
     twitter: async (input: string) => {
       try {
         console.log('Processing X input:', input);
         const raw = await fetchXData(input);
-        console.log('X raw response:', raw);
-        console.log('X raw response type:', typeof raw);
-        console.log('X raw response keys:', Object.keys(raw || {}));
-        console.log('X raw response data type:', typeof raw?.data);
-        console.log('X raw response data is array:', Array.isArray(raw?.data));
         
         if (raw && Array.isArray(raw.data)) {
           // Filter posts more carefully - check for non-empty text and valid dates
@@ -1243,7 +1275,7 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           // Take top posts (default 3 if no timeline limit)
           const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.twitter?.postLimit || 3);
           
-          // AI Summarization for Twitter posts
+          // AI Summarization for Twitter posts (optimized)
           console.log('🤖 Starting Twitter AI summarization...');
           const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'Twitter');
           tempData.twitter = summarizedPosts;
@@ -1260,11 +1292,10 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           tempData.allImages = [...(tempData.allImages || []), ...images];
           tempData.allText += summarizedPosts.map(p => `[X] ${p.text}`).join('\n\n');
           
-          // Add summary logging for X data
           console.log('X data processed:', {
             postsCount: summarizedPosts.length,
             imagesCount: images.length,
-            aiSummarized: summarizedPosts.every(p => p.aiSummarized)
+            aiSummarized: summarizedPosts.some(p => p.aiSummarized)
           });
         } else {
           console.log('X: No valid data returned from API, using fallback');
@@ -1297,8 +1328,7 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           
           console.log('X fallback data processed:', {
             postsCount: fallbackPosts.length,
-            imagesCount: images.length,
-            textLength: fallbackPosts.map(p => p.text).join('\n\n').length
+            imagesCount: images.length
           });
         }
       } catch (error) {
@@ -1329,12 +1359,6 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
         });
         tempData.allImages = [...(tempData.allImages || []), ...images];
         tempData.allText += fallbackPosts.map(p => `[X] ${p.text}`).join('\n\n');
-        
-        console.log('X error fallback data processed:', {
-          postsCount: fallbackPosts.length,
-          imagesCount: images.length,
-          textLength: fallbackPosts.map(p => p.text).join('\n\n').length
-        });
       }
     },
     instagram: async (input: string) => {
@@ -1577,6 +1601,9 @@ Total Images: ${data.allImages?.length || 0}
   };
 
   tempData.dataFile = createDataFile(tempData);
+  
+  // Store the result in the cache
+  (processAllPlatforms as any).cache[cacheKey] = tempData;
   
   return tempData;
 }
@@ -2359,14 +2386,9 @@ export default function NewsletterBuilder() {
     console.log('📊 Data keys:', Object.keys(data));
     
     try {
-      // Enhanced progress tracking with more realistic steps
+      // Real progress tracking based on actual work
       setGenerationProgress(5);
       setGenerationStep('Initializing newsletter generation...');
-      await new Promise(resolve => setTimeout(resolve, 400));
-      
-      setGenerationProgress(12);
-      setGenerationStep('Validating template selection...');
-      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Get the template
       const template = NEWSLETTER_TEMPLATES.find(t => t.id === templateId);
@@ -2376,16 +2398,14 @@ export default function NewsletterBuilder() {
       
       console.log('📄 Template found:', template.name);
       
-      setGenerationProgress(20);
+      setGenerationProgress(15);
       setGenerationStep('Processing social media data...');
-      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Process and enhance the data
       const processedData = await processNewsletterData(data);
       
-      setGenerationProgress(35);
+      setGenerationProgress(40);
       setGenerationStep('Loading template HTML...');
-      await new Promise(resolve => setTimeout(resolve, 400));
       
       // Load template HTML
       let templateHtml;
@@ -2399,24 +2419,14 @@ export default function NewsletterBuilder() {
         console.log('📄 Using enhanced fallback template');
       }
       
-      setGenerationProgress(50);
-      setGenerationStep('Analyzing content structure...');
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      setGenerationProgress(65);
+      setGenerationProgress(60);
       setGenerationStep('Generating newsletter content...');
-      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Generate newsletter content with enhanced processing
       const newsletterContent = await generateEnhancedNewsletterContent(templateHtml, processedData, template);
       
       setGenerationProgress(80);
       setGenerationStep('Applying styling and formatting...');
-      await new Promise(resolve => setTimeout(resolve, 400));
-      
-      setGenerationProgress(90);
-      setGenerationStep('Optimizing for display...');
-      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Create enhanced newsletter data structure
       const newsletterData = {
@@ -2446,15 +2456,9 @@ export default function NewsletterBuilder() {
       
       setGenerationProgress(95);
       setGenerationStep('Finalizing newsletter...');
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      setGenerationProgress(98);
-      setGenerationStep('Preparing for display...');
-      await new Promise(resolve => setTimeout(resolve, 400));
       
       setGenerationProgress(100);
       setGenerationStep('Complete!');
-      await new Promise(resolve => setTimeout(resolve, 1200)); // Longer delay at 100%
       
       console.log('✅ Newsletter generated successfully');
       console.log('📊 Metadata:', newsletterData.metadata);
