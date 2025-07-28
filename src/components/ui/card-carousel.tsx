@@ -87,7 +87,7 @@ export function CardCarousel({ children, className }: CardCarouselProps) {
       </Button>
       <div
         ref={containerRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
+        className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4 py-4"
       >
         {children}
       </div>

@@ -2774,7 +2774,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               </div>
             </div>
             
-                        <CardCarousel className="mb-6">
+                        <CardCarousel className="mb-6 px-4 py-4">
               {(() => {
                 console.log('📋 Rendering templates:', NEWSLETTER_TEMPLATES.length, 'templates available');
                 return NEWSLETTER_TEMPLATES.map((template) => (
