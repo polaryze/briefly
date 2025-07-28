@@ -681,13 +681,13 @@ async function fetchInstagramData(profileOrUrl: string) {
     });
     
     // Fallback to mock data if API fails
-    return {
-      data: [
-        {
-          text: "Behind the scenes of our latest project 📸",
-          posted: new Date().toISOString(),
-          images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
-          likes: 89,
+  return {
+    data: [
+      {
+        text: "Behind the scenes of our latest project 📸",
+        posted: new Date().toISOString(),
+        images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
+        likes: 89,
           comments: 12,
           url: `https://instagram.com/p/sample_post_id`,
           is_video: false,
@@ -949,13 +949,13 @@ async function fetchYouTubeData(channelName: string) {
     });
     
     // Fallback to mock data if API fails
-    return {
-      data: [
-        {
-          text: "New tutorial video is live! Check out how to build this feature step by step.",
-          posted: new Date().toISOString(),
-          images: [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
-          likes: 156,
+  return {
+    data: [
+      {
+        text: "New tutorial video is live! Check out how to build this feature step by step.",
+        posted: new Date().toISOString(),
+        images: [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
+        likes: 156,
           comments: 23,
           views: 1000,
           video_length: "10:30",
@@ -1055,20 +1055,22 @@ async function summarizeYouTubeContent(text: string): Promise<string> {
 async function summarizeSocialMediaPosts(posts: any[], platform: string): Promise<any[]> {
   console.log(`🤖 Starting AI summarization for ${platform} posts...`);
   
-  // Skip AI summarization for very few posts or when posts are already concise
+  // Always process AI for Instagram and YouTube, optimize for Twitter/X
   const totalPosts = posts.length;
   const averagePostLength = posts.reduce((sum, post) => sum + (post.text?.length || 0), 0) / totalPosts;
   
-  // Skip AI summarization if:
-  // 1. Only 1-2 posts (minimal data scenario)
-  // 2. Average post length is already short (< 50 characters)
-  // 3. No posts need summarization
-  if (totalPosts <= 2 || averagePostLength < 50) {
+  // Skip AI summarization only for Twitter/X if minimal data
+  if (platform.toLowerCase() === 'twitter' && (totalPosts <= 2 || averagePostLength < 50)) {
     console.log(`⏭️ Skipping AI summarization for ${platform}: ${totalPosts} posts, avg length: ${averagePostLength.toFixed(1)} chars`);
     return posts.map(post => ({
       ...post,
       aiSummarized: false
     }));
+  }
+  
+  // For Instagram and YouTube, always process AI regardless of post count
+  if (platform.toLowerCase() === 'instagram' || platform.toLowerCase() === 'youtube') {
+    console.log(`🤖 Always processing AI for ${platform}: ${totalPosts} posts`);
   }
   
   // Batch processing for better performance
@@ -1082,7 +1084,25 @@ async function summarizeSocialMediaPosts(posts: any[], platform: string): Promis
     return textToSummarize.length <= 10;
   });
   
-  // Skip if no posts need summarization
+  // For Instagram and YouTube, process even short posts
+  if ((platform.toLowerCase() === 'instagram' || platform.toLowerCase() === 'youtube') && postsToSummarize.length === 0) {
+    console.log(`🤖 Processing all posts for ${platform} even if short`);
+    const allTexts = posts.map(post => post.text || '').join('\n\n---\n\n');
+    const batchSummarizedText = await summarizeTextBatch(allTexts, posts.length);
+    const summaries = batchSummarizedText.split('\n\n---\n\n');
+    
+    const summarizedPosts = posts.map((post, index) => ({
+      ...post,
+      text: summaries[index] || post.text,
+      originalText: post.text,
+      aiSummarized: true
+    }));
+    
+    console.log(`✅ Completed AI summarization for ${platform}:`, summarizedPosts.length, 'posts');
+    return summarizedPosts;
+  }
+  
+  // Skip if no posts need summarization (only for Twitter/X)
   if (postsToSummarize.length === 0) {
     console.log(`⏭️ No posts need summarization for ${platform}`);
     return posts.map(post => ({
@@ -1363,48 +1383,90 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
     },
     instagram: async (input: string) => {
       try {
-      const raw = await fetchInstagramData(input);
-      if (raw && Array.isArray(raw.data)) {
-        const posts = raw.data.filter(post => post.text && post.posted);
-        const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
+        console.log('📸 Processing Instagram input:', input);
+        const raw = await fetchInstagramData(input);
         
-        // Apply timeline filtering
-        const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'instagram', timelineOptions);
-        
-        // Take top posts (default 3 if no timeline limit)
-        const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.instagram?.postLimit || 3);
-        
-        // AI Summarization for Instagram posts
-        console.log('🤖 Starting Instagram AI summarization...');
-        const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'Instagram');
-        tempData.instagram = summarizedPosts;
-        
-        const images = summarizedPosts.flatMap(post => {
-          const postImages = post.images || [];
-          return postImages.map((img: any) => ({
-            url: img.url,
-            postText: post.text,
-            postDate: post.posted,
-            platform: 'instagram'
-          }));
-        });
-        tempData.allImages = [...(tempData.allImages || []), ...images];
-        tempData.allText += summarizedPosts.map(p => `[Instagram] ${p.text}`).join('\n\n');
+        if (raw && Array.isArray(raw.data)) {
+          // Filter posts that have images and descriptions
+          const posts = raw.data.filter(post => {
+            const hasImages = post.images && post.images.length > 0;
+            const hasDescription = post.text && post.text.trim().length > 0;
+            const hasDate = post.posted && post.posted !== 'Invalid Date';
+            return hasImages && hasDescription && hasDate;
+          });
           
-          console.log('Instagram data processed:', {
+          console.log('📸 Instagram posts with images and descriptions:', posts.length);
+          
+          const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
+          
+          // Apply timeline filtering
+          const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'instagram', timelineOptions);
+          
+          // Take top posts (default 3 if no timeline limit)
+          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.instagram?.postLimit || 3);
+          
+          // Always process AI for Instagram descriptions
+          console.log('🤖 Starting Instagram AI summarization for descriptions...');
+          const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'Instagram');
+          tempData.instagram = summarizedPosts;
+          
+          // Extract all images from posts
+          const images = summarizedPosts.flatMap(post => {
+            const postImages = post.images || [];
+            return postImages.map((img: any) => ({
+              url: img.url,
+              postText: post.text,
+              postDate: post.posted,
+              platform: 'instagram'
+            }));
+          });
+          tempData.allImages = [...(tempData.allImages || []), ...images];
+          tempData.allText += summarizedPosts.map(p => `[Instagram] ${p.text}`).join('\n\n');
+          
+          console.log('📸 Instagram data processed:', {
             postsCount: summarizedPosts.length,
             imagesCount: images.length,
-            textLength: summarizedPosts.map(p => p.text).join('\n\n').length,
-            aiSummarized: summarizedPosts.every(p => p.aiSummarized)
+            aiSummarized: summarizedPosts.some(p => p.aiSummarized)
+          });
+        } else {
+          console.log('📸 Instagram: No valid data returned from API, using fallback');
+          // Create fallback content with images and descriptions
+          const fallbackPosts = [
+            {
+              text: "Behind the scenes of our latest project 📸 Excited to share the process with you all!",
+              posted: new Date().toISOString(),
+              images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
+              likes: 89,
+              comments: 12,
+              url: `https://instagram.com/p/sample_post_id`,
+              is_video: false
+            }
+          ];
+          tempData.instagram = fallbackPosts;
+          
+          const images = fallbackPosts.flatMap(post => {
+            const postImages = post.images || [];
+            return postImages.map((img: any) => ({
+              url: img.url,
+              postText: post.text,
+              postDate: post.posted,
+              platform: 'instagram'
+            }));
+          });
+          tempData.allImages = [...(tempData.allImages || []), ...images];
+          tempData.allText += fallbackPosts.map(p => `[Instagram] ${p.text}`).join('\n\n');
+          
+          console.log('📸 Instagram fallback data processed:', {
+            postsCount: fallbackPosts.length,
+            imagesCount: images.length
           });
         }
       } catch (error) {
-        console.error('Instagram processing error:', error);
-        // Instagram already returns mock data, so this is unlikely to error
-        // But we'll handle it just in case
+        console.error('📸 Instagram processing error:', error);
+        // Create fallback content with images and descriptions
         const fallbackPosts = [
           {
-            text: "Behind the scenes of our latest project 📸",
+            text: "Behind the scenes of our latest project 📸 Excited to share the process with you all!",
             posted: new Date().toISOString(),
             images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
             likes: 89,
@@ -1426,22 +1488,23 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
         });
         tempData.allImages = [...(tempData.allImages || []), ...images];
         tempData.allText += fallbackPosts.map(p => `[Instagram] ${p.text}`).join('\n\n');
-        
-        console.log('Instagram error fallback data processed:', {
-          postsCount: fallbackPosts.length,
-          imagesCount: images.length,
-          textLength: fallbackPosts.map(p => p.text).join('\n\n').length
-        });
       }
     },
     youtube: async (input: string) => {
       try {
         console.log('🎬 Processing YouTube input:', input);
         const raw = await fetchYouTubeData(input);
-        console.log('🎬 YouTube raw data received:', raw);
         
         if (raw && Array.isArray(raw.data)) {
-          const posts = raw.data.filter(post => post.text && post.posted);
+          // Filter posts that have subtitles/text content
+          const posts = raw.data.filter(post => {
+            const hasSubtitles = post.text && post.text.trim().length > 0;
+            const hasDate = post.posted && post.posted !== 'Invalid Date';
+            return hasSubtitles && hasDate;
+          });
+          
+          console.log('🎬 YouTube videos with subtitles:', posts.length);
+          
           const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
           
           // Apply timeline filtering
@@ -1449,9 +1512,14 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           
           // Take top posts (default 3 if no timeline limit)
           const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.youtube?.postLimit || 3);
-          tempData.youtube = finalPosts;
           
-          const images = finalPosts.flatMap(post => {
+          // Always process AI for YouTube subtitles in first person
+          console.log('🤖 Starting YouTube AI summarization for subtitles...');
+          const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'YouTube');
+          tempData.youtube = summarizedPosts;
+          
+          // Extract video thumbnails
+          const images = summarizedPosts.flatMap(post => {
             const postImages = post.images || [];
             return postImages.map((img: any) => ({
               url: img.url,
@@ -1461,36 +1529,25 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
             }));
           });
           tempData.allImages = [...(tempData.allImages || []), ...images];
-          tempData.allText += finalPosts.map(p => `[YouTube] ${p.text}`).join('\n\n');
-            
+          tempData.allText += summarizedPosts.map(p => `[YouTube] ${p.text}`).join('\n\n');
+          
           console.log('🎬 YouTube data processed:', {
-            postsCount: finalPosts.length,
+            postsCount: summarizedPosts.length,
             imagesCount: images.length,
-            textLength: finalPosts.map(p => p.text).join('\n\n').length,
-            posts: finalPosts.map(p => ({
-              text: p.text?.substring(0, 100) + '...',
-              posted: p.posted,
-              views: p.views,
-              video_length: p.video_length
-            }))
+            aiSummarized: summarizedPosts.some(p => p.aiSummarized)
           });
-                } else {
+        } else {
           console.log('🎬 YouTube: No valid data returned from API, using fallback');
-          // Create fallback content to ensure we have something
+          // Create fallback content with subtitles
           const fallbackPosts = [
             {
-              text: "I created a comprehensive tutorial showing how to build this feature from scratch, covering all the essential steps and best practices.",
+              text: "Just uploaded a new video! 🎬 In this video, I share my thoughts on the latest developments and what I've learned from the process.",
               posted: new Date().toISOString(),
               images: [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
-              likes: 156,
-              comments: 23,
-              views: 1000,
+              views: 1234,
               video_length: "10:30",
-              video_id: "sample_video_id",
               url: `https://youtube.com/watch?v=sample_video_id`,
-              is_video: true,
-              subtitles: "This is a sample video about building features step by step.",
-              video_summary: "I created a comprehensive tutorial showing how to build this feature from scratch, covering all the essential steps and best practices."
+              is_video: true
             }
           ];
           tempData.youtube = fallbackPosts;
@@ -1509,27 +1566,21 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           
           console.log('🎬 YouTube fallback data processed:', {
             postsCount: fallbackPosts.length,
-            imagesCount: images.length,
-            textLength: fallbackPosts.map(p => p.text).join('\n\n').length
+            imagesCount: images.length
           });
         }
       } catch (error) {
         console.error('🎬 YouTube processing error:', error);
-        // Create fallback content even on error
+        // Create fallback content with subtitles
         const fallbackPosts = [
           {
-            text: "I created a comprehensive tutorial showing how to build this feature from scratch, covering all the essential steps and best practices.",
+            text: "Just uploaded a new video! 🎬 In this video, I share my thoughts on the latest developments and what I've learned from the process.",
             posted: new Date().toISOString(),
             images: [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
-            likes: 156,
-            comments: 23,
-            views: 1000,
+            views: 1234,
             video_length: "10:30",
-            video_id: "sample_video_id",
             url: `https://youtube.com/watch?v=sample_video_id`,
-            is_video: true,
-            subtitles: "This is a sample video about building features step by step.",
-            video_summary: "I created a comprehensive tutorial showing how to build this feature from scratch, covering all the essential steps and best practices."
+            is_video: true
           }
         ];
         tempData.youtube = fallbackPosts;
@@ -1545,12 +1596,6 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
         });
         tempData.allImages = [...(tempData.allImages || []), ...images];
         tempData.allText += fallbackPosts.map(p => `[YouTube] ${p.text}`).join('\n\n');
-        
-        console.log('🎬 YouTube error fallback data processed:', {
-          postsCount: fallbackPosts.length,
-          imagesCount: images.length,
-          textLength: fallbackPosts.map(p => p.text).join('\n\n').length
-        });
       }
     }
   };
@@ -2087,7 +2132,7 @@ export default function NewsletterBuilder() {
   
   // Debug modal state
   const [showDebugModal, setShowDebugModal] = useState(false);
-
+  
   // Hidden feature: bypass social media input with "skibidi"
   const [typedKeys, setTypedKeys] = useState('');
   
@@ -2277,8 +2322,8 @@ export default function NewsletterBuilder() {
       setTempData({}); // Clear previous temp data
 
       try {
-          // Process all selected platforms and collect data
-  logger.info('Processing all platforms', { selected });
+        // Process all selected platforms and collect data
+        logger.info('Processing all platforms', { selected });
   const tempData = await processAllPlatforms(selected, inputs, timelineOptions);
         setTempData(tempData); // Store temp data
 
@@ -2962,47 +3007,47 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               {(() => {
                 console.log('📋 Rendering templates:', NEWSLETTER_TEMPLATES.length, 'templates available');
                 return NEWSLETTER_TEMPLATES.map((template) => (
-                  <div
-                    key={template.id}
-                    onClick={() => setSelectedTemplate(template.id)}
-                    className={`cursor-pointer group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
-                      selectedTemplate === template.id
-                        ? 'border-black bg-gray-50 shadow-xl scale-105'
-                        : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
-                    }`}
+                <div
+                  key={template.id}
+                  onClick={() => setSelectedTemplate(template.id)}
+                  className={`cursor-pointer group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
+                    selectedTemplate === template.id
+                      ? 'border-black bg-gray-50 shadow-xl scale-105'
+                      : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
+                  }`}
                     style={{ width: '320px', flexShrink: 0 }}
-                  >
-                    <div className="aspect-[4/3] bg-white relative overflow-hidden">
-                      <iframe 
-                        src={template.htmlPath}
-                        className="w-full h-full border-0 pointer-events-none transform scale-[0.5] origin-top-left"
-                        style={{ width: '200%', height: '200%' }}
-                        title={template.name}
-                      />
+                >
+                  <div className="aspect-[4/3] bg-white relative overflow-hidden">
+                    <iframe 
+                      src={template.htmlPath}
+                      className="w-full h-full border-0 pointer-events-none transform scale-[0.5] origin-top-left"
+                      style={{ width: '200%', height: '200%' }}
+                      title={template.name}
+                    />
                       <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-500 ease-in-out backdrop-blur-sm">
                         <span className="text-white font-bold text-base sm:text-lg transform hover:scale-110 transition-transform duration-300">Select Template</span>
+                    </div>
+                    {selectedTemplate === template.id && (
+                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
                       </div>
-                      {selectedTemplate === template.id && (
-                        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3 sm:p-4">
-                      <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{template.name}</h3>
-                      <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">{template.description}</p>
-                      <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
-                        template.style === 'modern' ? 'bg-blue-100 text-blue-800' :
-                        template.style === 'classic' ? 'bg-green-100 text-green-800' :
-                        template.style === 'minimal' ? 'bg-gray-100 text-gray-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}>
-                        {template.style}
-                      </span>
-                    </div>
+                    )}
                   </div>
+                  <div className="p-3 sm:p-4">
+                    <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{template.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">{template.description}</p>
+                    <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
+                      template.style === 'modern' ? 'bg-blue-100 text-blue-800' :
+                      template.style === 'classic' ? 'bg-green-100 text-green-800' :
+                      template.style === 'minimal' ? 'bg-gray-100 text-gray-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {template.style}
+                    </span>
+                  </div>
+                </div>
                 ));
               })()}
             </CardCarousel>
@@ -3101,8 +3146,8 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               </div>
               
 
-            </div>
-
+                      </div>
+                      
 
             
           </div>
@@ -3243,7 +3288,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                                 <option value="50">50 posts</option>
                                 <option value="100">100 posts</option>
                               </select>
-                            </div>
+                      </div>
                           )}
                         </div>
                       </div>
