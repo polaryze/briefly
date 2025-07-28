@@ -2217,14 +2217,14 @@ export default function NewsletterBuilder() {
     console.log('📊 Data keys:', Object.keys(data));
     
     try {
-      // Enhanced progress tracking
+      // Enhanced progress tracking with more realistic steps
       setGenerationProgress(5);
       setGenerationStep('Initializing newsletter generation...');
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      setGenerationProgress(15);
-      setGenerationStep('Loading template...');
       await new Promise(resolve => setTimeout(resolve, 400));
+      
+      setGenerationProgress(12);
+      setGenerationStep('Validating template selection...');
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Get the template
       const template = NEWSLETTER_TEMPLATES.find(t => t.id === templateId);
@@ -2234,14 +2234,14 @@ export default function NewsletterBuilder() {
       
       console.log('📄 Template found:', template.name);
       
-      setGenerationProgress(25);
+      setGenerationProgress(20);
       setGenerationStep('Processing social media data...');
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Process and enhance the data
       const processedData = await processNewsletterData(data);
       
-      setGenerationProgress(40);
+      setGenerationProgress(35);
       setGenerationStep('Loading template HTML...');
       await new Promise(resolve => setTimeout(resolve, 400));
       
@@ -2257,16 +2257,24 @@ export default function NewsletterBuilder() {
         console.log('📄 Using enhanced fallback template');
       }
       
-      setGenerationProgress(60);
+      setGenerationProgress(50);
+      setGenerationStep('Analyzing content structure...');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      setGenerationProgress(65);
       setGenerationStep('Generating newsletter content...');
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Generate newsletter content with enhanced processing
       const newsletterContent = await generateEnhancedNewsletterContent(templateHtml, processedData, template);
       
       setGenerationProgress(80);
-      setGenerationStep('Finalizing newsletter...');
+      setGenerationStep('Applying styling and formatting...');
       await new Promise(resolve => setTimeout(resolve, 400));
+      
+      setGenerationProgress(90);
+      setGenerationStep('Optimizing for display...');
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Create enhanced newsletter data structure
       const newsletterData = {
@@ -2294,9 +2302,17 @@ export default function NewsletterBuilder() {
         }
       };
       
+      setGenerationProgress(95);
+      setGenerationStep('Finalizing newsletter...');
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      setGenerationProgress(98);
+      setGenerationStep('Preparing for display...');
+      await new Promise(resolve => setTimeout(resolve, 400));
+      
       setGenerationProgress(100);
       setGenerationStep('Complete!');
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 1200)); // Longer delay at 100%
       
       console.log('✅ Newsletter generated successfully');
       console.log('📊 Metadata:', newsletterData.metadata);

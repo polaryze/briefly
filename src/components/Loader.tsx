@@ -21,7 +21,30 @@ const Loader = ({ progress, step }: LoaderProps) => {
     "Why did the template feel confident? It had great structure! 🏗️",
     "What's a newsletter's favorite movie? The Content Matrix! 🎬",
     "Why did the hashtag go to the gym? To get more #fits! 💪",
-    "What do you call a newsletter that's always on time? A punctual-letter! ⏰"
+    "What do you call a newsletter that's always on time? A punctual-letter! ⏰",
+    "Why did the email feel important? It had great subject matter! 📧",
+    "What do you call a newsletter that's always trending? A viral-letter! 🔥",
+    "Why did the content creator feel rich? They had lots of followers! 💰",
+    "What's a newsletter's favorite sport? Content creation! ⚽",
+    "Why did the algorithm feel smart? It had great logic! 🧠",
+    "What do you call a newsletter that's always engaging? A captiv-letter! 🎯",
+    "Why did the social media feel social? It had great connections! 🤝",
+    "What's a newsletter's favorite dessert? Content cake! 🍰",
+    "Why did the template feel flexible? It had great adaptability! 🧘",
+    "What do you call a newsletter that's always fresh? A crisp-letter! 🥬",
+    "Why did the AI feel creative? It had great imagination! 🎨",
+    "What's a newsletter's favorite music? Content beats! 🎵",
+    "Why did the hashtag feel popular? It had great reach! 📈",
+    "What do you call a newsletter that's always relevant? A timely-letter! ⏱️",
+    "Why did the content feel valuable? It had great insights! 💎",
+    "What's a newsletter's favorite color? Content blue! 🔵",
+    "Why did the template feel modern? It had great design! 🎨",
+    "What do you call a newsletter that's always helpful? A useful-letter! 🛠️",
+    "Why did the social media feel connected? It had great networking! 🌐",
+    "What's a newsletter's favorite season? Content spring! 🌱",
+    "Why did the AI feel intelligent? It had great processing! 💻",
+    "What do you call a newsletter that's always accurate? A precise-letter! 🎯",
+    "Why did the content feel engaging? It had great storytelling! 📖"
   ];
 
   const tips = [
@@ -108,10 +131,11 @@ const Loader = ({ progress, step }: LoaderProps) => {
         <div className="status-indicator">
           <div className="status-dot"></div>
           <span className="status-text">
-            {progress < 30 ? 'Collecting data...' : 
-             progress < 60 ? 'Processing content...' : 
-             progress < 90 ? 'Generating newsletter...' : 
-             'Finalizing...'}
+            {progress < 15 ? 'Initializing...' : 
+             progress < 35 ? 'Processing data...' : 
+             progress < 65 ? 'Generating content...' : 
+             progress < 90 ? 'Finalizing...' : 
+             'Preparing display...'}
           </span>
         </div>
       </div>
