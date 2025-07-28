@@ -613,10 +613,19 @@ async function fetchInstagramData(profileOrUrl: string) {
       if (post.carousel_media && Array.isArray(post.carousel_media)) {
         post.carousel_media.forEach((carouselItem: any) => {
           if (carouselItem.image_versions && Array.isArray(carouselItem.image_versions)) {
-            // Get the highest quality image (usually the first one)
-            const bestImage = carouselItem.image_versions[0];
-            if (bestImage && bestImage.url) {
-              images.push({ url: bestImage.url });
+            // Handle new API structure with items array
+            if (carouselItem.image_versions.items && Array.isArray(carouselItem.image_versions.items)) {
+              // Get the highest quality image (usually the first one)
+              const bestImage = carouselItem.image_versions.items[0];
+              if (bestImage && bestImage.url) {
+                images.push({ url: bestImage.url });
+              }
+            } else {
+              // Handle old API structure (direct array)
+              const bestImage = carouselItem.image_versions[0];
+              if (bestImage && bestImage.url) {
+                images.push({ url: bestImage.url });
+              }
             }
           }
         });
@@ -625,10 +634,19 @@ async function fetchInstagramData(profileOrUrl: string) {
       // Handle single image posts
       if (images.length === 0) {
         if (post.image_versions && Array.isArray(post.image_versions)) {
-          // Get the highest quality image
-          const bestImage = post.image_versions[0];
-          if (bestImage && bestImage.url) {
-            images.push({ url: bestImage.url });
+          // Handle new API structure with items array
+          if (post.image_versions.items && Array.isArray(post.image_versions.items)) {
+            // Get the highest quality image (usually the first one)
+            const bestImage = post.image_versions.items[0];
+            if (bestImage && bestImage.url) {
+              images.push({ url: bestImage.url });
+            }
+          } else {
+            // Handle old API structure (direct array)
+            const bestImage = post.image_versions[0];
+            if (bestImage && bestImage.url) {
+              images.push({ url: bestImage.url });
+            }
           }
         } else if (post.image_url) {
           images.push({ url: post.image_url });
@@ -696,6 +714,17 @@ async function fetchInstagramData(profileOrUrl: string) {
     
     console.log('Instagram posts transformed:', transformedPosts.length);
     console.log('Instagram sample transformed post:', transformedPosts[0]);
+    
+    // Debug: Log the first post's image structure
+    if (transformedPosts.length > 0) {
+      const firstPost = transformedPosts[0];
+      console.log('📸 Instagram first post image structure:', {
+        hasImages: !!firstPost.images,
+        imagesLength: firstPost.images?.length || 0,
+        images: firstPost.images,
+        imageUrls: firstPost.images?.map((img: any) => img.url) || []
+      });
+    }
     
     return { data: transformedPosts };
     
@@ -1536,6 +1565,11 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           // Extract all images from posts
           const images = summarizedPosts.flatMap(post => {
             const postImages = post.images || [];
+            console.log('📸 Instagram post images:', {
+              postText: post.text?.substring(0, 50) + '...',
+              imagesCount: postImages.length,
+              images: postImages
+            });
             return postImages.map((img: any) => ({
               url: img.url,
               postText: post.text,
@@ -2407,7 +2441,7 @@ export default function NewsletterBuilder() {
   }> => {
     const startTime = Date.now();
     const summaries: { [platform: string]: string[] } = {};
-    const images: Array<{url: string, postText: string, postDate: string, platform: string}> = [];
+    const images: Array<{url: string, postText: string, postDate: string, platform: string, likes?: number, comments?: number}> = [];
     
     console.log('🚀 Starting step-by-step social media processing...');
     
@@ -2467,13 +2501,19 @@ export default function NewsletterBuilder() {
         // Extract images from API content only
         platformData.forEach(post => {
           if (post.images && post.images.length > 0) {
-            post.images.forEach((imageUrl: string) => {
-              images.push({
-                url: imageUrl,
-                postText: post.text || '',
-                postDate: post.posted || '',
-                platform: platform
-              });
+            post.images.forEach((image: any) => {
+              // Handle both string URLs and image objects
+              const imageUrl = typeof image === 'string' ? image : image.url;
+              if (imageUrl) {
+                images.push({
+                  url: imageUrl,
+                  postText: post.text || '',
+                  postDate: post.posted || '',
+                  platform: platform,
+                  likes: post.likes || 0,
+                  comments: post.comments || 0
+                });
+              }
             });
           }
         });
