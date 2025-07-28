@@ -1046,19 +1046,39 @@ async function summarizeTextBatch(allTexts: string, postCount: number): Promise<
       { role: "system", content: "You are a professional newsletter writer helping to transform social media content into engaging bullet-point summaries in first person." },
       { role: "user", content: prompt }
     ],
-    max_tokens: 150 * postCount, // Scale tokens with post count
+    max_tokens: Math.min(150 * postCount, 1000), // Cap at 1000 tokens max
     temperature: 0.7
   };
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await resp.json();
-  return data.choices?.[0]?.message?.content?.trim() || allTexts;
+  
+  // Add timeout to prevent hanging
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+  
+  try {
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!resp.ok) {
+      console.error('OpenAI API error:', resp.status, resp.statusText);
+      return allTexts;
+    }
+    
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content?.trim() || allTexts;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('OpenAI API request failed:', error);
+    return allTexts;
+  }
 }
 
 async function summarizeYouTubeContent(text: string): Promise<string> {
@@ -1076,27 +1096,47 @@ async function summarizeYouTubeContent(text: string): Promise<string> {
     max_tokens: 200,
     temperature: 0.7
   };
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await resp.json();
-  return data.choices?.[0]?.message?.content?.trim() || text;
+  
+  // Add timeout to prevent hanging
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
+  
+  try {
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!resp.ok) {
+      console.error('OpenAI API error:', resp.status, resp.statusText);
+      return text;
+    }
+    
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content?.trim() || text;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('OpenAI API request failed:', error);
+    return text;
+  }
 }
 
 async function summarizeSocialMediaPosts(posts: any[], platform: string): Promise<any[]> {
   console.log(`🤖 Starting AI summarization for ${platform} posts...`);
   
-  // Always process AI for Instagram and YouTube, optimize for Twitter/X
+  // Skip AI summarization for very short content to improve performance
   const totalPosts = posts.length;
   const averagePostLength = posts.reduce((sum, post) => sum + (post.text?.length || 0), 0) / totalPosts;
   
-  // Skip AI summarization only for Twitter/X if minimal data
-  if (platform.toLowerCase() === 'twitter' && (totalPosts <= 2 || averagePostLength < 50)) {
+  // Skip AI summarization for Twitter/X if minimal data or very short content
+  if (platform.toLowerCase() === 'twitter' && (totalPosts <= 2 || averagePostLength < 30)) {
     console.log(`⏭️ Skipping AI summarization for ${platform}: ${totalPosts} posts, avg length: ${averagePostLength.toFixed(1)} chars`);
     return posts.map(post => ({
       ...post,
@@ -1104,41 +1144,27 @@ async function summarizeSocialMediaPosts(posts: any[], platform: string): Promis
     }));
   }
   
-  // For Instagram and YouTube, always process AI regardless of post count
-  if (platform.toLowerCase() === 'instagram' || platform.toLowerCase() === 'youtube') {
-    console.log(`🤖 Always processing AI for ${platform}: ${totalPosts} posts`);
+  // For Instagram and YouTube, only process if content is substantial
+  if ((platform.toLowerCase() === 'instagram' || platform.toLowerCase() === 'youtube') && averagePostLength < 20) {
+    console.log(`⏭️ Skipping AI summarization for ${platform}: content too short (avg: ${averagePostLength.toFixed(1)} chars)`);
+    return posts.map(post => ({
+      ...post,
+      aiSummarized: false
+    }));
   }
   
   // Batch processing for better performance
   const postsToSummarize = posts.filter(post => {
     const textToSummarize = post.text || '';
-    return textToSummarize.length > 10;
+    return textToSummarize.length > 15; // Increased minimum length
   });
   
   const postsToKeep = posts.filter(post => {
     const textToSummarize = post.text || '';
-    return textToSummarize.length <= 10;
+    return textToSummarize.length <= 15;
   });
   
-  // For Instagram and YouTube, process even short posts
-  if ((platform.toLowerCase() === 'instagram' || platform.toLowerCase() === 'youtube') && postsToSummarize.length === 0) {
-    console.log(`🤖 Processing all posts for ${platform} even if short`);
-    const allTexts = posts.map(post => post.text || '').join('\n\n---\n\n');
-    const batchSummarizedText = await summarizeTextBatch(allTexts, posts.length);
-    const summaries = batchSummarizedText.split('\n\n---\n\n');
-    
-    const summarizedPosts = posts.map((post, index) => ({
-      ...post,
-      text: summaries[index] || post.text,
-      originalText: post.text,
-      aiSummarized: true
-    }));
-    
-    console.log(`✅ Completed AI summarization for ${platform}:`, summarizedPosts.length, 'posts');
-    return summarizedPosts;
-  }
-  
-  // Skip if no posts need summarization (only for Twitter/X)
+  // Skip if no posts need summarization
   if (postsToSummarize.length === 0) {
     console.log(`⏭️ No posts need summarization for ${platform}`);
     return posts.map(post => ({
@@ -1147,7 +1173,7 @@ async function summarizeSocialMediaPosts(posts: any[], platform: string): Promis
     }));
   }
   
-  // Batch summarize all posts at once
+  // Batch summarize all posts at once with timeout
   if (postsToSummarize.length > 0) {
     try {
       const allTexts = postsToSummarize.map(post => post.text).join('\n\n---\n\n');
@@ -2479,11 +2505,11 @@ export default function NewsletterBuilder() {
       
       console.log('📄 Template found:', template.name);
       
-      setGenerationProgress(15);
+      setGenerationProgress(20);
       setGenerationStep('Processing social media data...');
       
-      // Process and enhance the data
-      const processedData = await processNewsletterData(data);
+      // Process and enhance the data (simplified for performance)
+      const processedData = data; // Skip additional processing for now
       
       setGenerationProgress(40);
       setGenerationStep('Loading template HTML...');
