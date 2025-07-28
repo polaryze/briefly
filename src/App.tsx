@@ -27,6 +27,9 @@ const auth0Config = {
     redirect_uri: window.location.origin,
     scope: 'openid profile email',
   },
+  // Additional configuration for better compatibility
+  cacheLocation: 'localstorage' as const,
+  useRefreshTokens: true,
 };
 
 // Debug logging
