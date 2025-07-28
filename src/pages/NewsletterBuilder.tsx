@@ -567,7 +567,9 @@ async function fetchInstagramData(profileOrUrl: string) {
     const transformedPosts = posts.map((post: any) => {
       // Extract text/caption from the post
       let text = '';
-      if (post.caption) {
+      if (post.caption && post.caption.text) {
+        text = post.caption.text;
+      } else if (post.caption) {
         text = typeof post.caption === 'string' ? post.caption : '';
       } else if (post.text) {
         text = post.text;
@@ -590,7 +592,9 @@ async function fetchInstagramData(profileOrUrl: string) {
       
       // Extract date
       let posted = '';
-      if (post.created_at) {
+      if (post.taken_at_ts) {
+        posted = new Date(post.taken_at_ts * 1000).toISOString();
+      } else if (post.created_at) {
         posted = new Date(post.created_at).toISOString();
       } else if (post.timestamp) {
         posted = new Date(post.timestamp).toISOString();
@@ -600,24 +604,45 @@ async function fetchInstagramData(profileOrUrl: string) {
         posted = new Date().toISOString();
       }
       
-      // Extract images
+      // Extract images from carousel_media structure
       const images = [];
       
-      // Check for image URLs in various possible fields
-      if (post.image_url) {
-        images.push({ url: post.image_url });
-      } else if (post.images && Array.isArray(post.images)) {
-        post.images.forEach((img: any) => {
-          if (img.url) {
-            images.push({ url: img.url });
+      // Handle carousel media (multiple images in one post)
+      if (post.carousel_media && Array.isArray(post.carousel_media)) {
+        post.carousel_media.forEach((carouselItem: any) => {
+          if (carouselItem.image_versions && Array.isArray(carouselItem.image_versions)) {
+            // Get the highest quality image (usually the first one)
+            const bestImage = carouselItem.image_versions[0];
+            if (bestImage && bestImage.url) {
+              images.push({ url: bestImage.url });
+            }
           }
         });
-      } else if (post.media && Array.isArray(post.media)) {
-        post.media.forEach((media: any) => {
-          if (media.url) {
-            images.push({ url: media.url });
+      }
+      
+      // Handle single image posts
+      if (images.length === 0) {
+        if (post.image_versions && Array.isArray(post.image_versions)) {
+          // Get the highest quality image
+          const bestImage = post.image_versions[0];
+          if (bestImage && bestImage.url) {
+            images.push({ url: bestImage.url });
           }
-        });
+        } else if (post.image_url) {
+          images.push({ url: post.image_url });
+        } else if (post.images && Array.isArray(post.images)) {
+          post.images.forEach((img: any) => {
+            if (img.url) {
+              images.push({ url: img.url });
+            }
+          });
+        } else if (post.media && Array.isArray(post.media)) {
+          post.media.forEach((media: any) => {
+            if (media.url) {
+              images.push({ url: media.url });
+            }
+          });
+        }
       }
       
       // If no images found, use a placeholder
@@ -626,11 +651,11 @@ async function fetchInstagramData(profileOrUrl: string) {
       }
       
       // Extract engagement metrics
-      const likes = post.likes || post.like_count || 0;
-      const comments = post.comments || post.comment_count || 0;
+      const likes = post.like_count || post.likes || 0;
+      const comments = post.comment_count || post.comments || 0;
       
       // Determine if it's a video
-      const isVideo = post.media_type === 'VIDEO' || post.is_video || false;
+      const isVideo = post.media_type === 2 || post.is_video || false;
       
       const transformedPost = {
         text: text,
@@ -638,7 +663,7 @@ async function fetchInstagramData(profileOrUrl: string) {
         images: images,
         likes: likes,
         comments: comments,
-        url: post.url || `https://instagram.com/p/${post.id || post.shortcode || 'sample'}`,
+        url: post.url || `https://instagram.com/p/${post.code || post.id || post.shortcode || 'sample'}`,
         is_video: isVideo,
         platform: 'instagram'
       };
