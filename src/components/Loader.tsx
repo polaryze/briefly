@@ -79,13 +79,7 @@ const Loader = ({ progress, step }: LoaderProps) => {
   const currentJoke = jokes[currentJokeIndex];
   const currentTip = tips[currentJokeIndex % tips.length];
 
-  // Enhanced progress bar with gradient
-  const getProgressColor = (progress: number) => {
-    if (progress < 30) return '#ef4444'; // Red
-    if (progress < 60) return '#f59e0b'; // Yellow
-    if (progress < 90) return '#3b82f6'; // Blue
-    return '#10b981'; // Green
-  };
+
 
   return (
     <StyledWrapper>
@@ -106,7 +100,7 @@ const Loader = ({ progress, step }: LoaderProps) => {
               className="progress-fill"
               style={{ 
                 width: `${progress}%`,
-                background: `linear-gradient(90deg, ${getProgressColor(progress)} 0%, ${getProgressColor(progress + 10)} 100%)`
+                background: '#000000'
               }}
             ></div>
           </div>
