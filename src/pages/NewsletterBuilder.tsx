@@ -709,7 +709,7 @@ async function fetchInstagramData(profileOrUrl: string) {
   return {
     data: [
       {
-        text: "Behind the scenes of our latest project 📸",
+        text: "Behind the scenes of our latest project 📸 Excited to share the process with you all!",
         posted: new Date().toISOString(),
         images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
         likes: 89,
@@ -864,29 +864,40 @@ async function fetchYouTubeData(channelName: string) {
       if (subtitlesData && subtitlesData.is_available && subtitlesData.subtitles && Array.isArray(subtitlesData.subtitles)) {
         console.log('YouTube: Found', subtitlesData.subtitles.length, 'subtitle segments');
         
-        // Combine all subtitle text
+        // Combine all subtitle text with better filtering
         subtitlesText = subtitlesData.subtitles
           .map((subtitle: any) => subtitle.text)
-          .filter((text: string) => text && text.trim() !== '[Music]' && text.trim() !== 'Oh' && text.trim().length > 1)
+          .filter((text: string) => {
+            const cleanText = text.trim();
+            // Filter out music indicators, short sounds, and empty text
+            return cleanText && 
+                   cleanText !== '[Music]' && 
+                   cleanText !== 'Oh' && 
+                   cleanText !== '[Applause]' &&
+                   cleanText !== '[Laughter]' &&
+                   cleanText.length > 2;
+          })
           .join(' ')
           .replace(/&#39;/g, "'")
           .replace(/&quot;/g, '"')
-          .replace(/&amp;/g, '&');
+          .replace(/&amp;/g, '&')
+          .replace(/\s+/g, ' ') // Remove extra whitespace
+          .trim();
         
         console.log('YouTube extracted subtitles length:', subtitlesText.length);
         console.log('YouTube subtitles preview:', subtitlesText.substring(0, 200) + '...');
         
-        // Use ChatGPT to summarize the video content
+        // Always use ChatGPT to summarize the video content (even for short subtitles)
         const openaiValidation = configManager.validateOpenAIKey();
-        if (subtitlesText.length > 50 && openaiValidation.isValid) {
+        if (subtitlesText.length > 10 && openaiValidation.isValid) {
           const OPENAI_API_KEY = configManager.getOpenAIKey();
           try {
-            const summaryPrompt = `Summarize this YouTube video transcript in 2-3 sentences, written in first person as if the video creator is describing their video for a newsletter. Keep it engaging and highlight the main points or value provided:\n\n${subtitlesText}`;
+            const summaryPrompt = `Summarize this YouTube video transcript in 2-3 sentences, written in first person as if the video creator is describing their video for a newsletter. Keep it engaging and highlight the main points or value provided. Make it sound natural and conversational:\n\n${subtitlesText}`;
             
             const summaryBody = {
               model: "gpt-4o",
               messages: [
-                { role: "system", content: "You are a professional newsletter writer helping to summarize video content." },
+                { role: "system", content: "You are a professional newsletter writer helping to summarize video content in first person." },
                 { role: "user", content: summaryPrompt }
               ],
               max_tokens: 150,
