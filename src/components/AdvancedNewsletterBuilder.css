@@ -1,0 +1,494 @@
+/* Advanced Newsletter Builder Styles - Clean & Minimalistic */
+
+/* Remove all GrapesJS default styling */
+.gjs-cv-canvas {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+.gjs-frame {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+
+/* Fix canvas background and ensure content fills entire area */
+.gjs-editor {
+  background: white !important;
+}
+
+.gjs-one-bg {
+  background: white !important;
+}
+
+.gjs-two-color {
+  background: white !important;
+}
+
+/* Ensure the canvas content fills the entire area */
+.gjs-cv-canvas {
+  background: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Ensure the frame fills the canvas */
+.gjs-frame {
+  background: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Ensure the newsletter content fills the entire frame */
+.gjs-frame iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+
+/* Remove any default canvas styling */
+.gjs-cv-canvas * {
+  box-sizing: border-box !important;
+}
+
+.gjs-selected {
+  outline: 2px solid #000 !important;
+  outline-offset: 2px !important;
+}
+
+.gjs-highlighter {
+  background: rgba(0,0,0,0.1) !important;
+}
+
+/* Clean up toolbar */
+.gjs-toolbar {
+  background: white !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.gjs-toolbar-item {
+  background: transparent !important;
+  border: none !important;
+  color: #666 !important;
+}
+
+.gjs-toolbar-item:hover {
+  background: #f8f8f8 !important;
+  color: #000 !important;
+}
+
+/* Clean up blocks - Black rounded rectangles */
+.gjs-block {
+  background: #000 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  margin: 6px !important;
+  padding: 12px 16px !important;
+  transition: all 0.2s ease !important;
+  color: white !important;
+  text-align: center !important;
+}
+
+.gjs-block:hover {
+  background: #333 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+.gjs-block::before {
+  display: none !important;
+}
+
+.gjs-block-label {
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+}
+
+/* Remove grey backgrounds from block containers */
+.gjs-blocks-c {
+  background: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 8px !important;
+}
+
+.gjs-blocks-cs {
+  background: white !important;
+  border: none !important;
+}
+
+/* Clean up panels */
+.gjs-pn-panel {
+  background: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.gjs-pn-views {
+  background: white !important;
+  border: none !important;
+}
+
+.gjs-pn-views-container {
+  background: white !important;
+  border: none !important;
+}
+
+/* BLOCK MANAGER CATEGORIES - Remove all dropdown functionality */
+.gjs-block-category {
+  background: white !important;
+  border: none !important;
+  margin-bottom: 16px !important;
+  box-shadow: none !important;
+}
+
+.gjs-block-category-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  border-radius: 0 !important;
+  padding: 8px 0 !important;
+  margin-bottom: 8px !important;
+  color: #333 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: default !important;
+}
+
+/* Remove ALL dropdown arrows and functionality from block categories */
+.gjs-block-category-label::after {
+  display: none !important;
+}
+
+.gjs-block-category-label::before {
+  display: none !important;
+}
+
+/* Remove any remaining category styling */
+.gjs-block-category-label:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.gjs-block-category-label:active {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Force all block categories to be always visible */
+.gjs-block-category .gjs-blocks-c {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+  padding: 8px 0 !important;
+  background: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove any collapse/expand functionality from block categories */
+.gjs-block-category.gjs-sm-open .gjs-blocks-c,
+.gjs-block-category .gjs-blocks-c {
+  display: grid !important;
+  opacity: 1 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* STYLE MANAGER CATEGORIES - Remove all dropdown functionality */
+.gjs-sm-sector {
+  background: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin-bottom: 16px !important;
+}
+
+.gjs-sm-sector-title {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  border-radius: 0 !important;
+  padding: 8px 0 !important;
+  margin-bottom: 8px !important;
+  color: #333 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: default !important;
+}
+
+/* Remove ALL dropdown arrows and functionality from style manager */
+.gjs-sm-sector-title::after {
+  display: none !important;
+}
+
+.gjs-sm-sector-title::before {
+  display: none !important;
+}
+
+/* Remove any remaining style manager category styling */
+.gjs-sm-sector-title:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.gjs-sm-sector-title:active {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Force all style manager sectors to be always visible */
+.gjs-sm-sector.gjs-sm-open .gjs-sm-properties,
+.gjs-sm-sector .gjs-sm-properties {
+  display: block !important;
+  opacity: 1 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure all style manager elements are clean */
+.gjs-sm-properties {
+  background: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 8px 0 !important;
+}
+
+.gjs-sm-property {
+  background: white !important;
+  border: none !important;
+  margin-bottom: 6px !important;
+}
+
+.gjs-sm-label {
+  color: #666 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  margin-bottom: 4px !important;
+}
+
+.gjs-sm-input {
+  background: white !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  color: #333 !important;
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.gjs-sm-input:focus {
+  border-color: #000 !important;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
+  outline: none !important;
+}
+
+.gjs-sm-select {
+  background: white !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  color: #333 !important;
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+}
+
+/* Clean up layer manager */
+.gjs-layer {
+  background: white !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  margin: 2px 0 !important;
+  padding: 6px 8px !important;
+}
+
+.gjs-layer:hover {
+  background: #f8f8f8 !important;
+}
+
+.gjs-layer-name {
+  color: #333 !important;
+  font-size: 12px !important;
+}
+
+/* Clean up trait manager */
+.gjs-trt-trait {
+  background: white !important;
+  border: none !important;
+  margin-bottom: 6px !important;
+}
+
+.gjs-trt-trait-label {
+  color: #666 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  margin-bottom: 4px !important;
+}
+
+.gjs-trt-trait-input {
+  background: white !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  color: #333 !important;
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+}
+
+.gjs-trt-trait-input:focus {
+  border-color: #000 !important;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
+  outline: none !important;
+}
+
+/* Clean up buttons */
+.gjs-btn-prim {
+  background: #000 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.gjs-btn-prim:hover {
+  background: #333 !important;
+}
+
+/* Custom scrollbars */
+.blocks-container::-webkit-scrollbar,
+.styles-container::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.blocks-container::-webkit-scrollbar-track,
+.styles-container::-webkit-scrollbar-track {
+  background: #f8f8f8 !important;
+  border-radius: 3px !important;
+}
+
+.blocks-container::-webkit-scrollbar-thumb,
+.styles-container::-webkit-scrollbar-thumb {
+  background: #ddd !important;
+  border-radius: 3px !important;
+}
+
+.blocks-container::-webkit-scrollbar-thumb:hover,
+.styles-container::-webkit-scrollbar-thumb:hover {
+  background: #ccc !important;
+}
+
+/* Ensure clean canvas */
+.gjs-cv-canvas {
+  background: white !important;
+  border-radius: 12px !important;
+}
+
+/* Remove any default GrapesJS styling */
+.gjs-frame {
+  background: white !important;
+  border-radius: 12px !important;
+}
+
+/* Clean up any remaining default styles */
+.gjs-pn-views-container {
+  background: transparent !important;
+}
+
+.gjs-pn-views {
+  background: transparent !important;
+}
+
+/* Ensure proper spacing */
+.gjs-block {
+  margin: 6px !important;
+}
+
+/* Make sure the editor container is clean */
+.advanced-newsletter-builder {
+  background: white !important;
+}
+
+/* Clean up any remaining GrapesJS UI elements */
+.gjs-pn-panel {
+  background: transparent !important;
+}
+
+.gjs-pn-views-container {
+  background: transparent !important;
+}
+
+/* Remove any default borders */
+.gjs-cv-canvas {
+  border: none !important;
+}
+
+/* Ensure clean component panels */
+.component-panels {
+  background: white !important;
+}
+
+.panel-section {
+  background: white !important;
+}
+
+/* Clean up any remaining default styling */
+.gjs-frame {
+  border: none !important;
+  background: white !important;
+}
+
+/* Remove any default GrapesJS backgrounds */
+.gjs-cv-canvas {
+  background: white !important;
+}
+
+/* Ensure clean styling for all GrapesJS elements */
+.gjs-sm-sector,
+.gjs-sm-property,
+.gjs-sm-label,
+.gjs-sm-input,
+.gjs-sm-select {
+  background: white !important;
+  border-color: #e0e0e0 !important;
+}
+
+/* Clean up any remaining default styling */
+.gjs-pn-panel {
+  background: transparent !important;
+}
+
+.gjs-pn-views {
+  background: transparent !important;
+}
+
+.gjs-pn-views-container {
+  background: transparent !important;
+}
+
+/* Remove all grey backgrounds from block categories */
+.gjs-blocks-cs {
+  background: white !important;
+}
+
+.gjs-blocks-c {
+  background: white !important;
+} 

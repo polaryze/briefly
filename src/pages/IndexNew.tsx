@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ArrowRight, Sparkles, Zap, Users, Menu, X, LogIn, DollarSign, HelpCircle, Wand2 } from 'lucide-react';
+import { CursorWander } from '@/components/ui/cursor-wander';
 import { useSmoothNavigate } from '../hooks/useSmoothNavigate';
 import StyledButton from '../components/StyledButton';
 import ScrollToGenerate from '../components/ScrollToGenerate';
@@ -138,29 +139,41 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
     }, 50);
   };
 
+  const isBlackBackground = scrollY > 400;
+  
   return (
     <div className="flex flex-col items-center px-4">
       <Card 
-        className="max-w-xl w-full p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8"
+        className={`max-w-xl w-full p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 transition-all duration-500 ${
+          isBlackBackground ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+        }`}
         style={{
           transform: `translate3d(0, ${Math.max(0, scrollY - 700) * 0.1}px, 0)`,
           willChange: 'transform'
         }}
       >
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Build Your Weekly Newsletter</h2>
+        <h2 className={`text-xl sm:text-2xl font-bold mb-3 sm:mb-4 transition-colors duration-500 ${
+          isBlackBackground ? 'text-white' : 'text-gray-800'
+        }`}>Build Your Weekly Newsletter</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4">
           <div>
-            <label className="block text-gray-700 text-sm mb-1">Your Name</label>
+            <label className={`block text-sm mb-1 transition-colors duration-500 ${
+              isBlackBackground ? 'text-gray-300' : 'text-gray-700'
+            }`}>Your Name</label>
             <Input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full"
+              className={`w-full transition-all duration-500 ${
+                isBlackBackground ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+              }`}
               disabled={loading}
             />
           </div>
           <div>
-            <label className="block text-gray-700 text-sm mb-1">Socials to include</label>
+            <label className={`block text-sm mb-1 transition-colors duration-500 ${
+              isBlackBackground ? 'text-gray-300' : 'text-gray-700'
+            }`}>Socials to include</label>
             <div className="flex gap-3 sm:gap-4 flex-wrap">
               {SOCIALS.map((s) => (
                 <label key={s.key} className="flex items-center gap-2 cursor-pointer">
@@ -171,7 +184,9 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
                     disabled={loading}
                     className="accent-pink-400 w-4 h-4 rounded focus:ring-2 focus:ring-pink-400"
                   />
-                  <span className="text-sm sm:text-base text-gray-800 capitalize">{s.label}</span>
+                  <span className={`text-sm sm:text-base capitalize transition-colors duration-500 ${
+                    isBlackBackground ? 'text-gray-300' : 'text-gray-800'
+                  }`}>{s.label}</span>
                 </label>
               ))}
             </div>
@@ -181,10 +196,14 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
             {SOCIALS.map((s) =>
               socials[s.key as keyof typeof socials] && (
                 <div key={s.key} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                  <label className="block text-gray-600 text-xs sm:text-sm sm:w-32 capitalize">{s.label}:</label>
+                  <label className={`block text-xs sm:text-sm sm:w-32 capitalize transition-colors duration-500 ${
+                    isBlackBackground ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{s.label}:</label>
                   <Input
                     type="text"
-                    className="flex-1 w-full"
+                    className={`flex-1 w-full transition-all duration-500 ${
+                      isBlackBackground ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                     value={socialInputs[s.key as keyof typeof socialInputs]}
                     onChange={e => handleInputChange(s.key, e.target.value)}
                     placeholder={s.placeholder}
@@ -195,9 +214,13 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
             )}
           </div>
           <div>
-            <label className="block text-gray-700 text-sm mb-1">How far back?</label>
+            <label className={`block text-sm mb-1 transition-colors duration-500 ${
+              isBlackBackground ? 'text-gray-300' : 'text-gray-700'
+            }`}>How far back?</label>
             <select
-              className="border rounded px-3 py-2 text-sm sm:text-base w-full"
+              className={`border rounded px-3 py-2 text-sm sm:text-base w-full transition-all duration-500 ${
+                isBlackBackground ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+              }`}
               value={timeRange}
               onChange={e => setTimeRange(e.target.value)}
               disabled={loading}
@@ -212,7 +235,9 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95"
+            className={`w-full font-medium py-3 px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 ${
+              isBlackBackground ? 'bg-white hover:bg-gray-200 text-black' : 'bg-black hover:bg-gray-800 text-white'
+            }`}
           >
             {loading ? (
               <div className="flex items-center gap-2">
@@ -228,13 +253,17 @@ const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
         {/* Progress bar */}
         {loading && (
           <div className="mt-4">
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className={`w-full rounded-full h-2 transition-all duration-500 ${
+              isBlackBackground ? 'bg-gray-700' : 'bg-gray-200'
+            }`}>
               <div 
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 mt-2 text-center">Generating your newsletter...</p>
+            <p className={`text-xs sm:text-sm mt-2 text-center transition-colors duration-500 ${
+              isBlackBackground ? 'text-gray-400' : 'text-gray-600'
+            }`}>Generating your newsletter...</p>
           </div>
         )}
       </Card>
@@ -490,17 +519,19 @@ const IndexNew = () => {
         <div className="hidden lg:flex flex-row items-center justify-between w-full px-16 xl:px-24 gap-0">
           {/* Left side content */}
           <div className="relative z-10 text-left">
-            <div 
-              className={`text-6xl xl:text-8xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
-              }`}
-              style={{
-                transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              Briefly
-            </div>
+            <CursorWander intensity={0.05} speed={0.3}>
+              <div 
+                className={`text-6xl xl:text-8xl font-bold text-black mb-4 transition-all duration-1000 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
+                }`}
+                style={{
+                  transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                Briefly
+              </div>
+            </CursorWander>
             <div className="text-2xl xl:text-4xl font-light text-gray-600">
               {text}
               <span 
@@ -603,17 +634,19 @@ const IndexNew = () => {
         <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen">
           {/* Center content with fade-in animation - moved up by 16px total */}
           <div className="flex flex-col items-center justify-center flex-1" style={{ marginTop: '-16px' }}>
-            <div 
-              className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              Briefly
-            </div>
+            <CursorWander intensity={0.03} speed={0.2}>
+              <div 
+                className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-black mb-4 transition-all duration-1000 ${
+                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+                }`}
+                style={{
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                Briefly
+              </div>
+            </CursorWander>
             <div 
               className={`text-lg sm:text-xl font-light text-gray-600 transition-all duration-1000 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
@@ -721,18 +754,21 @@ const IndexNew = () => {
       {/* Newsletter Generation Section */}
       <div 
         id="how-it-works"
-        className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center relative newsletter-section pb-16"
+        className="min-h-screen flex flex-col items-center justify-center relative newsletter-section pb-16 transition-all duration-500"
         style={{
-          backgroundImage: newsletterDots,
+          backgroundColor: scrollY > 400 ? '#000000' : 'transparent',
+          backgroundImage: scrollY > 400 ? 'none' : newsletterDots,
           opacity: Math.max(0, (scrollY - 400) / 400),
           transform: `translate3d(0, ${Math.max(0, scrollY - 400) * 0.2}px, 0)`,
-          willChange: 'transform, opacity',
-          transition: 'background-image 0.2s ease-out'
+          willChange: 'transform, opacity, background-color',
+          transition: 'background-image 0.2s ease-out, background-color 0.5s ease-out'
         }}
       >
         <div className="text-center mb-32 sm:mb-64 px-4">
           <h2 
-            className="text-3xl sm:text-5xl lg:text-7xl font-bold text-gray-800 mb-4 sm:mb-8"
+            className={`text-3xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-8 transition-colors duration-500 ${
+              scrollY > 400 ? 'text-white' : 'text-gray-800'
+            }`}
             style={{
               transform: `translate3d(0, ${Math.max(0, scrollY - 500) * 0.3}px, 0)`,
               marginTop: '-50px sm:-100px',
@@ -751,19 +787,6 @@ const IndexNew = () => {
           @keyframes blink {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0; }
-          }
-          
-          .briefly-hover {
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            will-change: letter-spacing, transform;
-            letter-spacing: 0em;
-            transform: translateZ(0);
-          }
-          
-          .briefly-hover:hover {
-            letter-spacing: 0.12em;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateZ(0);
           }
         `
       }} />

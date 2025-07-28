@@ -171,4 +171,10 @@ export default {
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
+	// Add scrollbar-hide utility
+	variants: {
+		extend: {
+			scrollbar: ['rounded']
+		}
+	}
 } satisfies Config;

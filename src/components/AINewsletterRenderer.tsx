@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Play, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Play, ExternalLink, Edit } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { useNavigate } from 'react-router-dom';
 
 interface NewsletterSection {
   title: string;
@@ -12,6 +13,8 @@ interface NewsletterSection {
 interface AINewsletterData {
   sections: NewsletterSection[];
   rawContent?: string;
+  editedContent?: string;
+  css?: string;
   error?: string;
   youtubeSummaries?: {[key: string]: string};
 }
@@ -23,11 +26,24 @@ interface AINewsletterRendererProps {
 }
 
 const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterData, posts, onBackToBuilder }) => {
+  const navigate = useNavigate();
+  
   const handleBackToGenerator = () => {
     logger.info('User clicked back to generator');
     if (onBackToBuilder) {
       onBackToBuilder();
     }
+  };
+
+  const handleEditNewsletter = () => {
+    logger.info('User clicked edit newsletter');
+    // Navigate to the newsletter editor with the current content
+    navigate('/newsletter-editor', { 
+      state: { 
+        newsletterContent: newsletterData.rawContent || newsletterData.editedContent || '',
+        newsletterData: newsletterData 
+      } 
+    });
   };
 
   const Section = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
@@ -40,32 +56,304 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   );
 
   // Handle raw content display - TRUE BLANK CANVAS MODE
-  if (newsletterData.rawContent) {
+  if (newsletterData.rawContent || newsletterData.editedContent) {
+    const contentToRender = newsletterData.editedContent || newsletterData.rawContent || '';
+    const cssToApply = newsletterData.css || '';
+    
     logger.info('Rendering newsletter with raw content', { 
-      contentLength: newsletterData.rawContent.length 
+      contentLength: contentToRender.length,
+      hasCss: !!cssToApply
     });
     
     // Debug logging
-    console.log('AINewsletterRenderer received rawContent:', newsletterData.rawContent);
-    console.log('RawContent length:', newsletterData.rawContent.length);
-    console.log('RawContent type:', typeof newsletterData.rawContent);
+    console.log('AINewsletterRenderer received content:', contentToRender);
+    console.log('AINewsletterRenderer received CSS:', cssToApply);
+    console.log('Content length:', contentToRender.length);
+    console.log('Content type:', typeof contentToRender);
     
     // Check if the content contains complete HTML structure
-    const hasCompleteHtml = newsletterData.rawContent.includes('<html') && newsletterData.rawContent.includes('</html>');
+    const hasCompleteHtml = contentToRender.includes('<html') && contentToRender.includes('</html>');
     
     if (hasCompleteHtml) {
       // For complete HTML documents, render in a completely isolated iframe
       // Remove any existing HTML structure from OpenAI and let it be the complete document
-      const cleanHtmlContent = newsletterData.rawContent
+      let cleanHtmlContent = contentToRender
         .replace(/^```html\s*/g, '')
         .replace(/\s*```$/g, '')
         .trim();
       
+      // If we have CSS, inject it into the HTML
+      if (cssToApply) {
+        // Find the head tag and inject CSS, or create head if it doesn't exist
+        if (cleanHtmlContent.includes('<head>')) {
+          cleanHtmlContent = cleanHtmlContent.replace(
+            '<head>',
+            `<head><style>
+              ${cssToApply}
+              /* Ensure all content fills the full width */
+              * {
+                box-sizing: border-box !important;
+              }
+              /* Remove any max-width constraints */
+              div, table, td, tr {
+                max-width: none !important;
+                width: 100% !important;
+              }
+              /* Ensure newsletter content fills the entire width */
+              .newsletter-section {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Make sure images don't exceed container width */
+              img {
+                max-width: 100% !important;
+                height: auto !important;
+              }
+              /* Ensure text content uses full width */
+              p, h1, h2, h3, h4, h5, h6 {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Force table layout to use full width */
+              table {
+                width: 100% !important;
+                max-width: none !important;
+                table-layout: fixed !important;
+              }
+              td {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+              }
+              /* Override any inline styles that might constrain width */
+              [style*="max-width"] {
+                max-width: none !important;
+              }
+              [style*="width"] {
+                width: 100% !important;
+              }
+              /* Ensure all newsletter content uses full width */
+              #section-1, #section-2, #section-3, #section-4, #section-5 {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              /* Force all divs to use full width */
+              div {
+                width: 100% !important;
+                max-width: none !important;
+                box-sizing: border-box !important;
+              }
+              /* EXTREMELY AGGRESSIVE RULES - Override everything */
+              body * {
+                max-width: none !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+              }
+              /* Target specific table structure */
+              table[role="presentation"] {
+                width: 100% !important;
+                max-width: none !important;
+                table-layout: fixed !important;
+              }
+              table[role="presentation"] td {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+              }
+              /* Override any GrapesJS generated styles */
+              [id^="i"] {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Force all elements to use full width */
+              html, body {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              /* SPECIFIC OVERRIDE FOR INLINE STYLES */
+              td[style*="width"] {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Target the specific td with id="i7uh" */
+              td#i7uh {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Override any inline width styles on td elements */
+              td[style] {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Force table layout to ignore inline widths */
+              table {
+                table-layout: fixed !important;
+                width: 100% !important;
+              }
+              /* Ensure all td elements use full width regardless of inline styles */
+              td {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 100% !important;
+              }
+            </style>`
+          );
+        } else {
+          // If no head tag, add one with CSS
+          cleanHtmlContent = cleanHtmlContent.replace(
+            '<html>',
+            `<html><head><style>
+              ${cssToApply}
+              /* Ensure all content fills the full width */
+              * {
+                box-sizing: border-box !important;
+              }
+              /* Remove any max-width constraints */
+              div, table, td, tr {
+                max-width: none !important;
+                width: 100% !important;
+              }
+              /* Ensure newsletter content fills the entire width */
+              .newsletter-section {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Make sure images don't exceed container width */
+              img {
+                max-width: 100% !important;
+                height: auto !important;
+              }
+              /* Ensure text content uses full width */
+              p, h1, h2, h3, h4, h5, h6 {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Force table layout to use full width */
+              table {
+                width: 100% !important;
+                max-width: none !important;
+                table-layout: fixed !important;
+              }
+              td {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+              }
+              /* Override any inline styles that might constrain width */
+              [style*="max-width"] {
+                max-width: none !important;
+              }
+              [style*="width"] {
+                width: 100% !important;
+              }
+              /* Ensure all newsletter content uses full width */
+              #section-1, #section-2, #section-3, #section-4, #section-5 {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              /* Force all divs to use full width */
+              div {
+                width: 100% !important;
+                max-width: none !important;
+                box-sizing: border-box !important;
+              }
+              /* EXTREMELY AGGRESSIVE RULES - Override everything */
+              body * {
+                max-width: none !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+              }
+              /* Target specific table structure */
+              table[role="presentation"] {
+                width: 100% !important;
+                max-width: none !important;
+                table-layout: fixed !important;
+              }
+              table[role="presentation"] td {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+              }
+              /* Override any GrapesJS generated styles */
+              [id^="i"] {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Force all elements to use full width */
+              html, body {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              /* SPECIFIC OVERRIDE FOR INLINE STYLES */
+              td[style*="width"] {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Target the specific td with id="i7uh" */
+              td#i7uh {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Override any inline width styles on td elements */
+              td[style] {
+                width: 100% !important;
+                max-width: none !important;
+              }
+              /* Force table layout to ignore inline widths */
+              table {
+                table-layout: fixed !important;
+                width: 100% !important;
+              }
+              /* Ensure all td elements use full width regardless of inline styles */
+              td {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 100% !important;
+              }
+            </style></head>`
+          );
+        }
+        
+        // Debug logging
+        console.log('Final HTML with CSS:', cleanHtmlContent.substring(0, 500) + '...');
+      }
+      
       return (
-        <div className="w-full h-full bg-white max-w-[640px] flex flex-col min-h-0">
+        <div className="w-full h-full bg-white flex flex-col min-h-0 max-w-[640px] mx-auto">
+          {/* Header with Edit Button */}
+          <header className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold mb-2">Your Newsletter</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">Generated newsletter content</p>
+              </div>
+              <Button
+                onClick={handleEditNewsletter}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200"
+              >
+                <Edit className="w-4 h-4" />
+                Edit Newsletter
+              </Button>
+            </div>
+          </header>
+          
           {/* Completely Isolated HTML Renderer */}
-          <div className="flex-1 flex justify-center min-h-0" style={{ padding: '0', margin: '0' }}>
-            <div className="w-full max-w-[640px] h-full min-h-0" style={{ padding: '0', margin: '0' }}>
+          <div className="flex-1 flex justify-center min-h-0">
+            <div className="w-full max-w-[640px] h-full min-h-0">
               <iframe
                 srcDoc={cleanHtmlContent}
                 className="w-full h-full border-0 min-h-0"
@@ -95,44 +383,186 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
         </div>
       );
     } else {
-      // For partial HTML content, render in a minimal container with no styling conflicts
+      // For partial HTML content, create a complete HTML document with CSS
+      const completeHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            ${cssToApply}
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: Arial, sans-serif;
+              background: white;
+              width: 100%;
+              min-width: 100%;
+            }
+            /* Ensure all content fills the full width */
+            * {
+              box-sizing: border-box !important;
+            }
+            /* Remove any max-width constraints */
+            div, table, td, tr {
+              max-width: none !important;
+              width: 100% !important;
+            }
+            /* Ensure newsletter content fills the entire width */
+            .newsletter-section {
+              width: 100% !important;
+              max-width: none !important;
+            }
+            /* Make sure images don't exceed container width */
+            img {
+              max-width: 100% !important;
+              height: auto !important;
+            }
+            /* Ensure text content uses full width */
+            p, h1, h2, h3, h4, h5, h6 {
+              width: 100% !important;
+              max-width: none !important;
+            }
+            /* Force table layout to use full width */
+            table {
+              width: 100% !important;
+              max-width: none !important;
+              table-layout: fixed !important;
+            }
+            td {
+              width: 100% !important;
+              max-width: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            /* Override any inline styles that might constrain width */
+            [style*="max-width"] {
+              max-width: none !important;
+            }
+            [style*="width"] {
+              width: 100% !important;
+            }
+            /* Ensure all newsletter content uses full width */
+            #section-1, #section-2, #section-3, #section-4, #section-5 {
+              width: 100% !important;
+              max-width: none !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            /* Force all divs to use full width */
+            div {
+              width: 100% !important;
+              max-width: none !important;
+              box-sizing: border-box !important;
+            }
+            /* EXTREMELY AGGRESSIVE RULES - Override everything */
+            body * {
+              max-width: none !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            /* Target specific table structure */
+            table[role="presentation"] {
+              width: 100% !important;
+              max-width: none !important;
+              table-layout: fixed !important;
+            }
+            table[role="presentation"] td {
+              width: 100% !important;
+              max-width: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            /* Override any GrapesJS generated styles */
+            [id^="i"] {
+              width: 100% !important;
+              max-width: none !important;
+            }
+            /* Force all elements to use full width */
+            html, body {
+              width: 100% !important;
+              max-width: none !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            /* SPECIFIC OVERRIDE FOR INLINE STYLES */
+            td[style*="width"] {
+              width: 100% !important;
+              max-width: none !important;
+            }
+            /* Target the specific td with id="i7uh" */
+            td#i7uh {
+              width: 100% !important;
+              max-width: none !important;
+            }
+            /* Override any inline width styles on td elements */
+            td[style] {
+              width: 100% !important;
+              max-width: none !important;
+            }
+            /* Force table layout to ignore inline widths */
+            table {
+              table-layout: fixed !important;
+              width: 100% !important;
+            }
+            /* Ensure all td elements use full width regardless of inline styles */
+            td {
+              width: 100% !important;
+              max-width: none !important;
+              min-width: 100% !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${contentToRender}
+        </body>
+        </html>
+      `;
+      
       return (
-        <div className="w-full h-full bg-white max-w-[640px] flex flex-col min-h-0">
-          {/* Minimal Content Renderer - No styling conflicts */}
-          <div className="flex-1 flex justify-center min-h-0" style={{ padding: '0', margin: '0' }}>
-            <div 
-              className="w-full max-w-[640px] h-full overflow-y-auto min-h-0"
-              style={{
-                // Reset all styles to avoid conflicts
-                all: 'unset',
-                display: 'block',
-                width: '100%',
-                height: '100%',
-                maxWidth: '640px',
-                backgroundColor: 'white',
-                overflowY: 'auto',
-                padding: '0',
-                margin: '0',
-                minHeight: '0',
-                // Additional isolation
-                isolation: 'isolate',
-                contain: 'layout style paint'
-              }}
-            >
-              <div 
-                dangerouslySetInnerHTML={{ __html: newsletterData.rawContent }}
-                style={{
-                  // Ensure no inherited styles interfere
-                  all: 'unset',
+        <div className="w-full h-full bg-white flex flex-col min-h-0 max-w-[640px] mx-auto">
+          {/* Header with Edit Button */}
+          <header className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold mb-2">Your Newsletter</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">Generated newsletter content</p>
+              </div>
+              <Button
+                onClick={handleEditNewsletter}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200"
+              >
+                <Edit className="w-4 h-4" />
+                Edit Newsletter
+              </Button>
+            </div>
+          </header>
+          
+          {/* Complete HTML Renderer with CSS */}
+          <div className="flex-1 flex justify-center min-h-0">
+            <div className="w-full max-w-[640px] h-full min-h-0">
+              <iframe
+                srcDoc={completeHtml}
+                className="w-full h-full border-0 min-h-0"
+                title="Newsletter Preview"
+                sandbox="allow-same-origin allow-scripts allow-forms"
+                style={{ 
+                  border: 'none',
+                  outline: 'none',
+                  background: 'white',
+                  width: '100%',
+                  height: '100%',
                   display: 'block',
-                  fontFamily: 'inherit',
-                  fontSize: 'inherit',
-                  lineHeight: 'inherit',
-                  color: 'inherit',
                   padding: '0',
                   margin: '0',
                   maxWidth: '640px',
+                  minHeight: '0',
+                  // Ensure no black bars
                   backgroundColor: 'white',
+                  color: 'inherit',
                   // Additional isolation
                   isolation: 'isolate',
                   contain: 'layout style paint'
@@ -168,12 +598,25 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   });
 
   return (
-    <div className="w-full h-full bg-white max-w-[640px] flex flex-col min-h-0">
+    <div className="w-full h-full bg-white flex flex-col min-h-0">
       <div className="flex-1 flex justify-center min-h-0">
         <div className="bg-white h-full overflow-y-auto max-w-[640px] w-full min-h-0">
           <header className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border p-4 sm:p-6">
-            <h1 className="text-xl sm:text-2xl font-bold mb-2">Your Weekly Newsletter</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Generated from your social media content and YouTube videos</p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold mb-2">Your Weekly Newsletter</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">Generated from your social media content and YouTube videos</p>
+              </div>
+              <Button
+                onClick={handleEditNewsletter}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200"
+              >
+                <Edit className="w-4 h-4" />
+                Edit Newsletter
+              </Button>
+            </div>
           </header>
           
           <main className="space-y-4 sm:space-y-6 p-4 sm:p-6">

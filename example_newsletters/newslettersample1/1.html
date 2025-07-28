@@ -1,88 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Newsletter</title>
-	<style>
-		body {
-			font-family: 'Arial', sans-serif;
-			line-height: 1.6;
-			color: #333;
-			max-width: 600px;
-			margin: 0 auto;
-			padding: 20px;
-		}
-		.header {
-			text-align: center;
-			padding: 20px 0;
-			border-bottom: 2px solid #333;
-		}
-		.content {
-			padding: 20px 0;
-		}
-		.social-section {
-			background: #f5f5f5;
-			padding: 20px;
-			margin: 20px 0;
-			border-radius: 8px;
-		}
-		.post {
-			border: 1px solid #ddd;
-			padding: 15px;
-			margin: 10px 0;
-			border-radius: 5px;
-		}
-		.engagement {
-			color: #666;
-			font-size: 0.9em;
-		}
-		.footer {
-			text-align: center;
-			padding: 20px 0;
-			border-top: 1px solid #ddd;
-			margin-top: 20px;
-		}
-	</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Melodies</title>
+<style>
+body{margin:0;padding:0;font-family:'Raleway',sans-serif;background:#e7e7e7;color:#000}
+.section{max-width:600px;margin:0 auto;padding:30px 20px;box-sizing:border-box}
+.logo{text-align:center;color:#fca311;font-size:30px}
+.split{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.split img,.split div{flex:1 1 48%;box-sizing:border-box}
+.heading{color:#fca311;font-family:'Playfair Display',serif;font-size:40px;margin-bottom:10px}
+.text{color:#95a5a6;font-size:14px;line-height:1.4}
+.dark{background:#182235;color:#fff}
+.dark .heading{color:#fca311;font-size:34px}
+.icons{display:flex;justify-content:space-around;padding:20px 0}
+.icons img{width:60px}
+img{max-width:100%;height:auto;display:block;margin:10px auto}
+</style>
 </head>
 <body>
-	<div class="header">
-		<h1>Social Media Highlights</h1>
-		<p>Your weekly social media recap</p>
-	</div>
-	
-	<div class="content">
-		<div class="social-section">
-			<h2>LinkedIn Updates</h2>
-			<div class="post">
-				<h3>Brand name</h3>
-				<p class="engagement">Aug 25, 12:20</p>
-				<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-				<div class="engagement">
-					<span>👍 89</span> | 
-					<span>💬 32</span> | 
-					<span>📤 15</span>
-				</div>
-			</div>
-		</div>
-		
-		<div class="social-section">
-			<h2>Twitter Updates</h2>
-			<div class="post">
-				<h3>Brand name</h3>
-				<p class="engagement">Aug 27, 11:34</p>
-				<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-				<div class="engagement">
-					<span>👍 89</span> | 
-					<span>💬 32</span> | 
-					<span>📤 15</span>
-				</div>
-			</div>
-		</div>
-	</div>
-	
-	<div class="footer">
-		<p>Thanks for reading! Follow us on social media for more updates.</p>
-	</div>
+<div id="logo" class="section logo">LOGO</div>
+
+<div id="intro" class="section split">
+  <img src="images/image-1.png" alt="DJs">
+  <div>
+    <div class="heading">Melodies<br>at Midnight</div>
+    <p class="text">Lorem ipsum dolor sit amet, consec adip elit, sed do eiusmod tempor in cididunt ut labore.</p>
+  </div>
+</div>
+
+<div id="about" class="section split dark">
+  <img src="images/image-2.png" alt="Music girl">
+  <div>
+    <div class="heading">About<br>The Event</div>
+    <p class="text">Lorem ipsum dolor sit amet, consec adip elit, sed do eiusmod tempor in cididunt ut labore.</p>
+  </div>
+</div>
+
+<div id="extra" class="section split dark">
+  <div>
+    <div class="heading">Lorem ipsum<br>dolor sit amet</div>
+  </div>
+  <div></div>
+</div>
+
+<div id="features" class="section split dark icons">
+  <div>
+    <img src="images/image-3.png" alt="Icon 1">
+    <p class="text">Text block<br>Change the text.</p>
+  </div>
+  <div>
+    <img src="images/image-4.png" alt="Icon 2">
+    <p class="text">Text block<br>Change the text.</p>
+  </div>
+  <div>
+    <img src="images/image-5.png" alt="Icon 3">
+    <p class="text">Text block<br>Change the text.</p>
+  </div>
+</div>
 </body>
 </html>

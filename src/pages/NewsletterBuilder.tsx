@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Loader2, Home } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight } from "lucide-react";
 import AINewsletterRenderer from "@/components/AINewsletterRenderer";
 import Loader from "@/components/Loader";
 import { logger } from "@/lib/logger";
@@ -13,18 +13,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { configManager } from "@/lib/config";
 import useSmoothNavigate from "@/hooks/useSmoothNavigate";
 import { NEWSLETTER_TEMPLATES, getTemplateById, loadTemplateHTML } from '../lib/newsletterTemplates';
-import { chatManager, ChatMessage, ChatSession } from '../lib/smartChat';
 import { identifyTemplate } from '../lib/templateIntelligence';
+import { CardCarousel } from '@/components/ui/card-carousel';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SOCIALS = [
-  {
-    key: "linkedin",
-    label: "LinkedIn",
-    placeholder: "nyassin",
-    disabled: false,
-    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z'/%3E%3C/svg%3E",
-    color: "#000000"
-  },
   {
     key: "twitter",
     label: "X",
@@ -53,7 +46,6 @@ const SOCIALS = [
 
 // Temporary data storage during newsletter generation
 interface TempData {
-  linkedin?: any[];
   twitter?: any[];
   instagram?: any[];
   youtube?: any[];
@@ -69,52 +61,6 @@ interface ValidationErrors {
 // API keys are now managed through configManager for better security
 
 // Helper functions for fetching data from different platforms
-async function fetchLinkedInRaw(usernameOrUrl: string) {
-  // Check if API key is available
-  const rapidApiValidation = configManager.validateRapidAPIKey();
-  if (!rapidApiValidation.isValid) {
-    console.error('RapidAPI key not configured for LinkedIn');
-    throw new Error(rapidApiValidation.error);
-  }
-  
-  const RAPIDAPI_KEY = configManager.getRapidAPIKey();
-  
-  // Extract username if a URL is provided
-  let username = usernameOrUrl;
-  if (usernameOrUrl.includes('linkedin.com')) {
-    const match = usernameOrUrl.match(/linkedin.com\/in\/([\w-]+)/);
-    username = match ? match[1] : usernameOrUrl;
-  }
-  
-  console.log('LinkedIn: Processing username:', username);
-  
-  try {
-  // Use the exact same fetch snippet as DebugSocialAPIs
-  const url = `https://fresh-linkedin-profile-data.p.rapidapi.com/get-profile-posts?linkedin_url=https%3A%2F%2Fwww.linkedin.com%2Fin%2F${encodeURIComponent(username)}%2F&type=posts`;
-  const options = {
-    method: 'GET',
-    headers: {
-      'x-rapidapi-key': RAPIDAPI_KEY,
-      'x-rapidapi-host': 'fresh-linkedin-profile-data.p.rapidapi.com'
-    }
-  };
-    
-  const response = await fetch(url, options);
-  const result = await response.text();
-    console.log('LinkedIn API Response:', result);
-    
-  try {
-    return JSON.parse(result);
-    } catch (parseError) {
-      console.error('Failed to parse LinkedIn API response:', parseError);
-      throw new Error('Failed to parse LinkedIn data');
-    }
-  } catch (error) {
-    console.error('LinkedIn API error:', error);
-    throw new Error('Failed to fetch LinkedIn data');
-  }
-}
-
 async function fetchXData(handleOrUrl: string) {
   // Check if API key is available
   const rapidApiValidation = configManager.validateRapidAPIKey();
@@ -916,7 +862,7 @@ async function fetchYouTubeData(channelId: string) {
             const summaryPrompt = `Summarize this YouTube video transcript in 2-3 sentences, written in first person as if the video creator is describing their video for a newsletter. Keep it engaging and highlight the main points or value provided:\n\n${subtitlesText}`;
             
             const summaryBody = {
-              model: "gpt-4o-mini",
+              model: "gpt-4o",
               messages: [
                 { role: "system", content: "You are a professional newsletter writer helping to summarize video content." },
                 { role: "user", content: summaryPrompt }
@@ -1034,12 +980,39 @@ async function summarizeText(text: string): Promise<string> {
   const OPENAI_API_KEY = configManager.getOpenAIKey();
   const prompt = `Summarize this social media post in 1-2 sentences, written in first person as if the original poster is describing their content for a newsletter. Keep it engaging and highlight the main points or value provided:\n\n${text}`;
   const body = {
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages: [
       { role: "system", content: "You are a professional newsletter writer helping to summarize social media content." },
       { role: "user", content: prompt }
     ],
     max_tokens: 120,
+    temperature: 0.7
+  };
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify(body)
+  });
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content?.trim() || text;
+}
+
+async function summarizeYouTubeContent(text: string): Promise<string> {
+  const openaiValidation = configManager.validateOpenAIKey();
+  if (!openaiValidation.isValid) return text;
+  
+  const OPENAI_API_KEY = configManager.getOpenAIKey();
+  const prompt = `Transform this YouTube video content into a first-person summary for a newsletter. Write it as if the YouTuber is describing what they created and shared. Make it engaging and highlight the key insights or value provided. Keep it to 2-3 sentences maximum:\n\n${text}`;
+  const body = {
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: "You are a professional newsletter writer helping to transform YouTube content into engaging first-person summaries." },
+      { role: "user", content: prompt }
+    ],
+    max_tokens: 150,
     temperature: 0.7
   };
   const resp = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -1061,21 +1034,22 @@ async function summarizeSocialMediaPosts(posts: any[], platform: string): Promis
   
   for (const post of posts) {
     try {
-      const originalText = post.text || '';
-      if (originalText.length > 10) {
-        console.log(`🤖 Summarizing ${platform} post:`, originalText.substring(0, 100) + '...');
-        const summarizedText = await summarizeText(originalText);
+      const textToSummarize = post.text || '';
+      
+              if (textToSummarize.length > 10) {
+          console.log(`🤖 Summarizing ${platform} post:`, textToSummarize.substring(0, 100) + '...');
+          const summarizedText = await summarizeText(textToSummarize);
         
         // Create new post object with summarized text
         const summarizedPost = {
           ...post,
           text: summarizedText,
-          originalText: originalText, // Keep original for reference
+          originalText: textToSummarize, // Keep original for reference
           aiSummarized: true
         };
         
         summarizedPosts.push(summarizedPost);
-        console.log(`✅ ${platform} post summarized:`, summarizedText);
+        console.log(`✅ ${platform} post processed:`, summarizedText);
       } else {
         // If text is too short, keep original
         summarizedPosts.push({
@@ -1096,14 +1070,6 @@ async function summarizeSocialMediaPosts(posts: any[], platform: string): Promis
   console.log(`✅ Completed AI summarization for ${platform}:`, summarizedPosts.length, 'posts');
   return summarizedPosts;
 }
-
-const validateLinkedInInput = (input: string): boolean => {
-  // Accepts either a LinkedIn profile URL or a username (alphanumeric, dashes, underscores)
-  if (!input) return false;
-  const urlPattern = /^https?:\/\/(www\.)?linkedin\.com\/in\/[\w-]+/i;
-  const usernamePattern = /^[\w-]+$/;
-  return urlPattern.test(input) || usernamePattern.test(input.trim());
-};
 
 const validateXInput = (input: string): boolean => {
   // Accepts X URLs, @handles, or just handles
@@ -1132,19 +1098,6 @@ const validateXInput = (input: string): boolean => {
   return isValidUrl || isValidHandle;
 };
 
-function extractLinkedInUsername(link: string): string | null {
-  // Accepts either a LinkedIn profile URL or a username
-  if (link.includes('linkedin.com')) {
-    const match = link.match(/linkedin.com\/in\/([\w-]+)/);
-    return match ? match[1] : null;
-  }
-  // If it's just a username
-  if (/^[\w-]+$/.test(link.trim())) {
-    return link.trim();
-  }
-  return null;
-}
-
 async function summarizePostsWithHeadings(posts: any[]): Promise<string> {
   const openaiValidation = configManager.validateOpenAIKey();
   if (!openaiValidation.isValid) return posts.map(p => p.text).join('\n\n');
@@ -1153,7 +1106,7 @@ async function summarizePostsWithHeadings(posts: any[]): Promise<string> {
   const allText = posts.map((p) => p.text).join('\n');
   const prompt = `just reply with what is asked, nothing else. use all the text to make a newsletter about the updates, post, etc. that are present about the person. write in a first person perspective. write very short paragraphs for quick updates and keep things clean. use headings to divide everything in neat areas and return everything in html code as it needs to be embedded in mails later on. make sure the response is in plain text but html code. make dark themed with #101118 as the background color. use an appropriate color palette. add emojis to make it a lot more engaging. shorten the length of all paragraphs.\n\n${allText}`;
   const body = {
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages: [
       { role: "system", content: "You are a professional newsletter writer." },
       { role: "user", content: prompt }
@@ -1181,108 +1134,6 @@ async function processAllPlatforms(selected: any, inputs: any): Promise<TempData
   };
   
   const platformProcessors = {
-    linkedin: async (input: string) => {
-      try {
-      const usernameOrUrl = extractLinkedInUsername(input) || input;
-      const raw = await fetchLinkedInRaw(usernameOrUrl);
-      if (raw && Array.isArray(raw.data)) {
-        const posts = raw.data.filter(post => !post.is_video && post.text && post.posted);
-        const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime()).slice(0, 3);
-        
-        // AI Summarization for LinkedIn posts
-        console.log('🤖 Starting LinkedIn AI summarization...');
-        const summarizedPosts = await summarizeSocialMediaPosts(sortedPosts, 'LinkedIn');
-        tempData.linkedin = summarizedPosts;
-        
-        // Collect images and text
-        const images = summarizedPosts.flatMap(post => {
-          const postImages = post.images || [];
-          return postImages.map((img: any) => ({
-            url: img.url,
-            postText: post.text,
-            postDate: post.posted,
-            platform: 'linkedin'
-          }));
-        });
-        tempData.allImages = [...(tempData.allImages || []), ...images];
-        tempData.allText += summarizedPosts.map(p => `[LinkedIn] ${p.text}`).join('\n\n');
-        
-        // Add detailed logging for LinkedIn data
-        console.log('LinkedIn data processed:', {
-          postsCount: summarizedPosts.length,
-          imagesCount: images.length,
-          textLength: summarizedPosts.map(p => p.text).join('\n\n').length,
-          aiSummarized: summarizedPosts.every(p => p.aiSummarized)
-        });
-        } else {
-          console.log('LinkedIn: No valid data returned from API, using fallback');
-          // Create fallback content to ensure we have something
-          const fallbackPosts = [
-            {
-              text: "Just shared insights about building scalable systems and team collaboration. Check out my latest thoughts on professional growth!",
-              posted: new Date().toISOString(),
-              images: [{ url: "https://placehold.co/400x300?text=LinkedIn+Post" }],
-              likes: 25,
-              comments: 8,
-              url: `https://linkedin.com/in/${input}/recent-activity`,
-              is_video: false
-            }
-          ];
-          tempData.linkedin = fallbackPosts;
-          
-          const images = fallbackPosts.flatMap(post => {
-            const postImages = post.images || [];
-            return postImages.map((img: any) => ({
-              url: img.url,
-              postText: post.text,
-              postDate: post.posted,
-              platform: 'linkedin'
-            }));
-          });
-          tempData.allImages = [...(tempData.allImages || []), ...images];
-          tempData.allText += fallbackPosts.map(p => `[LinkedIn] ${p.text}`).join('\n\n');
-          
-          console.log('LinkedIn fallback data processed:', {
-            postsCount: fallbackPosts.length,
-            imagesCount: images.length,
-            textLength: fallbackPosts.map(p => p.text).join('\n\n').length
-          });
-        }
-      } catch (error) {
-        console.error('LinkedIn processing error:', error);
-        // Create fallback content even on error
-        const fallbackPosts = [
-          {
-            text: "Just shared insights about building scalable systems and team collaboration. Check out my latest thoughts on professional growth!",
-            posted: new Date().toISOString(),
-            images: [{ url: "https://placehold.co/400x300?text=LinkedIn+Post" }],
-            likes: 25,
-            comments: 8,
-            url: `https://linkedin.com/in/${input}/recent-activity`,
-            is_video: false
-          }
-        ];
-        tempData.linkedin = fallbackPosts;
-        
-        const images = fallbackPosts.flatMap(post => {
-          const postImages = post.images || [];
-          return postImages.map((img: any) => ({
-            url: img.url,
-            postText: post.text,
-            postDate: post.posted,
-            platform: 'linkedin'
-          }));
-        });
-        tempData.allImages = [...(tempData.allImages || []), ...images];
-        tempData.allText += fallbackPosts.map(p => `[LinkedIn] ${p.text}`).join('\n\n');
-        
-        console.log('LinkedIn error fallback data processed:', {
-          postsCount: fallbackPosts.length,
-          imagesCount: images.length,
-          textLength: fallbackPosts.map(p => p.text).join('\n\n').length
-        });
-      }
-    },
     twitter: async (input: string) => {
       try {
         console.log('Processing X input:', input);
@@ -1793,20 +1644,21 @@ function cleanOpenAIHtml(html: string): string {
 }
 
 export default function NewsletterBuilder() {
+
   const navigate = useNavigate();
   const smoothNavigate = useSmoothNavigate();
+  const location = useLocation();
   const [selected, setSelected] = useState({
-    linkedin: false,
     twitter: false,
     instagram: false,
     youtube: false,
   });
   const [inputs, setInputs] = useState({
-    linkedin: "",
     twitter: "",
     instagram: "",
     youtube: "",
   });
+
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [loading, setLoading] = useState(false);
   const [newsletter, setNewsletter] = useState<any>(null);
@@ -1824,12 +1676,16 @@ export default function NewsletterBuilder() {
   const [generationStep, setGenerationStep] = useState('');
   const [showLoadingPage, setShowLoadingPage] = useState(false);
 
-  // Section editing state
-  const [showSectionEditor, setShowSectionEditor] = useState(false);
-  const [selectedSectionForEdit, setSelectedSectionForEdit] = useState<string | null>(null);
-  const [sectionEditLoading, setSectionEditLoading] = useState(false);
-  const [sectionEditInput, setSectionEditInput] = useState('');
-  const [availableSections, setAvailableSections] = useState<Array<{id: string, title: string, content: string}>>([]);
+  // Handle edited newsletter content from editor
+  useEffect(() => {
+    if (location.state?.hasEditedContent && location.state?.editedNewsletter) {
+      console.log('Received edited newsletter:', location.state.editedNewsletter);
+      setNewsletter(location.state.editedNewsletter);
+      setNewsletterData(location.state.editedNewsletter);
+      // Clear the state to prevent re-processing
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate]);
 
   // Reset loading state when template selection is shown
   useEffect(() => {
@@ -1846,14 +1702,72 @@ export default function NewsletterBuilder() {
     console.log('🔄 Generation step:', generationStep);
   }, [loading, generationProgress, generationStep]);
   
+  // Debug newsletter state changes
+  useEffect(() => {
+    console.log('🔄 Newsletter state changed:', newsletter ? 'has newsletter' : 'no newsletter');
+    console.log('🔄 Newsletter data:', newsletter);
+  }, [newsletter]);
+  
+  // Debug showLoadingPage state changes
+  useEffect(() => {
+    console.log('🔄 showLoadingPage state changed:', showLoadingPage);
+  }, [showLoadingPage]);
+  
+  // Debug what's being rendered
+  useEffect(() => {
+    console.log('🔄 Render state:');
+    console.log('  - showLoadingPage:', showLoadingPage);
+    console.log('  - newsletter:', newsletter ? 'has newsletter' : 'no newsletter');
+    console.log('  - showTemplateSelection:', showTemplateSelection);
+    console.log('  - loading:', loading);
+    
+    if (showLoadingPage && !newsletter) {
+      console.log('🔄 Should render: LOADING PAGE');
+    } else if (showTemplateSelection) {
+      console.log('🔄 Should render: TEMPLATE SELECTION');
+    } else if (newsletter) {
+      console.log('🔄 Should render: NEWSLETTER');
+    } else {
+      console.log('🔄 Should render: FORM');
+    }
+  }, [showLoadingPage, newsletter, showTemplateSelection, loading]);
+  
   // Debug modal state
   const [showDebugModal, setShowDebugModal] = useState(false);
+
+  // Hidden feature: bypass social media input with "skibidi"
+  const [typedKeys, setTypedKeys] = useState('');
   
-  // Chat functionality state
-  const [chatSession, setChatSession] = useState<ChatSession | null>(null);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Only listen for alphabetic keys
+      if (/^[a-zA-Z]$/.test(event.key)) {
+        const newTypedKeys = typedKeys + event.key.toLowerCase();
+        setTypedKeys(newTypedKeys);
+        
+        // Check if "skibidi" is typed
+        if (newTypedKeys.includes('skibidi')) {
+          console.log('🎭 Hidden feature activated: "skibidi" detected!');
+          setTypedKeys(''); // Reset for next use
+          
+          // Bypass social media input and go directly to template selection
+          setShowTemplateSelection(true);
+          setIsTemplateSelectionPhase(true);
+          setCollectedData({}); // Empty data since we're bypassing
+        }
+        
+        // Keep only last 10 characters to prevent memory buildup
+        if (newTypedKeys.length > 10) {
+          setTypedKeys(newTypedKeys.slice(-10));
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [typedKeys]);
 
   const handleCheck = (key: string) => {
     setSelected((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
@@ -1894,13 +1808,7 @@ export default function NewsletterBuilder() {
           errors[social.key] = requiredValidation.error!;
           isValid = false;
         } else {
-          // Validate URL or username for LinkedIn
-          if (social.key === 'linkedin') {
-            if (!validateLinkedInInput(input)) {
-              errors[social.key] = 'Enter a valid LinkedIn profile URL or username';
-              isValid = false;
-            }
-          } else if (social.key === 'twitter') {
+                  if (social.key === 'twitter') {
             if (!validateXInput(input)) {
               errors[social.key] = 'Enter a valid X profile URL or handle (e.g., @username or username)';
               isValid = false;
@@ -1965,7 +1873,7 @@ export default function NewsletterBuilder() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🚀 Button clicked!');
+    console.log('🚀 handleSubmit called!');
     console.log('Selected platforms:', selected);
     console.log('Inputs:', inputs);
     console.log('Selected template:', selectedTemplate);
@@ -2027,70 +1935,24 @@ export default function NewsletterBuilder() {
       console.log('button disabled:', !selectedTemplate || loading);
       
       if (selectedTemplate) {
-        console.log('✅ Calling generateNewsletterWithOpenAI with:', selectedTemplate, collectedData);
+        console.log('✅ Calling generateNewsletterWithTemplate with:', selectedTemplate, collectedData);
         console.log('🔄 Setting loading state to true...');
         setLoading(true); // Set loading to true when starting generation
         setIsTemplateSelectionPhase(false); // Ensure we're not in template selection phase
         setGenerationProgress(0);
         setGenerationStep('Initializing...');
         setShowLoadingPage(true); // Show the dedicated loading page
-        console.log('🔄 Loading state set, calling generateNewsletterWithOpenAI...');
-        generateNewsletterWithOpenAI(selectedTemplate, collectedData);
+        console.log('🔄 showLoadingPage set to true');
+        console.log('🔄 Loading state set, calling generateNewsletterWithTemplate...');
+        generateNewsletterWithTemplate(selectedTemplate, collectedData);
       } else {
         console.log('❌ No template selected');
       }
     }
   };
 
-  // Handle chat message submission
-  const handleChatSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim() || !chatSession || chatLoading) return;
 
-    const userMessage = chatInput.trim();
-    setChatInput('');
-    setChatLoading(true);
 
-    try {
-      console.log('💬 Sending chat message:', userMessage);
-      
-      const result = await chatManager.processMessage(chatSession.id, userMessage);
-      console.log('📨 Chat result received:', result);
-      
-      // Update chat messages from the session (to avoid duplicates)
-      const updatedSession = chatManager.getSession(chatSession.id);
-      if (updatedSession) {
-        setChatMessages(updatedSession.messages);
-        console.log('📝 Updated chat messages from session, total messages:', updatedSession.messages.length);
-      }
-      
-      // If the AI made changes, update the newsletter
-      if (result.response.editRequest?.modifiedHtml) {
-        console.log('🎯 AI suggested newsletter changes, length:', result.response.editRequest.modifiedHtml.length);
-        console.log('🎯 Modified HTML preview:', result.response.editRequest.modifiedHtml.substring(0, 200));
-        console.log('🎯 Modified HTML validation passed');
-        // Auto-apply changes
-        setNewsletter({ rawContent: result.response.editRequest.modifiedHtml });
-      } else {
-        console.log('⚠️ No HTML changes found in AI response');
-        console.log('AI response content:', result.response.content);
-        console.log('AI response editRequest:', result.response.editRequest);
-      }
-      
-    } catch (error: any) {
-      console.error('❌ Chat error:', error);
-      // Add error message to chat
-      const errorMessage: ChatMessage = {
-        id: `msg_${Date.now()}`,
-        role: 'assistant',
-        content: `Sorry, I encountered an error: ${error.message}. Please try again.`,
-        timestamp: new Date()
-      };
-      setChatMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setChatLoading(false);
-    }
-  };
 
   // OLD IMPLEMENTATION - TO BE REMOVED
   const handleSubmitOLD = async (e: React.FormEvent) => {
@@ -2107,7 +1969,7 @@ export default function NewsletterBuilder() {
     try {
       // Process all selected platforms and collect data
       logger.info('Processing all platforms', { selected });
-      const tempData = await processAllPlatforms(selected, inputs);
+              const tempData = await processAllPlatforms(selected, inputs);
       setTempData(tempData); // Store temp data
       
       // Debug logging to see what data was collected
@@ -2119,7 +1981,6 @@ export default function NewsletterBuilder() {
         platforms: Object.keys(selected).filter(key => selected[key]),
         dataKeys: Object.keys(tempData),
         platformData: {
-          linkedin: tempData.linkedin?.length || 0,
           twitter: tempData.twitter?.length || 0,
           instagram: tempData.instagram?.length || 0,
           youtube: tempData.youtube?.length || 0
@@ -2141,7 +2002,6 @@ export default function NewsletterBuilder() {
         console.error('No content found from any platform. Temp data:', tempData);
         console.error('Platform breakdown:', {
           selected: Object.keys(selected).filter(key => selected[key]),
-          linkedinPosts: tempData.linkedin?.length || 0,
           twitterPosts: tempData.twitter?.length || 0,
           instagramPosts: tempData.instagram?.length || 0,
           youtubePosts: tempData.youtube?.length || 0
@@ -2271,7 +2131,7 @@ IMAGES TO INCLUDE:
 ${imageData}`;
         
         const body = {
-          model: "gpt-4o-mini",
+          model: "gpt-4o",
           messages: [
             { role: "system", content: "You are an expert newsletter designer and writer who creates visually stunning, magazine-quality publications. You excel at transforming social media content into sophisticated, engaging newsletters that readers love to receive and share." },
             { role: "user", content: prompt }
@@ -2342,6 +2202,131 @@ ${imageData}`;
   };
 
   // Function to generate newsletter with OpenAI after template selection
+  // TEMPORARY DEVELOPMENT FUNCTION: Uses templates directly without OpenAI
+  // This bypasses OpenAI API calls and loads template HTML exactly as-is
+  const generateNewsletterWithTemplate = async (templateId: string, data: TempData) => {
+    console.log('🚀 Starting newsletter generation with template directly...');
+    console.log('📊 Template ID:', templateId);
+    console.log('📊 Data keys:', Object.keys(data));
+    
+    try {
+      // Progress steps to show loading
+      setGenerationProgress(10);
+      setGenerationStep('Initializing...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setGenerationProgress(30);
+      setGenerationStep('Loading template...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Get the template
+      const template = NEWSLETTER_TEMPLATES.find(t => t.id === templateId);
+      if (!template) {
+        throw new Error(`Template not found: ${templateId}`);
+      }
+      
+      console.log('📄 Template found:', template.name);
+      console.log('📄 Template path:', template.htmlPath);
+      
+      // Load template HTML
+      console.log('🔄 Attempting to load template HTML...');
+      let templateHtml;
+      try {
+        templateHtml = await loadTemplateHTML(template);
+        console.log('📄 Template HTML loaded successfully, length:', templateHtml.length);
+      } catch (loadError) {
+        console.error('❌ Failed to load template HTML:', loadError);
+        // Fallback: create a simple HTML template
+        templateHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Newsletter Template</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+              h1 { color: #333; }
+              p { line-height: 1.6; }
+            </style>
+          </head>
+          <body>
+            <h1>${template.name}</h1>
+            <p>This is a fallback template for ${template.name}.</p>
+            <p>The original template file could not be loaded.</p>
+          </body>
+          </html>
+        `;
+        console.log('📄 Using fallback template HTML');
+      }
+      
+      console.log('🔗 Template contains images:', templateHtml.includes('<img'));
+      console.log('🔗 Template contains links:', templateHtml.includes('<a href'));
+      console.log('📄 First 200 chars of template:', templateHtml.substring(0, 200));
+      
+      // Complete immediately
+      setGenerationProgress(100);
+      setGenerationStep('Complete!');
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Longer delay to show loading page
+      
+      // TEMPORARY DEVELOPMENT: Use template HTML directly without any cleaning
+      // This ensures ALL template content is preserved exactly as-is
+      // TODO: Remove this bypass when ready to use OpenAI again
+      let templateContent = templateHtml;
+      
+
+      
+      // Create newsletter data structure
+      const newsletterData = {
+        sections: [
+          {
+            title: "Template Content",
+            icon: "📄",
+            content: templateContent
+          }
+        ],
+        rawContent: templateContent,
+        editedContent: templateContent,
+        css: "", // Template CSS is already included in the HTML
+        error: undefined,
+        youtubeSummaries: {}
+      };
+      
+      console.log('✅ Newsletter generated successfully with template');
+      console.log('📄 Final HTML length:', templateContent.length);
+      
+      // Set the newsletter data
+      console.log('🔄 Setting newsletter state:', newsletterData);
+      setNewsletter(newsletterData);
+      setNewsletterData(data);
+      setLoading(false);
+      setShowLoadingPage(false);
+      setShowTemplateSelection(false); // Hide template selection when newsletter is ready
+      setGenerationProgress(0);
+      setGenerationStep('');
+      console.log('🔄 Newsletter state set, should show newsletter now');
+      console.log('🔄 showLoadingPage set to false');
+      console.log('🔄 showTemplateSelection set to false');
+      
+      // Small delay to ensure state updates are processed
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+    } catch (error: any) {
+      console.error('❌ Newsletter generation error:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        templateId,
+        dataKeys: Object.keys(data)
+      });
+      setError(error.message || "Failed to generate newsletter");
+      setLoading(false);
+      setShowLoadingPage(false);
+      setGenerationProgress(0);
+      setGenerationStep('');
+    }
+  };
+
   const generateNewsletterWithOpenAI = async (templateId: string, data: TempData) => {
     console.log('🚀 Starting newsletter generation with OpenAI...');
     console.log('📊 Template ID:', templateId);
@@ -2420,7 +2405,7 @@ ${imageData}`;
               "Authorization": `Bearer ${OPENAI_API_KEY}`
             },
             body: JSON.stringify({
-              model: "gpt-4o-mini",
+              model: "gpt-4o",
               messages: [
                 { 
                   role: "system", 
@@ -2477,24 +2462,12 @@ ${imageData}`;
         exchangesUsed: exchangeCount
       });
       
-      // Initialize chat session for the generated newsletter
-      console.log('🔗 Creating chat session with templateId:', templateId);
-      const session = chatManager.createSession(templateId, populatedHtml);
-      setChatSession(session);
-      setChatMessages(session.messages);
-      console.log('✅ Chat session created:', session.id);
-      
       // Set the populated newsletter after progress reaches 100%
       setNewsletter({ rawContent: populatedHtml });
       setNewsletterData(data);
       
-      // Extract sections for editing
-      const sectionsForEditing = extractSectionsForEditing(populatedHtml);
-      setAvailableSections(sectionsForEditing);
-      console.log('📝 Extracted', sectionsForEditing.length, 'sections for editing');
-      
-      // Show section editor by default
-      setShowSectionEditor(true);
+      // Newsletter is ready
+      console.log('📝 Newsletter ready');
       
       setShowTemplateSelection(false);
       setShowLoadingPage(false); // Hide the loading page
@@ -2518,18 +2491,7 @@ ${imageData}`;
     // Extract and analyze the newsletter sections
     const sections = extractNewsletterSections(templateHtml);
     
-    // Add content summarization instructions
-    const contentEnhancement = `
-CONTENT PROCESSING INSTRUCTIONS:
-- Summarize long social media posts to 1-2 engaging sentences
-- Make the tone professional and newsletter-appropriate
-- Highlight key insights and value from each post
-- Use real engagement metrics from the data provided
-- For YouTube videos, include view counts and duration
-- Make content more engaging and shareable
-- Ensure all content is relevant and valuable to newsletter readers`;
-    
-    return `POPULATE NEWSLETTER SECTIONS WITH SOCIAL MEDIA DATA
+    return `POPULATE TEMPLATE 5 NEWSLETTER WITH SOCIAL MEDIA DATA
 
 SOCIAL MEDIA DATA:
 ${socialData}
@@ -2537,23 +2499,42 @@ ${socialData}
 NEWSLETTER SECTIONS TO POPULATE:
 ${sections}
 
-INSTRUCTIONS:
-You are populating a newsletter template with 5 distinct sections. Each section should be populated with relevant social media content based on the section's purpose and the available data.
+SPECIFIC FORMATTING FOR TEMPLATE 5:
 
-SECTION POPULATION RULES:
-1. SECTION 1 (Header and Initial Promo): Use the most engaging social media content for the main headline and promotional message
-2. SECTION 2 (Game Zones): Feature social media posts about activities, events, or highlights
-3. SECTION 3 (First Content Block): Use social media insights and key takeaways
-4. SECTION 4 (Special Offer): Create promotional content based on social media engagement patterns
-5. SECTION 5 (Second Content Block and Footer): Use remaining social media content and add footer information
+CONTENT STRUCTURE:
+1. BULLET POINT SUMMARY: Create a concise bullet-point summary of the social media content
+   - Format as: "- [brief summary of activity/event/update]"
+   - Example: "- I went to Tokyo and had amazing food"
+   - Example: "- Met some friends and fans at the event"
+   - Example: "- Going on hiatus for the next month"
+
+2. THUMBNAILS AND IMAGES: After the bullet points, organize all thumbnails, images, and links
+   - Display all social media images in an organized grid/layout
+   - Include links to the original posts
+   - Maintain proper spacing and alignment
+   - Use actual engagement numbers and post dates
 
 CONTENT REQUIREMENTS:
 - Replace all "Lorem ipsum" text with actual social media content
 - Use real engagement numbers from the provided data
 - Maintain the original structure and styling of each section
 - Make content engaging and newsletter-appropriate
-- Distribute social media content evenly across sections
 - Use actual brand/company names from the data
+- Focus on creating engaging bullet points that summarize activities
+
+BULLET POINT GUIDELINES:
+- Keep each bullet point concise (1-2 sentences max)
+- Focus on activities, events, updates, and highlights
+- Use engaging, conversational tone
+- Include key details like locations, people met, achievements
+- Make it feel personal and authentic
+
+THUMBNAIL ORGANIZATION:
+- Display images in a clean, organized manner
+- Include post captions or descriptions
+- Show engagement metrics (likes, comments, views)
+- Link to original posts where possible
+- Maintain visual hierarchy and spacing
 
 CRITICAL REQUIREMENTS:
 - Return ONLY the complete HTML from <!DOCTYPE> to </html>
@@ -2561,6 +2542,7 @@ CRITICAL REQUIREMENTS:
 - Keep all original images and their src attributes
 - Use actual engagement numbers from the provided data
 - Make content newsletter-appropriate and engaging
+- Ensure bullet points come first, followed by organized thumbnails
 
 RESPONSE FORMAT:
 Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and end with </html>.`;
@@ -2637,14 +2619,6 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
   const formatSocialDataForPrompt = (data: TempData): string => {
     let formattedData = '';
     
-    if (data.linkedin && data.linkedin.length > 0) {
-      formattedData += 'LINKEDIN:\n';
-      data.linkedin.slice(0, 2).forEach((post, index) => {
-        formattedData += `${index + 1}. ${(post.text || 'LinkedIn post').substring(0, 200)}...\n`;
-        formattedData += `   Engagement: ${post.likes || 0} likes, ${post.comments || 0} comments\n\n`;
-      });
-    }
-    
     if (data.twitter && data.twitter.length > 0) {
       formattedData += 'TWITTER:\n';
       data.twitter.slice(0, 2).forEach((post, index) => {
@@ -2673,142 +2647,20 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
   };
 
   // Extract sections from generated newsletter for editing
-  const extractSectionsForEditing = (newsletterHtml: string): Array<{id: string, title: string, content: string}> => {
-    console.log('🔍 Extracting sections for editing...');
-    const sections: Array<{id: string, title: string, content: string}> = [];
+  // Debug function to check available sections
+  const checkAvailableSections = () => {
+    const newsletterHtml = newsletter?.rawContent || newsletter;
+    if (!newsletterHtml) return;
     
-    // Find all newsletter sections
-    const sectionMatches = newsletterHtml.match(/<div[^>]*id="section-(\d+)"[^>]*class="newsletter-section"[^>]*>(.*?)<\/div>/gs);
+    console.log('🔍 Checking available sections in newsletter...');
+    const allDivs = newsletterHtml.match(/<div[^>]*id="[^"]*"[^>]*>/g);
+    console.log('All divs with IDs:', allDivs);
     
-    if (sectionMatches) {
-      sectionMatches.forEach((match) => {
-        const sectionId = match.match(/id="section-(\d+)"/)?.[1] || 'unknown';
-        const sectionContent = match.replace(/<[^>]*>/g, '').trim();
-        
-        let sectionTitle = '';
-        switch(sectionId) {
-          case '1':
-            sectionTitle = 'Header and Initial Promo';
-            break;
-          case '2':
-            sectionTitle = 'Game Zones';
-            break;
-          case '3':
-            sectionTitle = 'First Content Block';
-            break;
-          case '4':
-            sectionTitle = 'Special Offer';
-            break;
-          case '5':
-            sectionTitle = 'Second Content Block and Footer';
-            break;
-          default:
-            sectionTitle = `Section ${sectionId}`;
-        }
-        
-        sections.push({
-          id: `section-${sectionId}`,
-          title: sectionTitle,
-          content: sectionContent
-        });
-      });
-      console.log('📝 Found', sections.length, 'sections for editing');
-    }
-    
-    return sections;
+    const sectionDivs = newsletterHtml.match(/<div[^>]*id="section-[^"]*"[^>]*>/g);
+    console.log('Section divs:', sectionDivs);
   };
 
-  // Handle section editing with OpenAI
-  const handleSectionEdit = async () => {
-    if (!selectedSectionForEdit || !sectionEditInput.trim()) {
-      return;
-    }
 
-    setSectionEditLoading(true);
-    console.log('✏️ Editing section:', selectedSectionForEdit);
-
-    try {
-      const OPENAI_API_KEY = configManager.getOpenAIKey();
-      
-      // Find the selected section in the newsletter
-      const selectedSection = availableSections.find(s => s.id === selectedSectionForEdit);
-      if (!selectedSection) {
-        throw new Error('Selected section not found');
-      }
-
-      // Create prompt for section editing
-      const editPrompt = `EDIT NEWSLETTER SECTION
-
-ORIGINAL SECTION CONTENT:
-${selectedSection.content}
-
-USER EDIT REQUEST:
-${sectionEditInput}
-
-INSTRUCTIONS:
-Edit the section content according to the user's request. Maintain the same tone and style as the original newsletter. Return ONLY the edited section content without any HTML tags or structure.
-
-RESPONSE FORMAT:
-Return ONLY the edited text content for this section.`;
-
-      // Call OpenAI for section editing
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            { 
-              role: "system", 
-              content: "You are a newsletter section editor. Edit the provided section content according to user requests. Return ONLY the edited text content." 
-            },
-            { role: "user", content: editPrompt }
-          ],
-          max_tokens: 1000,
-          temperature: 0.3
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const editedContent = data.choices[0]?.message?.content?.trim();
-
-      if (!editedContent) {
-        throw new Error('No content received from OpenAI');
-      }
-
-      // Replace the section content in the newsletter
-      const updatedNewsletter = newsletter.replace(
-        new RegExp(`<div[^>]*id="${selectedSectionForEdit}"[^>]*class="newsletter-section"[^>]*>.*?<\/div>`, 'gs'),
-        (match) => {
-          // Replace the text content while preserving HTML structure
-          return match.replace(/>([^<]*)</g, `>${editedContent}<`);
-        }
-      );
-
-      // Update the newsletter
-      setNewsletter(updatedNewsletter);
-      
-      // Reset editing state
-      setSelectedSectionForEdit(null);
-      setSectionEditInput('');
-      setShowSectionEditor(false);
-      
-      console.log('✅ Section edited successfully');
-
-    } catch (error) {
-      console.error('❌ Error editing section:', error);
-      setError(`Failed to edit section: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setSectionEditLoading(false);
-    }
-  };
 
   // Create section-specific prompt for individual section population
   const createSectionSpecificPrompt = (sectionId: string, sectionNumber: number, data: TempData, currentHtml: string): string => {
@@ -2868,6 +2720,40 @@ RESPONSE FORMAT:
 Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and end with </html>.`;
   };
 
+  // Add custom styles for smooth dropdown animations
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .timeline-select-content {
+        z-index: 50;
+        position: relative;
+        animation-delay: 0.05s;
+      }
+      
+      .timeline-select-item {
+        transition: all 0.15s ease-in-out;
+      }
+      
+      .timeline-select-item:hover {
+        background-color: #f9fafb;
+        transform: translateX(2px);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Log template availability on mount
+  useEffect(() => {
+    console.log('📋 NewsletterBuilder mounted - Templates available:', NEWSLETTER_TEMPLATES.length);
+    NEWSLETTER_TEMPLATES.forEach((template, index) => {
+      console.log(`📋 Template ${index + 1}:`, template.id, template.name, template.htmlPath);
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-white relative page-transition">
       {showLoadingPage ? (
@@ -2875,58 +2761,67 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
         <Loader progress={generationProgress} step={generationStep} />
       ) : showTemplateSelection ? (
         // Template Selection Phase - Hide form, show only template selection
-        <div className="min-h-screen bg-white animate-in fade-in duration-500 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-white p-4 sm:p-6 lg:p-8">
 
           <Card className="max-w-6xl w-full p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-xl mx-auto mt-4 sm:mt-8 animate-in slide-in-from-bottom-4 duration-700">
             <div className="text-center mb-6 sm:mb-8">
               <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">Choose Your Newsletter Template</h2>
-              <p className="text-sm sm:text-base text-gray-600 px-2">Select a design from the templates below. We'll populate it with your social media content.</p>
+              <p className="text-sm sm:text-base text-gray-600 px-2 mb-4">Select a design from the templates below. We'll populate it with your social media content.</p>
+              <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                <ChevronLeft className="w-4 h-4" />
+                <span>Scroll to browse templates</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              {NEWSLETTER_TEMPLATES.map((template) => (
-                <div
-                  key={template.id}
-                  onClick={() => setSelectedTemplate(template.id)}
-                  className={`cursor-pointer group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
-                    selectedTemplate === template.id
-                      ? 'border-black bg-gray-50 shadow-xl scale-105'
-                      : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
-                  }`}
-                >
-                  <div className="aspect-[4/3] bg-white relative overflow-hidden">
-                    <iframe 
-                      src={template.htmlPath}
-                      className="w-full h-full border-0 pointer-events-none transform scale-[0.5] origin-top-left"
-                      style={{ width: '200%', height: '200%' }}
-                      title={template.name}
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out backdrop-blur-sm">
-                      <span className="text-white font-bold text-base sm:text-lg transform group-hover:scale-110 transition-transform duration-300">Select Template</span>
-                    </div>
-                    {selectedTemplate === template.id && (
-                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
+                        <CardCarousel className="mb-6">
+              {(() => {
+                console.log('📋 Rendering templates:', NEWSLETTER_TEMPLATES.length, 'templates available');
+                return NEWSLETTER_TEMPLATES.map((template) => (
+                  <div
+                    key={template.id}
+                    onClick={() => setSelectedTemplate(template.id)}
+                    className={`cursor-pointer group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
+                      selectedTemplate === template.id
+                        ? 'border-black bg-gray-50 shadow-xl scale-105'
+                        : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
+                    }`}
+                    style={{ width: '320px', flexShrink: 0 }}
+                  >
+                    <div className="aspect-[4/3] bg-white relative overflow-hidden">
+                      <iframe 
+                        src={template.htmlPath}
+                        className="w-full h-full border-0 pointer-events-none transform scale-[0.5] origin-top-left"
+                        style={{ width: '200%', height: '200%' }}
+                        title={template.name}
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-500 ease-in-out backdrop-blur-sm">
+                        <span className="text-white font-bold text-base sm:text-lg transform hover:scale-110 transition-transform duration-300">Select Template</span>
                       </div>
-                    )}
+                      {selectedTemplate === template.id && (
+                        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 sm:p-4">
+                      <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{template.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">{template.description}</p>
+                      <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
+                        template.style === 'modern' ? 'bg-blue-100 text-blue-800' :
+                        template.style === 'classic' ? 'bg-green-100 text-green-800' :
+                        template.style === 'minimal' ? 'bg-gray-100 text-gray-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                        {template.style}
+                      </span>
+                    </div>
                   </div>
-                  <div className="p-3 sm:p-4">
-                    <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{template.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">{template.description}</p>
-                    <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
-                      template.style === 'modern' ? 'bg-blue-100 text-blue-800' :
-                      template.style === 'classic' ? 'bg-green-100 text-green-800' :
-                      template.style === 'minimal' ? 'bg-gray-100 text-gray-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
-                      {template.style}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ));
+              })()}
+            </CardCarousel>
             
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 gap-4 sm:gap-0">
               {/* Debug info - hidden on mobile */}
@@ -2949,27 +2844,9 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               </Button>
               
               <LoadingButton
-                onClick={() => {
-                  console.log('🎯 Template selected, generating newsletter...');
-                  console.log('selectedTemplate:', selectedTemplate);
-                  console.log('collectedData:', collectedData);
-                  console.log('collectedData keys:', Object.keys(collectedData));
-                  console.log('loading state before:', loading);
-                  console.log('button disabled:', !selectedTemplate || loading);
-                  
-                  if (selectedTemplate) {
-                    console.log('✅ Calling generateNewsletterWithOpenAI with:', selectedTemplate, collectedData);
-                    console.log('🔄 Setting loading state to true...');
-                    setLoading(true); // Set loading to true when starting generation
-                    setIsTemplateSelectionPhase(false); // Ensure we're not in template selection phase
-                    setGenerationProgress(0);
-                    setGenerationStep('Initializing...');
-                    setShowLoadingPage(true); // Show the dedicated loading page
-                    console.log('🔄 Loading state set, calling generateNewsletterWithOpenAI...');
-                    generateNewsletterWithOpenAI(selectedTemplate, collectedData);
-                  } else {
-                    console.log('❌ No template selected');
-                  }
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit(e);
                 }}
                 loading={loading}
                 loadingText="Generating Newsletter..."
@@ -2982,13 +2859,13 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
           </Card>
         </div>
       ) : newsletter ? (
-        // Newsletter & Chat Display Phase - Side by side windows
-        <div className="bg-gray-50 p-3 sm:p-6 animate-in fade-in duration-700">
+        // Newsletter Display Phase
+                  <div className="bg-gray-50 p-3 sm:p-6">
           <div className="flex flex-col lg:flex-row justify-center items-start gap-4 sm:gap-6">
             
             {/* Newsletter Window */}
             <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden animate-in slide-in-from-left-6 duration-800 w-full lg:w-auto" 
-                 style={{ width: '100%', maxWidth: '640px', height: '70vh', minHeight: '500px' }}>
+                 style={{ width: '100%', maxWidth: '640px', height: '85vh' }}>
               
               {/* Newsletter Header */}
               <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-white">
@@ -3044,171 +2921,10 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                 </div>
               </div>
               
-              {/* Section Editing Interface */}
-              {newsletter && availableSections.length > 0 && (
-                <div className="border-t border-gray-200 bg-gray-50 p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-0">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-800">Edit Newsletter Sections</h3>
-                    <Button
-                      onClick={() => setShowSectionEditor(!showSectionEditor)}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 w-full sm:w-auto"
-                    >
-                      {showSectionEditor ? 'Hide Editor' : 'Edit Sections'}
-                    </Button>
-                  </div>
-                  
-                  {showSectionEditor && (
-                    <div className="space-y-3 sm:space-y-4">
-                      {/* Section Selection Dropdown */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Select Section to Edit
-                        </label>
-                        <select
-                          value={selectedSectionForEdit || ''}
-                          onChange={(e) => setSelectedSectionForEdit(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="">Choose a section...</option>
-                          {availableSections.map((section) => (
-                            <option key={section.id} value={section.id}>
-                              {section.title}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      {/* Edit Input */}
-                      {selectedSectionForEdit && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Describe your changes
-                          </label>
-                          <textarea
-                            value={sectionEditInput}
-                            onChange={(e) => setSectionEditInput(e.target.value)}
-                            placeholder="Describe what changes you want to make to this section..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            rows={3}
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Edit Button */}
-                      {selectedSectionForEdit && sectionEditInput.trim() && (
-                        <Button
-                          onClick={handleSectionEdit}
-                          disabled={sectionEditLoading}
-                          className="w-full"
-                        >
-                          {sectionEditLoading ? (
-                            <div className="flex items-center gap-2">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              Editing Section...
-                            </div>
-                          ) : (
-                            'Apply Changes'
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+
             </div>
 
-            {/* Chat Window */}
-            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden animate-in slide-in-from-right-6 duration-800 w-full lg:w-auto" 
-                 style={{ width: '100%', maxWidth: '400px', height: '70vh', minHeight: '500px' }}>
-              
-              {/* Chat Header */}
-              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-white">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">AI Editor</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                  <span className="text-xs text-gray-500 hidden sm:inline">Online</span>
-                </div>
-              </div>
-              
-                              {/* Chat Content Area */}
-                <div className="h-full flex flex-col" style={{ height: 'calc(100% - 65px)' }}>
-                  {/* Messages Area */}
-                  <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-                    <div className="space-y-4">
-                      {chatMessages.map((message, index) => (
-                        <div 
-                          key={message.id} 
-                          className={`flex items-start gap-3 animate-in slide-in-from-bottom-4 duration-500`}
-                          style={{ animationDelay: `${index * 100}ms` }}
-                        >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${
-                            message.role === 'assistant' ? 'bg-blue-500' : 'bg-gray-600'
-                          }`}>
-                            {message.role === 'assistant' ? 'AI' : 'U'}
-                          </div>
-                          <div className="flex-1">
-                            <div className={`rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-300 ${
-                              message.role === 'assistant' ? 'bg-white' : 'bg-blue-50 border border-blue-200'
-                            }`}>
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                {message.content}
-                              </p>
-                              {/* Simple chat doesn't need apply changes - changes are applied immediately */}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {message.timestamp.toLocaleTimeString()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                      {chatLoading && (
-                        <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
-                            AI
-                          </div>
-                          <div className="flex-1">
-                            <div className="bg-white rounded-lg p-3 shadow-sm">
-                              <div className="flex items-center gap-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                                <p className="text-sm text-gray-700">AI is thinking...</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Chat Input Area */}
-                  <div className="p-4 border-t border-gray-200 bg-white">
-                    <form onSubmit={handleChatSubmit} className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Ask me to edit something..."
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        disabled={chatLoading || !chatSession}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-                      />
-                      <Button
-                        type="submit"
-                        disabled={chatLoading || !chatInput.trim() || !chatSession}
-                        size="sm"
-                        className="px-4 bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
-                      >
-                        {chatLoading ? 'Sending...' : 'Send'}
-                      </Button>
-                    </form>
-                    {!chatSession && (
-                      <p className="text-xs text-gray-400 mt-2">Generate a newsletter first to start chatting!</p>
-                    )}
-                  </div>
-                </div>
-            </div>
+
             
           </div>
         </div>
@@ -3231,7 +2947,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-3 text-center">Select Social Platforms</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 justify-center max-w-md mx-auto">
                   {SOCIALS.map((s) => (
                     <div
                       key={s.key}
@@ -3305,6 +3021,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                           <p className="text-red-500 text-xs mt-1">{validationErrors[s.key]}</p>
                         )}
                       </div>
+
                     </div>
                   </div>
                 )}

@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PageTransition from "./components/PageTransition";
 import DebugSocialAPIs from './pages/DebugSocialAPIs';
+import NewsletterEditor from './pages/NewsletterEditor';
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,9 @@ const App = () => (
           />
           {/* DEV/DEBUG ROUTE: Remove this in production! */}
           <Route path="/debug-social-apis" element={<PageTransition><DebugSocialAPIs /></PageTransition>} />
+
+          {/* Newsletter Editor */}
+          <Route path="/newsletter-editor" element={<PageTransition><NewsletterEditor /></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
