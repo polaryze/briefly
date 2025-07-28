@@ -975,14 +975,14 @@ async function summarizeText(text: string): Promise<string> {
   if (!openaiValidation.isValid) return text;
   
   const OPENAI_API_KEY = configManager.getOpenAIKey();
-  const prompt = `Summarize this social media post in 1-2 sentences, written in first person as if the original poster is describing their content for a newsletter. Keep it engaging and highlight the main points or value provided:\n\n${text}`;
+  const prompt = `Transform this social media post into a bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided:\n\n${text}`;
   const body = {
     model: "gpt-4o",
     messages: [
-      { role: "system", content: "You are a professional newsletter writer helping to summarize social media content." },
+      { role: "system", content: "You are a professional newsletter writer helping to transform social media content into engaging bullet-point summaries in first person." },
       { role: "user", content: prompt }
     ],
-    max_tokens: 120,
+    max_tokens: 150,
     temperature: 0.7
   };
   const resp = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -1002,14 +1002,14 @@ async function summarizeYouTubeContent(text: string): Promise<string> {
   if (!openaiValidation.isValid) return text;
   
   const OPENAI_API_KEY = configManager.getOpenAIKey();
-  const prompt = `Transform this YouTube video content into a first-person summary for a newsletter. Write it as if the YouTuber is describing what they created and shared. Make it engaging and highlight the key insights or value provided. Keep it to 2-3 sentences maximum:\n\n${text}`;
+  const prompt = `Transform this YouTube video content into bullet points written in first person. Write as if the YouTuber is describing what they created and shared for a newsletter. Use bullet points (•) and highlight the key insights, value, or main topics covered. Keep each point concise and engaging:\n\n${text}`;
   const body = {
     model: "gpt-4o",
     messages: [
-      { role: "system", content: "You are a professional newsletter writer helping to transform YouTube content into engaging first-person summaries." },
+      { role: "system", content: "You are a professional newsletter writer helping to transform YouTube content into engaging bullet-point summaries in first person." },
       { role: "user", content: prompt }
     ],
-    max_tokens: 150,
+    max_tokens: 200,
     temperature: 0.7
   };
   const resp = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -1747,6 +1747,39 @@ function createEnhancedFallbackTemplate(templateName: string, data: TempData): s
         </div>
         <p>This is an enhanced fallback template for ${templateName}.</p>
         <p>The original template file could not be loaded, but your content has been processed successfully.</p>
+        
+        ${data.twitter && data.twitter.length > 0 ? `
+        <h3>🐦 Latest from X (Twitter)</h3>
+        ${data.twitter.map(post => `
+          <div class="social-post">
+            <p><strong>${new Date(post.posted).toLocaleDateString()}</strong></p>
+            <p>${post.text}</p>
+            ${post.url ? `<p><a href="${post.url}" target="_blank">View original post →</a></p>` : ''}
+          </div>
+        `).join('')}
+        ` : ''}
+        
+        ${data.instagram && data.instagram.length > 0 ? `
+        <h3>📸 Instagram Updates</h3>
+        ${data.instagram.map(post => `
+          <div class="social-post">
+            <p><strong>${new Date(post.posted).toLocaleDateString()}</strong></p>
+            <p>${post.text}</p>
+            ${post.url ? `<p><a href="${post.url}" target="_blank">View original post →</a></p>` : ''}
+          </div>
+        `).join('')}
+        ` : ''}
+        
+        ${data.youtube && data.youtube.length > 0 ? `
+        <h3>📺 YouTube Highlights</h3>
+        ${data.youtube.map(video => `
+          <div class="social-post">
+            <p><strong>${new Date(video.posted).toLocaleDateString()}</strong></p>
+            <p>${video.text}</p>
+            ${video.url ? `<p><a href="${video.url}" target="_blank">Watch video →</a></p>` : ''}
+          </div>
+        `).join('')}
+        ` : ''}
       </div>
     </body>
     </html>
@@ -1756,15 +1789,61 @@ function createEnhancedFallbackTemplate(templateName: string, data: TempData): s
 async function generateEnhancedNewsletterContent(templateHtml: string, data: TempData, template: any): Promise<string> {
   console.log('🔄 Generating enhanced newsletter content...');
   
-  // For now, return the template HTML as-is
-  // In the future, this could integrate with OpenAI for content generation
   let content = templateHtml;
   
-  // Replace placeholder content if it exists
-  if (data.allText) {
-    const placeholderText = data.allText.substring(0, 1000); // Limit text length
-    content = content.replace(/Lorem ipsum dolor sit amet/g, placeholderText);
+  // Create structured content from collected data
+  let structuredContent = '';
+  
+  // Add Twitter content if available
+  if (data.twitter && data.twitter.length > 0) {
+    structuredContent += '<h3>🐦 Latest from X (Twitter)</h3>';
+    data.twitter.forEach((post, index) => {
+      structuredContent += `<div class="social-post">
+        <p><strong>${new Date(post.posted).toLocaleDateString()}</strong></p>
+        <p>${post.text}</p>
+        ${post.url ? `<p><a href="${post.url}" target="_blank">View original post →</a></p>` : ''}
+      </div>`;
+    });
+    structuredContent += '<hr>';
   }
+  
+  // Add Instagram content if available
+  if (data.instagram && data.instagram.length > 0) {
+    structuredContent += '<h3>📸 Instagram Updates</h3>';
+    data.instagram.forEach((post, index) => {
+      structuredContent += `<div class="social-post">
+        <p><strong>${new Date(post.posted).toLocaleDateString()}</strong></p>
+        <p>${post.text}</p>
+        ${post.url ? `<p><a href="${post.url}" target="_blank">View original post →</a></p>` : ''}
+      </div>`;
+    });
+    structuredContent += '<hr>';
+  }
+  
+  // Add YouTube content if available
+  if (data.youtube && data.youtube.length > 0) {
+    structuredContent += '<h3>📺 YouTube Highlights</h3>';
+    data.youtube.forEach((video, index) => {
+      structuredContent += `<div class="social-post">
+        <p><strong>${new Date(video.posted).toLocaleDateString()}</strong></p>
+        <p>${video.text}</p>
+        ${video.url ? `<p><a href="${video.url}" target="_blank">Watch video →</a></p>` : ''}
+      </div>`;
+    });
+    structuredContent += '<hr>';
+  }
+  
+  // If no structured content, use allText as fallback
+  if (!structuredContent && data.allText) {
+    structuredContent = `<div class="newsletter-content">
+      <p>${data.allText.substring(0, 1000)}</p>
+    </div>`;
+  }
+  
+  // Replace common placeholders in templates
+  content = content.replace(/Lorem ipsum dolor sit amet/g, structuredContent);
+  content = content.replace(/\[NEWSLETTER_CONTENT\]/g, structuredContent);
+  content = content.replace(/\[SOCIAL_MEDIA_CONTENT\]/g, structuredContent);
   
   console.log('✅ Enhanced newsletter content generated');
   return content;
