@@ -35,6 +35,13 @@ export default function AuthCallback() {
     }
   }, [isAuthenticated, isLoading, navigate, error, user, hasRedirected])
 
+  // Add more detailed logging
+  useEffect(() => {
+    console.log('AuthCallback - URL:', window.location.href);
+    console.log('AuthCallback - Pathname:', window.location.pathname);
+    console.log('AuthCallback - Search:', window.location.search);
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">

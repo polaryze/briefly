@@ -18,8 +18,8 @@ export default function SignInPage() {
       return;
     }
     
-    // Automatically trigger login if not already authenticated and not loading
-    if (!isAuthenticated && !isLoading) {
+    // Only auto-trigger login if we're not in a callback state
+    if (!isAuthenticated && !isLoading && !window.location.pathname.includes('/auth/callback')) {
       console.log('Auto-triggering Auth0 login...');
       loginWithRedirect();
     }

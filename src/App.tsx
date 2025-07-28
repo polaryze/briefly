@@ -30,8 +30,6 @@ const auth0Config = {
   // SPA configuration - no client secret
   cacheLocation: 'localstorage' as const,
   useRefreshTokens: true,
-  // Handle custom domain
-  skipRedirectCallback: window.location.pathname === '/auth/callback',
 };
 
 // Debug logging
