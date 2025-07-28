@@ -2831,30 +2831,33 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                 Data: {Object.keys(collectedData).length} keys
               </div>
               
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowTemplateSelection(false);
-                  setCollectedData({});
-                  setSelectedTemplate(null);
-                }}
-                className="flex items-center gap-2 w-full sm:w-auto"
-              >
-                ← Back
-              </Button>
-              
-              <LoadingButton
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }}
-                loading={loading}
-                loadingText="Generating Newsletter..."
-                disabled={!selectedTemplate || loading}
-                className="font-medium py-3 px-6 sm:px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 bg-black hover:bg-gray-800 text-white w-full sm:w-auto"
-              >
-                Generate Newsletter →
-              </LoadingButton>
+              {/* Mobile: Generate Newsletter first, then Back */}
+              <div className="flex flex-col-reverse sm:flex-row w-full sm:w-auto gap-4 sm:gap-0">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowTemplateSelection(false);
+                    setCollectedData({});
+                    setSelectedTemplate(null);
+                  }}
+                  className="flex items-center gap-2 w-full sm:w-auto"
+                >
+                  ← Back
+                </Button>
+                
+                <LoadingButton
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }}
+                  loading={loading}
+                  loadingText="Generating Newsletter..."
+                  disabled={!selectedTemplate || loading}
+                  className="font-medium py-3 px-6 sm:px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 bg-black hover:bg-gray-800 text-white w-full sm:w-auto"
+                >
+                  Generate Newsletter →
+                </LoadingButton>
+              </div>
             </div>
           </Card>
         </div>
@@ -2954,6 +2957,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                       onClick={() => !s.disabled && !loading && handleCheck(s.key)}
                       className={`
                         relative p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-500 ease-in-out group transform hover:scale-105 hover:-translate-y-1 active:scale-95
+                        ${s.key === 'youtube' ? 'col-span-2 sm:col-span-1' : ''}
                         ${selected[s.key as keyof typeof selected] 
                           ? 'border-black bg-gray-50 shadow-lg scale-105' 
                           : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-xl'
