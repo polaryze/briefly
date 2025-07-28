@@ -997,6 +997,34 @@ async function summarizeText(text: string): Promise<string> {
   return data.choices?.[0]?.message?.content?.trim() || text;
 }
 
+// Batch summarization for better performance
+async function summarizeTextBatch(allTexts: string, postCount: number): Promise<string> {
+  const openaiValidation = configManager.validateOpenAIKey();
+  if (!openaiValidation.isValid) return allTexts;
+  
+  const OPENAI_API_KEY = configManager.getOpenAIKey();
+  const prompt = `Transform these ${postCount} social media posts into bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided. Separate each post summary with "---" on its own line:\n\n${allTexts}`;
+  const body = {
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: "You are a professional newsletter writer helping to transform social media content into engaging bullet-point summaries in first person." },
+      { role: "user", content: prompt }
+    ],
+    max_tokens: 150 * postCount, // Scale tokens with post count
+    temperature: 0.7
+  };
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify(body)
+  });
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content?.trim() || allTexts;
+}
+
 async function summarizeYouTubeContent(text: string): Promise<string> {
   const openaiValidation = configManager.validateOpenAIKey();
   if (!openaiValidation.isValid) return text;
@@ -1027,45 +1055,57 @@ async function summarizeYouTubeContent(text: string): Promise<string> {
 async function summarizeSocialMediaPosts(posts: any[], platform: string): Promise<any[]> {
   console.log(`🤖 Starting AI summarization for ${platform} posts...`);
   
-  const summarizedPosts = [];
+  // Batch processing for better performance
+  const postsToSummarize = posts.filter(post => {
+    const textToSummarize = post.text || '';
+    return textToSummarize.length > 10;
+  });
   
-  for (const post of posts) {
+  const postsToKeep = posts.filter(post => {
+    const textToSummarize = post.text || '';
+    return textToSummarize.length <= 10;
+  });
+  
+  // Batch summarize all posts at once
+  if (postsToSummarize.length > 0) {
     try {
-      const textToSummarize = post.text || '';
+      const allTexts = postsToSummarize.map(post => post.text).join('\n\n---\n\n');
+      const batchSummarizedText = await summarizeTextBatch(allTexts, postsToSummarize.length);
       
-              if (textToSummarize.length > 10) {
-          console.log(`🤖 Summarizing ${platform} post:`, textToSummarize.substring(0, 100) + '...');
-          const summarizedText = await summarizeText(textToSummarize);
-        
-        // Create new post object with summarized text
-        const summarizedPost = {
-          ...post,
-          text: summarizedText,
-          originalText: textToSummarize, // Keep original for reference
-          aiSummarized: true
-        };
-        
-        summarizedPosts.push(summarizedPost);
-        console.log(`✅ ${platform} post processed:`, summarizedText);
-      } else {
-        // If text is too short, keep original
-        summarizedPosts.push({
-          ...post,
-          aiSummarized: false
-        });
-      }
-    } catch (error) {
-      console.error(`❌ Failed to summarize ${platform} post:`, error);
-      // Keep original post if summarization fails
-      summarizedPosts.push({
+      // Split the batch response back into individual summaries
+      const summaries = batchSummarizedText.split('\n\n---\n\n');
+      
+      const summarizedPosts = postsToSummarize.map((post, index) => ({
+        ...post,
+        text: summaries[index] || post.text,
+        originalText: post.text,
+        aiSummarized: true
+      }));
+      
+      // Add posts that didn't need summarization
+      const finalPosts = [...summarizedPosts, ...postsToKeep.map(post => ({
         ...post,
         aiSummarized: false
-      });
+      }))];
+      
+      console.log(`✅ Completed AI summarization for ${platform}:`, finalPosts.length, 'posts');
+      return finalPosts;
+      
+    } catch (error) {
+      console.error(`❌ Failed to batch summarize ${platform} posts:`, error);
+      // Fallback to original posts if batch summarization fails
+      return posts.map(post => ({
+        ...post,
+        aiSummarized: false
+      }));
     }
+  } else {
+    // No posts need summarization
+    return posts.map(post => ({
+      ...post,
+      aiSummarized: false
+    }));
   }
-  
-  console.log(`✅ Completed AI summarization for ${platform}:`, summarizedPosts.length, 'posts');
-  return summarizedPosts;
 }
 
 const validateXInput = (input: string): boolean => {
@@ -1191,17 +1231,9 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           const posts = raw.data.filter(post => {
             const hasText = post.text && post.text.trim().length > 0;
             const hasDate = post.posted && post.posted !== 'Invalid Date';
-            console.log('X post filter check:', {
-              text: post.text?.substring(0, 50) + '...',
-              hasText,
-              posted: post.posted,
-              hasDate,
-              passed: hasText && hasDate
-            });
             return hasText && hasDate;
           });
           console.log('X filtered posts:', posts.length);
-          console.log('X sample filtered post:', posts[0]);
           
           const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
           
@@ -1228,13 +1260,10 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           tempData.allImages = [...(tempData.allImages || []), ...images];
           tempData.allText += summarizedPosts.map(p => `[X] ${p.text}`).join('\n\n');
           
-          // Add detailed logging for X data
+          // Add summary logging for X data
           console.log('X data processed:', {
             postsCount: summarizedPosts.length,
             imagesCount: images.length,
-            textLength: summarizedPosts.map(p => p.text).join('\n\n').length,
-            posts: summarizedPosts.map(p => ({ text: p.text.substring(0, 100) + '...', date: p.posted })),
-            allTextLength: tempData.allText?.length,
             aiSummarized: summarizedPosts.every(p => p.aiSummarized)
           });
         } else {
@@ -1923,6 +1952,9 @@ export default function NewsletterBuilder() {
   const navigate = useNavigate();
   const smoothNavigate = useSmoothNavigate();
   const location = useLocation();
+  
+  // Simple cache to avoid re-processing
+  const [dataCache, setDataCache] = useState<{[key: string]: any}>({});
   const [selected, setSelected] = useState({
     twitter: false,
     instagram: false,
@@ -2110,6 +2142,12 @@ export default function NewsletterBuilder() {
     }));
   };
 
+  // Generate cache key for data
+  const generateCacheKey = (platform: string, input: string, timelineOptions: any) => {
+    const options = timelineOptions[platform];
+    return `${platform}_${input}_${options?.timeRange || 'all'}_${options?.postLimit || 10}`;
+  };
+
   const validateInputs = (): boolean => {
     const errors: ValidationErrors = {};
     let isValid = true;
@@ -2212,9 +2250,9 @@ export default function NewsletterBuilder() {
       setTempData({}); // Clear previous temp data
 
       try {
-        // Process all selected platforms and collect data
-        logger.info('Processing all platforms', { selected });
-        const tempData = await processAllPlatforms(selected, inputs, timelineOptions);
+          // Process all selected platforms and collect data
+  logger.info('Processing all platforms', { selected });
+  const tempData = await processAllPlatforms(selected, inputs, timelineOptions);
         setTempData(tempData); // Store temp data
 
         console.log('Data collected successfully:', {
