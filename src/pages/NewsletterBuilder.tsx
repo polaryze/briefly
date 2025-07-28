@@ -723,7 +723,7 @@ async function fetchInstagramData(profileOrUrl: string) {
   }
 }
 
-async function fetchYouTubeData(channelName: string) {
+async function fetchYouTubeData(channelId: string) {
   // Check if API key is available
   const rapidApiValidation = configManager.validateRapidAPIKey();
   if (!rapidApiValidation.isValid) {
@@ -733,59 +733,17 @@ async function fetchYouTubeData(channelName: string) {
   
   const RAPIDAPI_KEY = configManager.getRapidAPIKey();
   
-  // Extract channel name from URL or use as-is
-  let channelNameClean = channelName;
-  if (channelName.includes('youtube.com/channel/')) {
-    const match = channelName.match(/youtube\.com\/channel\/([^\/\?]+)/);
-    channelNameClean = match ? match[1] : channelName;
-  } else if (channelName.includes('youtube.com/c/')) {
-    const match = channelName.match(/youtube\.com\/c\/([^\/\?]+)/);
-    channelNameClean = match ? match[1] : channelName;
-  } else if (channelName.includes('youtube.com/@')) {
-    const match = channelName.match(/youtube\.com\/@([^\/\?]+)/);
-    channelNameClean = match ? match[1] : channelName;
+  // Clean the channel ID - remove @ if present
+  let cleanChannelId = channelId;
+  if (channelId.startsWith('@')) {
+    cleanChannelId = channelId.substring(1);
   }
   
-  console.log('YouTube: Processing channel name:', channelNameClean);
+  console.log('YouTube: Processing channel ID:', cleanChannelId);
   
   try {
-    // Step 1: Get channel ID from channel name
-    const channelUrl = `https://youtube-v2.p.rapidapi.com/channel/id?channel_name=${encodeURIComponent(channelNameClean)}`;
-    const channelOptions = {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'youtube-v2.p.rapidapi.com'
-      }
-    };
-    
-    const channelResponse = await fetch(channelUrl, channelOptions);
-    const channelResult = await channelResponse.text();
-    console.log('YouTube Channel ID API Response:', channelResult);
-    
-    let channelData;
-    try {
-      channelData = JSON.parse(channelResult);
-      console.log('YouTube channelData parsed successfully');
-    } catch (parseError) {
-      console.error('Failed to parse YouTube channel API response:', parseError);
-      throw new Error('Failed to get channel data');
-    }
-    
-    console.log('YouTube channel data structure:', channelData);
-    console.log('YouTube channel data keys:', Object.keys(channelData || {}));
-    
-    // Extract channel ID
-    const channelId = channelData?.channel_id;
-    if (!channelId) {
-      console.error('No channel_id found in channel data:', channelData);
-      throw new Error('Channel not found or no channel_id available');
-    }
-    
-    console.log('YouTube Channel ID:', channelId);
-    
-    // Step 2: Get videos from channel
-    const videosUrl = `https://youtube-v2.p.rapidapi.com/channel/videos?channel_id=${channelId}`;
+    // Step 1: Get videos directly from channel ID
+    const videosUrl = `https://youtube-v2.p.rapidapi.com/channel/videos?channel_id=${cleanChannelId}`;
     const videosOptions = {
       method: 'GET',
       headers: {
@@ -793,6 +751,8 @@ async function fetchYouTubeData(channelName: string) {
         'x-rapidapi-host': 'youtube-v2.p.rapidapi.com'
       }
     };
+    
+    console.log('YouTube: Fetching videos for channel ID:', cleanChannelId);
     
     const videosResponse = await fetch(videosUrl, videosOptions);
     const videosResult = await videosResponse.text();
@@ -981,7 +941,7 @@ async function fetchYouTubeData(channelName: string) {
     console.log('YouTube API error details:', {
       message: error.message,
       stack: error.stack,
-      channelName: channelName
+      channelId: channelId
     });
     
     // Fallback to mock data if API fails
