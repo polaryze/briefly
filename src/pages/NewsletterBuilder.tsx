@@ -2120,16 +2120,23 @@ function extractCSSFromTemplate(templateHtml: string): string {
 
 // Function to replace sections in the cleaned newsletter template
 const replaceNewsletterSections = (templateHtml: string, summaries: { [platform: string]: string[] }, images: Array<{url: string, postText: string, postDate: string, platform: string}>): string => {
+  console.log('🔧 replaceNewsletterSections called with:');
+  console.log('  - Template HTML length:', templateHtml.length);
+  console.log('  - Summaries:', Object.keys(summaries).map(p => `${p}: ${summaries[p].length}`));
+  console.log('  - Images:', images.length);
+  
   let modifiedHtml = templateHtml;
   
   // Replace YouTube section
   if (summaries.youtube && summaries.youtube.length > 0) {
     const youtubeContent = summaries.youtube.join('\n\n');
+    console.log('📺 Replacing YouTube section with:', youtubeContent.length, 'characters');
     modifiedHtml = modifiedHtml.replace(
       'REPLACE THIS TEXT FOR YOUTUBE SUMMARY',
       youtubeContent
     );
   } else {
+    console.log('📺 No YouTube data, hiding section');
     // Hide YouTube section if no data
     const youtubeSectionRegex = /<!-- SECTION: YouTube -->[\s\S]*?<!-- SECTION: X \(formerly Twitter\) -->/;
     modifiedHtml = modifiedHtml.replace(youtubeSectionRegex, '<!-- SECTION: X (formerly Twitter) -->');
@@ -2138,11 +2145,13 @@ const replaceNewsletterSections = (templateHtml: string, summaries: { [platform:
   // Replace X (Twitter) section
   if (summaries.twitter && summaries.twitter.length > 0) {
     const twitterContent = summaries.twitter.join('\n\n');
+    console.log('🐦 Replacing X section with:', twitterContent.length, 'characters');
     modifiedHtml = modifiedHtml.replace(
       'REPLACE THIS TEXT FOR X SUMMARY',
       twitterContent
     );
   } else {
+    console.log('🐦 No X data, hiding section');
     // Hide X section if no data
     const xSectionRegex = /<!-- SECTION: X \(formerly Twitter\) -->[\s\S]*?<!-- SECTION: Instagram -->/;
     modifiedHtml = modifiedHtml.replace(xSectionRegex, '<!-- SECTION: Instagram -->');
@@ -2151,11 +2160,13 @@ const replaceNewsletterSections = (templateHtml: string, summaries: { [platform:
   // Replace Instagram section
   if (summaries.instagram && summaries.instagram.length > 0) {
     const instagramContent = summaries.instagram.join('\n\n');
+    console.log('📸 Replacing Instagram section with:', instagramContent.length, 'characters');
     modifiedHtml = modifiedHtml.replace(
       'REPLACE THIS TEXT FOR INSTAGRAM SUMMARY',
       instagramContent
     );
   } else {
+    console.log('📸 No Instagram data, hiding section');
     // Hide Instagram section if no data
     const instagramSectionRegex = /<!-- SECTION: Instagram -->[\s\S]*?<!-- SECTION: Content Placeholder -->/;
     modifiedHtml = modifiedHtml.replace(instagramSectionRegex, '<!-- SECTION: Content Placeholder -->');
@@ -2167,11 +2178,13 @@ const replaceNewsletterSections = (templateHtml: string, summaries: { [platform:
       `<img src="${image.url}" alt="${image.postText.substring(0, 50)}" style="max-width: 200px; margin: 10px; border-radius: 8px;" />`
     ).join('');
     
+    console.log('🖼️ Replacing images section with:', images.length, 'images');
     modifiedHtml = modifiedHtml.replace(
       '<!-- SECTION: IMAGES HERE -->',
       imageHtml
     );
   } else {
+    console.log('🖼️ No images, showing placeholder');
     // Hide images section if no images
     modifiedHtml = modifiedHtml.replace(
       '<!-- SECTION: IMAGES HERE -->',
@@ -2760,12 +2773,18 @@ export default function NewsletterBuilder() {
       // Use new section replacement logic for cleaned newsletter
       let newsletterContent;
       if (templateId === 'cleaned_newsletter') {
-        // Convert data to summaries format
+        // Convert data to summaries format - extract text from objects
         const summaries = {
-          twitter: processedData.twitter || [],
-          instagram: processedData.instagram || [],
-          youtube: processedData.youtube || []
+          twitter: (processedData.twitter || []).map(post => post.text || '').filter(text => text.length > 0),
+          instagram: (processedData.instagram || []).map(post => post.text || '').filter(text => text.length > 0),
+          youtube: (processedData.youtube || []).map(post => post.text || '').filter(text => text.length > 0)
         };
+        
+        console.log('📊 Data conversion for newsletter sections:');
+        console.log('  - Twitter summaries:', summaries.twitter.length);
+        console.log('  - Instagram summaries:', summaries.instagram.length);
+        console.log('  - YouTube summaries:', summaries.youtube.length);
+        console.log('  - Images:', processedData.allImages?.length || 0);
         
         newsletterContent = replaceNewsletterSections(templateHtml, summaries, processedData.allImages || []);
         console.log('✅ Sections replaced for cleaned newsletter');
