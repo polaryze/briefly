@@ -1008,9 +1008,14 @@ async function fetchYouTubeData(channelName: string) {
 
 async function summarizeText(text: string): Promise<string> {
   const openaiValidation = configManager.validateOpenAIKey();
-  if (!openaiValidation.isValid) return text;
+  if (!openaiValidation.isValid) {
+    console.error('❌ OpenAI API key validation failed:', openaiValidation.error);
+    return text;
+  }
   
   const OPENAI_API_KEY = configManager.getOpenAIKey();
+  console.log('🔑 OpenAI API key found, length:', OPENAI_API_KEY?.length || 0);
+  
   const prompt = `Transform this social media post into a bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided:\n\n${text}`;
   const body = {
     model: "gpt-4o",
@@ -1021,16 +1026,48 @@ async function summarizeText(text: string): Promise<string> {
     max_tokens: 150,
     temperature: 0.7
   };
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await resp.json();
-  return data.choices?.[0]?.message?.content?.trim() || text;
+  
+  // Add timeout to prevent hanging
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+  
+  try {
+    console.log('🚀 Making OpenAI API request...');
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!resp.ok) {
+      console.error('❌ OpenAI API error:', resp.status, resp.statusText);
+      const errorText = await resp.text();
+      console.error('❌ Error details:', errorText);
+      return text;
+    }
+    
+    const data = await resp.json();
+    console.log('✅ OpenAI API response received');
+    
+    if (data.error) {
+      console.error('❌ OpenAI API returned error:', data.error);
+      return text;
+    }
+    
+    const result = data.choices?.[0]?.message?.content?.trim() || text;
+    console.log('✅ Summarization completed, length:', result.length);
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('❌ OpenAI API request failed:', error);
+    return text;
+  }
 }
 
 // Batch summarization for better performance
@@ -2285,6 +2322,7 @@ export default function NewsletterBuilder() {
       
       console.log(`📱 Processing ${platform}...`);
       setGenerationStep(`Processing ${platform} data...`);
+      setGenerationProgress(20 + (platforms.indexOf(platform) * 15)); // 20, 35, 50
       
       try {
         let platformData: any[] = [];
@@ -2342,6 +2380,7 @@ export default function NewsletterBuilder() {
         
         // Summarize posts one by one
         setGenerationStep(`Summarizing ${platform} content...`);
+        setGenerationProgress(50 + (platforms.indexOf(platform) * 10)); // 50, 60, 70
         const platformSummaries: string[] = [];
         
         for (let i = 0; i < platformData.length; i++) {
@@ -2564,7 +2603,7 @@ export default function NewsletterBuilder() {
       try {
         // Use new step-by-step processing
         console.log('🚀 Starting step-by-step processing...');
-        setGenerationProgress(5);
+        setGenerationProgress(10);
         setGenerationStep('Initializing data collection...');
         
         const { summaries, images, processingTime } = await processSocialMediaStepByStep(selected, inputs, timelineOptions);
@@ -2682,8 +2721,8 @@ export default function NewsletterBuilder() {
     console.log('📊 Data keys:', Object.keys(data));
     
     try {
-      // Real progress tracking based on actual work
-      setGenerationProgress(5);
+      // More accurate progress tracking
+      setGenerationProgress(10);
       setGenerationStep('Initializing newsletter generation...');
       
       // Get the template
@@ -2694,7 +2733,7 @@ export default function NewsletterBuilder() {
       
       console.log('📄 Template found:', template.name);
       
-      setGenerationProgress(20);
+      setGenerationProgress(25);
       setGenerationStep('Processing social media data...');
       
       // Process and enhance the data (simplified for performance)
@@ -2715,7 +2754,7 @@ export default function NewsletterBuilder() {
         console.log('📄 Using enhanced fallback template');
       }
       
-      setGenerationProgress(60);
+      setGenerationProgress(55);
       setGenerationStep('Replacing newsletter sections...');
       
       // Use new section replacement logic for cleaned newsletter
@@ -2735,7 +2774,7 @@ export default function NewsletterBuilder() {
         newsletterContent = await generateEnhancedNewsletterContent(templateHtml, processedData, template);
       }
       
-      setGenerationProgress(80);
+      setGenerationProgress(75);
       setGenerationStep('Applying styling and formatting...');
       
       // Create enhanced newsletter data structure
@@ -3270,16 +3309,19 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
             
                         <CardCarousel className="mb-6 px-4 py-4">
               {(() => {
-                const enabledTemplates = NEWSLETTER_TEMPLATES.filter(t => t.enabled);
-                console.log('📋 Rendering templates:', enabledTemplates.length, 'enabled templates available');
-                return enabledTemplates.map((template) => (
+                console.log('📋 Rendering templates:', NEWSLETTER_TEMPLATES.length, 'templates available');
+                return NEWSLETTER_TEMPLATES.map((template) => (
                 <div
                   key={template.id}
-                  onClick={() => setSelectedTemplate(template.id)}
-                  className={`cursor-pointer group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
-                    selectedTemplate === template.id
-                      ? 'border-black bg-gray-50 shadow-xl scale-105'
-                      : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
+                  onClick={() => template.enabled && setSelectedTemplate(template.id)}
+                  className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
+                    template.enabled 
+                      ? `cursor-pointer ${
+                          selectedTemplate === template.id
+                            ? 'border-black bg-gray-50 shadow-xl scale-105'
+                            : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
+                        }`
+                      : 'cursor-not-allowed opacity-60 border-gray-300'
                   }`}
                     style={{ width: '320px', flexShrink: 0 }}
                 >
@@ -3290,16 +3332,24 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                       style={{ width: '200%', height: '200%' }}
                       title={template.name}
                     />
-                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-500 ease-in-out backdrop-blur-sm">
-                        <span className="text-white font-bold text-base sm:text-lg transform hover:scale-110 transition-transform duration-300">Select Template</span>
-                    </div>
-                    {selectedTemplate === template.id && (
-                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
+                      {template.enabled ? (
+                        <>
+                          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-500 ease-in-out backdrop-blur-sm">
+                            <span className="text-white font-bold text-base sm:text-lg transform hover:scale-110 transition-transform duration-300">Select Template</span>
+                          </div>
+                          {selectedTemplate === template.id && (
+                            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+                              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-sm">
+                          <span className="text-white font-bold text-base sm:text-lg">Coming Soon</span>
+                        </div>
+                      )}
                   </div>
                   <div className="p-3 sm:p-4">
                     <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{template.name}</h3>
@@ -3317,25 +3367,6 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                 ));
               })()}
             </CardCarousel>
-            
-            {/* Coming Soon Templates */}
-            <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">More Templates Coming Soon</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {NEWSLETTER_TEMPLATES.filter(t => !t.enabled).map((template) => (
-                  <div key={template.id} className="p-4 bg-white rounded-lg border border-gray-200 opacity-60">
-                    <div className="aspect-[4/3] bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-gray-500 text-sm">Preview</span>
-                    </div>
-                    <h4 className="font-medium text-gray-700 mb-1">{template.name}</h4>
-                    <p className="text-xs text-gray-500 mb-2">{template.description}</p>
-                    <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Coming Soon
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
             
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 gap-4 sm:gap-0">
               {/* Back button on left */}
