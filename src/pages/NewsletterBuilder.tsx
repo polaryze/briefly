@@ -1970,7 +1970,7 @@ export default function NewsletterBuilder() {
   const [timelineOptions, setTimelineOptions] = useState({
     twitter: {
       timeRange: '7d', // 1d, 7d, 30d, 90d, all
-      postLimit: 10, // 5, 10, 20, 50, 100
+      postLimit: 10, // 1, 5, 10, 20, 50, 100
       enabled: false
     },
     instagram: {
@@ -3232,6 +3232,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                                 className="border border-gray-300 rounded px-1 py-0.5 text-xs"
                                 disabled={loading}
                               >
+                                <option value="1">1 post</option>
                                 <option value="5">5 posts</option>
                                 <option value="10">10 posts</option>
                                 <option value="20">20 posts</option>
