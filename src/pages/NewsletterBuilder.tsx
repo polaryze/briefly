@@ -1123,8 +1123,53 @@ async function summarizePostsWithHeadings(posts: any[]): Promise<string> {
   return data.choices?.[0]?.message?.content?.trim() || '';
 }
 
+// Helper function to filter posts by timeline options
+function filterPostsByTimeline(posts: any[], platform: string, timelineOptions?: any): any[] {
+  if (!timelineOptions || !timelineOptions[platform] || !timelineOptions[platform].enabled) {
+    return posts;
+  }
+
+  const options = timelineOptions[platform];
+  let filteredPosts = [...posts];
+
+  // Filter by time range
+  if (options.timeRange && options.timeRange !== 'all') {
+    const now = new Date();
+    const timeRangeMap: { [key: string]: number } = {
+      '1d': 24 * 60 * 60 * 1000,
+      '7d': 7 * 24 * 60 * 60 * 1000,
+      '30d': 30 * 24 * 60 * 60 * 1000,
+      '90d': 90 * 24 * 60 * 60 * 1000
+    };
+
+    const timeLimit = timeRangeMap[options.timeRange];
+    if (timeLimit) {
+      const cutoffDate = new Date(now.getTime() - timeLimit);
+      filteredPosts = filteredPosts.filter(post => {
+        const postDate = new Date(post.posted);
+        return postDate >= cutoffDate;
+      });
+    }
+  }
+
+  // Limit by post count
+  if (options.postLimit && options.postLimit > 0) {
+    filteredPosts = filteredPosts.slice(0, options.postLimit);
+  }
+
+  console.log(`📊 Timeline filtering for ${platform}:`, {
+    originalCount: posts.length,
+    filteredCount: filteredPosts.length,
+    timeRange: options.timeRange,
+    postLimit: options.postLimit,
+    enabled: options.enabled
+  });
+
+  return filteredPosts;
+}
+
 // Function to process all platforms and collect data
-async function processAllPlatforms(selected: any, inputs: any): Promise<TempData> {
+async function processAllPlatforms(selected: any, inputs: any, timelineOptions?: any): Promise<TempData> {
   const tempData: TempData = {
     allImages: [],
     allText: ''
@@ -1158,11 +1203,17 @@ async function processAllPlatforms(selected: any, inputs: any): Promise<TempData
           console.log('X filtered posts:', posts.length);
           console.log('X sample filtered post:', posts[0]);
           
-          const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime()).slice(0, 3);
+          const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
+          
+          // Apply timeline filtering
+          const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'twitter', timelineOptions);
+          
+          // Take top posts (default 3 if no timeline limit)
+          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.twitter?.postLimit || 3);
           
           // AI Summarization for Twitter posts
           console.log('🤖 Starting Twitter AI summarization...');
-          const summarizedPosts = await summarizeSocialMediaPosts(sortedPosts, 'Twitter');
+          const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'Twitter');
           tempData.twitter = summarizedPosts;
           
           const images = summarizedPosts.flatMap(post => {
@@ -1262,11 +1313,17 @@ async function processAllPlatforms(selected: any, inputs: any): Promise<TempData
       const raw = await fetchInstagramData(input);
       if (raw && Array.isArray(raw.data)) {
         const posts = raw.data.filter(post => post.text && post.posted);
-        const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime()).slice(0, 3);
+        const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
+        
+        // Apply timeline filtering
+        const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'instagram', timelineOptions);
+        
+        // Take top posts (default 3 if no timeline limit)
+        const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.instagram?.postLimit || 3);
         
         // AI Summarization for Instagram posts
         console.log('🤖 Starting Instagram AI summarization...');
-        const summarizedPosts = await summarizeSocialMediaPosts(sortedPosts, 'Instagram');
+        const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'Instagram');
         tempData.instagram = summarizedPosts;
         
         const images = summarizedPosts.flatMap(post => {
@@ -1332,10 +1389,16 @@ async function processAllPlatforms(selected: any, inputs: any): Promise<TempData
         
         if (raw && Array.isArray(raw.data)) {
           const posts = raw.data.filter(post => post.text && post.posted);
-          const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime()).slice(0, 3);
-          tempData.youtube = sortedPosts;
+          const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
           
-          const images = sortedPosts.flatMap(post => {
+          // Apply timeline filtering
+          const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'youtube', timelineOptions);
+          
+          // Take top posts (default 3 if no timeline limit)
+          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.youtube?.postLimit || 3);
+          tempData.youtube = finalPosts;
+          
+          const images = finalPosts.flatMap(post => {
             const postImages = post.images || [];
             return postImages.map((img: any) => ({
               url: img.url,
@@ -1345,13 +1408,13 @@ async function processAllPlatforms(selected: any, inputs: any): Promise<TempData
             }));
           });
           tempData.allImages = [...(tempData.allImages || []), ...images];
-          tempData.allText += sortedPosts.map(p => `[YouTube] ${p.text}`).join('\n\n');
+          tempData.allText += finalPosts.map(p => `[YouTube] ${p.text}`).join('\n\n');
             
           console.log('🎬 YouTube data processed:', {
-            postsCount: sortedPosts.length,
+            postsCount: finalPosts.length,
             imagesCount: images.length,
-            textLength: sortedPosts.map(p => p.text).join('\n\n').length,
-            posts: sortedPosts.map(p => ({
+            textLength: finalPosts.map(p => p.text).join('\n\n').length,
+            posts: finalPosts.map(p => ({
               text: p.text?.substring(0, 100) + '...',
               posted: p.posted,
               views: p.views,
@@ -1871,6 +1934,25 @@ export default function NewsletterBuilder() {
     youtube: "",
   });
 
+  // Timeline options for each platform
+  const [timelineOptions, setTimelineOptions] = useState({
+    twitter: {
+      timeRange: '7d', // 1d, 7d, 30d, 90d, all
+      postLimit: 10, // 5, 10, 20, 50, 100
+      enabled: false
+    },
+    instagram: {
+      timeRange: '7d',
+      postLimit: 10,
+      enabled: false
+    },
+    youtube: {
+      timeRange: '30d',
+      postLimit: 5,
+      enabled: false
+    }
+  });
+
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [loading, setLoading] = useState(false);
   const [newsletter, setNewsletter] = useState<any>(null);
@@ -2006,6 +2088,28 @@ export default function NewsletterBuilder() {
     }
   };
 
+  // Handle timeline option changes
+  const handleTimelineOption = (platform: string, option: string, value: string | number) => {
+    setTimelineOptions(prev => ({
+      ...prev,
+      [platform]: {
+        ...prev[platform as keyof typeof prev],
+        [option]: value
+      }
+    }));
+  };
+
+  // Toggle timeline options for a platform
+  const toggleTimelineOptions = (platform: string) => {
+    setTimelineOptions(prev => ({
+      ...prev,
+      [platform]: {
+        ...prev[platform as keyof typeof prev],
+        enabled: !prev[platform as keyof typeof prev].enabled
+      }
+    }));
+  };
+
   const validateInputs = (): boolean => {
     const errors: ValidationErrors = {};
     let isValid = true;
@@ -2110,7 +2214,7 @@ export default function NewsletterBuilder() {
       try {
         // Process all selected platforms and collect data
         logger.info('Processing all platforms', { selected });
-        const tempData = await processAllPlatforms(selected, inputs);
+        const tempData = await processAllPlatforms(selected, inputs, timelineOptions);
         setTempData(tempData); // Store temp data
 
         console.log('Data collected successfully:', {
@@ -3054,6 +3158,51 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                         {validationErrors[s.key] && (
                           <p className="text-red-500 text-xs mt-1">{validationErrors[s.key]}</p>
                         )}
+                        
+                        {/* Timeline Options */}
+                        <div className="mt-2 flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleTimelineOptions(s.key)}
+                            className="text-xs h-6 px-2"
+                          >
+                            {timelineOptions[s.key as keyof typeof timelineOptions]?.enabled ? '⚙️' : '⚙️'} Timeline
+                          </Button>
+                          
+                          {timelineOptions[s.key as keyof typeof timelineOptions]?.enabled && (
+                            <div className="flex items-center gap-1 text-xs">
+                              <select
+                                value={timelineOptions[s.key as keyof typeof timelineOptions]?.timeRange || '7d'}
+                                onChange={(e) => handleTimelineOption(s.key, 'timeRange', e.target.value)}
+                                className="border border-gray-300 rounded px-1 py-0.5 text-xs"
+                                disabled={loading}
+                              >
+                                <option value="1d">1 day</option>
+                                <option value="7d">7 days</option>
+                                <option value="30d">30 days</option>
+                                <option value="90d">90 days</option>
+                                <option value="all">All time</option>
+                              </select>
+                              
+                              <span className="text-gray-500">•</span>
+                              
+                              <select
+                                value={timelineOptions[s.key as keyof typeof timelineOptions]?.postLimit || 10}
+                                onChange={(e) => handleTimelineOption(s.key, 'postLimit', parseInt(e.target.value))}
+                                className="border border-gray-300 rounded px-1 py-0.5 text-xs"
+                                disabled={loading}
+                              >
+                                <option value="5">5 posts</option>
+                                <option value="10">10 posts</option>
+                                <option value="20">20 posts</option>
+                                <option value="50">50 posts</option>
+                                <option value="100">100 posts</option>
+                              </select>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                     </div>
