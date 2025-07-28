@@ -25,7 +25,7 @@ const auth0Config = {
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || '',
   authorizationParams: {
     redirect_uri: `${window.location.origin}/auth/callback`,
-    scope: 'openid profile email',
+    scope: 'openid profile email https://www.googleapis.com/auth/gmail.send',
   },
   // SPA configuration - no client secret
   cacheLocation: 'localstorage' as const,

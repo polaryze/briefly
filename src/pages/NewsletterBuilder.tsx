@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight } from "lucide-react";
 import AINewsletterRenderer from "@/components/AINewsletterRenderer";
+import { GmailSender } from "@/components/GmailSender";
 import Loader from "@/components/Loader";
 import { logger } from "@/lib/logger";
 import { validateSocialMediaUrl, validateRequired } from "@/lib/validation";
@@ -12,7 +13,8 @@ import { LoadingButton } from "@/components/ui/loading";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { configManager } from "@/lib/config";
 import useSmoothNavigate from "@/hooks/useSmoothNavigate";
-import { NEWSLETTER_TEMPLATES, getTemplateById, loadTemplateHTML } from '../lib/newsletterTemplates';
+import { NEWSLETTER_TEMPLATES, getTemplateById, loadTemplateHTML, testTemplateLoading } from '../lib/newsletterTemplates';
+import { getFallbackTemplate } from '../lib/placeholderNewsletter';
 import { identifyTemplate } from '../lib/templateIntelligence';
 import { CardCarousel } from '@/components/ui/card-carousel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -2283,6 +2285,14 @@ export default function NewsletterBuilder() {
     }
   }, [location.state, navigate]);
 
+  // Test template loading on mount (development only)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log('🧪 Development mode detected, testing template loading...');
+      testTemplateLoading().catch(console.error);
+    }
+  }, []);
+
   // Reset loading state when template selection is shown
   useEffect(() => {
     if (showTemplateSelection && loading && !selectedTemplate) {
@@ -2622,6 +2632,17 @@ export default function NewsletterBuilder() {
     console.log('Inputs:', inputs);
     console.log('Selected template:', selectedTemplate);
 
+    // Check API configuration first
+    const apiValidation = configManager.validateAllKeys();
+    if (!apiValidation.isValid) {
+      console.error('❌ API configuration error:', apiValidation.error);
+      setError(`${apiValidation.error}\n\n${configManager.getEnvironmentErrorMessage()}`);
+      return;
+    }
+
+    console.log('✅ API configuration validated');
+    console.log('Environment:', configManager.isProduction() ? 'Production' : 'Development');
+
     // If no template is selected, show template selection
     if (!selectedTemplate) {
       console.log('📋 No template selected, showing template selection...');
@@ -2675,7 +2696,9 @@ export default function NewsletterBuilder() {
 
       } catch (error: any) {
         console.error('Newsletter generation error:', error);
-        setError(error.message || "Unknown error");
+        const errorMessage = error.message || "Unknown error";
+        const environmentMessage = configManager.getEnvironmentErrorMessage();
+        setError(`${errorMessage}\n\n${environmentMessage}`);
         setTempData({});
         setLoading(false);
         setIsTemplateSelectionPhase(false);
@@ -2788,9 +2811,13 @@ export default function NewsletterBuilder() {
         console.log('📄 Template HTML loaded successfully, length:', templateHtml.length);
       } catch (loadError) {
         console.error('❌ Failed to load template HTML:', loadError);
-        // Enhanced fallback template
-        templateHtml = createEnhancedFallbackTemplate(template.name, processedData);
-        console.log('📄 Using enhanced fallback template');
+        console.log('📄 Using fallback template due to template loading failure');
+        // Use our new fallback template
+        templateHtml = getFallbackTemplate({
+          authorName: 'Your',
+          templateName: template.name
+        });
+        console.log('📄 Fallback template loaded, length:', templateHtml.length);
       }
       
       setGenerationProgress(55);
@@ -3510,6 +3537,20 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                       setSelectedTemplate(null);
                     }}
                   />
+                  
+                  {/* Gmail Sender Component */}
+                  <div className="p-4 border-t border-gray-200 bg-gray-50">
+                    <GmailSender 
+                      newsletterHtml={newsletter?.rawContent || ''}
+                      onSendComplete={(success) => {
+                        if (success) {
+                          console.log('✅ Newsletter sent successfully via Gmail');
+                        } else {
+                          console.log('❌ Failed to send newsletter via Gmail');
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
               

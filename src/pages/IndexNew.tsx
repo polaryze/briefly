@@ -40,7 +40,18 @@ const NewsletterExample = () => {
         <header className="bg-white px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-2 border-b border-gray-200">
           <h1 className="mb-2 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-gray-900">Alex's Weekly Recap <span className="text-lg sm:text-xl lg:text-2xl font-normal text-gray-500">(July 7, 2025)</span></h1>
           <div className="flex items-center gap-3 sm:gap-4 text-sm sm:text-base text-gray-700 opacity-90 mb-2">
-            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Alex Kumar" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200" />
+            <img 
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face&auto=format" 
+              alt="Alex Kumar" 
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200 bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-medium hidden">
+              AK
+            </div>
             <span className="font-medium">by Alex Kumar</span>
             <span className="opacity-60">·</span>
             <span className="opacity-80">Week 27, 2025</span>
@@ -608,10 +619,15 @@ const IndexNew = () => {
                         src={user.picture} 
                         alt={user.name || 'User'} 
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
                       />
-                    ) : (
-                      <span className="text-2xl">👤</span>
-                    )}
+                    ) : null}
+                    <div className={`w-full h-full bg-gray-100 flex items-center justify-center text-gray-500 text-lg font-medium ${user?.picture ? 'hidden' : ''}`}>
+                      {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : '👤'}
+                    </div>
                   </button>
                   
                   {/* Profile Dropdown Menu */}
@@ -757,10 +773,15 @@ const IndexNew = () => {
                       src={user.picture} 
                       alt={user.name || 'User'} 
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
                     />
-                  ) : (
-                    <span className="text-lg">👤</span>
-                  )}
+                  ) : null}
+                  <div className={`w-full h-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm font-medium ${user?.picture ? 'hidden' : ''}`}>
+                    {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : '👤'}
+                  </div>
                 </button>
                 
                 {/* Profile Dropdown Menu */}

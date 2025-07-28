@@ -90,7 +90,14 @@ const Testimonials = () => {
                       src={testimonial.avatar}
                       alt={testimonial.author}
                       className="w-12 h-12 rounded-full object-cover shadow-lg"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
                     />
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-medium shadow-lg hidden">
+                      {testimonial.author.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </div>
                     <div className="text-left">
                       <div className="font-semibold text-foreground">{testimonial.author}</div>
                       <div className="text-muted-foreground">{testimonial.role}</div>

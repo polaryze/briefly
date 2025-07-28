@@ -32,14 +32,14 @@ class ConfigManager {
     if (!key || key.trim() === '') {
       return {
         isValid: false,
-        error: 'OpenAI API key not configured. Please set VITE_OPENAI_API_KEY in your environment variables.'
+        error: 'OpenAI API key not configured. Please set VITE_OPENAI_API_KEY in your environment variables. This is required for newsletter generation.'
       };
     }
 
     if (!key.startsWith('sk-')) {
       return {
         isValid: false,
-        error: 'Invalid OpenAI API key format. Key should start with "sk-".'
+        error: 'Invalid OpenAI API key format. Key should start with "sk-". Please check your VITE_OPENAI_API_KEY configuration.'
       };
     }
 
@@ -52,7 +52,7 @@ class ConfigManager {
     if (!key || key.trim() === '' || key === 'your_rapidapi_key') {
       return {
         isValid: false,
-        error: 'RapidAPI key not configured. Please set VITE_RAPIDAPI_KEY in your environment variables.'
+        error: 'RapidAPI key not configured. Please set VITE_RAPIDAPI_KEY in your environment variables. This is required for social media data fetching.'
       };
     }
 
@@ -60,7 +60,7 @@ class ConfigManager {
     if (key.length < 20) {
       return {
         isValid: false,
-        error: 'Invalid RapidAPI key format. Key appears to be too short.'
+        error: 'Invalid RapidAPI key format. Key appears to be too short. Please check your VITE_RAPIDAPI_KEY configuration.'
       };
     }
 
@@ -82,11 +82,27 @@ class ConfigManager {
     return { isValid: true };
   }
 
+  // Check if we're in production/domain environment
+  isProduction(): boolean {
+    return window.location.hostname !== 'localhost' && 
+           window.location.hostname !== '127.0.0.1' &&
+           !window.location.hostname.includes('localhost');
+  }
+
+  // Get environment-specific error messages
+  getEnvironmentErrorMessage(): string {
+    if (this.isProduction()) {
+      return 'Newsletter generation is not working on the domain. Please ensure all API keys are properly configured in your production environment variables.';
+    }
+    return 'Newsletter generation is not working locally. Please check your environment variables and API key configurations.';
+  }
+
   // Security check - ensure no API keys are accidentally logged
   getSafeConfig(): object {
     return {
       openai: this.config.openai ? `${this.config.openai.substring(0, 7)}...` : 'not configured',
-      rapidapi: this.config.rapidapi ? `${this.config.rapidapi.substring(0, 7)}...` : 'not configured'
+      rapidapi: this.config.rapidapi ? `${this.config.rapidapi.substring(0, 7)}...` : 'not configured',
+      environment: this.isProduction() ? 'production' : 'development'
     };
   }
 }

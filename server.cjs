@@ -8,6 +8,74 @@ app.use(cors());
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || 'YOUR_RAPIDAPI_KEY';
 
+// Gmail API proxy endpoint
+app.post('/api/gmail/send', async (req, res) => {
+  const { message, accessToken } = req.body;
+  
+  if (!message || !accessToken) {
+    return res.status(400).json({ error: 'Missing message or access token' });
+  }
+
+  try {
+    // Construct the raw MIME message
+    const boundary = 'boundary_' + Math.random().toString(36).substring(2);
+    const date = new Date().toISOString();
+    
+    const mimeMessage = [
+      `From: ${message.from || 'Briefly Newsletter <noreply@briefly.ai>'}`,
+      `To: ${message.to}`,
+      `Subject: ${message.subject}`,
+      `Date: ${date}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: multipart/alternative; boundary="${boundary}"`,
+      '',
+      `--${boundary}`,
+      `Content-Type: text/plain; charset=UTF-8`,
+      `Content-Transfer-Encoding: 7bit`,
+      '',
+      `View this email in your browser to see the full newsletter.`,
+      '',
+      `--${boundary}`,
+      `Content-Type: text/html; charset=UTF-8`,
+      `Content-Transfer-Encoding: 7bit`,
+      '',
+      message.html,
+      '',
+      `--${boundary}--`
+    ].join('\r\n');
+
+    // Base64 encode and make URL-safe (Unicode-safe)
+    const encoded = Buffer.from(mimeMessage, 'utf8').toString('base64');
+    const raw = encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    // Send to Gmail API
+    const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ raw })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Gmail API error:', errorData);
+      return res.status(response.status).json({ 
+        error: `Gmail API error: ${errorData.error?.message || response.statusText}` 
+      });
+    }
+
+    const result = await response.json();
+    res.json({ success: true, messageId: result.id });
+  } catch (error) {
+    console.error('Failed to send Gmail message:', error);
+    res.status(500).json({ 
+      error: error.message || 'Unknown error' 
+    });
+  }
+});
+
 app.post('/api/linkedin-scrape', async (req, res) => {
   const { username } = req.body;
   if (!username) {
