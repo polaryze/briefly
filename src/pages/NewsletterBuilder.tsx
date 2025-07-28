@@ -698,7 +698,7 @@ async function fetchInstagramData(profileOrUrl: string) {
   }
 }
 
-async function fetchYouTubeData(channelId: string) {
+async function fetchYouTubeData(channelName: string) {
   // Check if API key is available
   const rapidApiValidation = configManager.validateRapidAPIKey();
   if (!rapidApiValidation.isValid) {
@@ -708,12 +708,25 @@ async function fetchYouTubeData(channelId: string) {
   
   const RAPIDAPI_KEY = configManager.getRapidAPIKey();
   
-  console.log('YouTube: Processing channel ID:', channelId);
+  // Extract channel name from URL or use as-is
+  let channelNameClean = channelName;
+  if (channelName.includes('youtube.com/channel/')) {
+    const match = channelName.match(/youtube\.com\/channel\/([^\/\?]+)/);
+    channelNameClean = match ? match[1] : channelName;
+  } else if (channelName.includes('youtube.com/c/')) {
+    const match = channelName.match(/youtube\.com\/c\/([^\/\?]+)/);
+    channelNameClean = match ? match[1] : channelName;
+  } else if (channelName.includes('youtube.com/@')) {
+    const match = channelName.match(/youtube\.com\/@([^\/\?]+)/);
+    channelNameClean = match ? match[1] : channelName;
+  }
+  
+  console.log('YouTube: Processing channel name:', channelNameClean);
   
   try {
-    // Step 1: Get videos from channel (we'll take the first video at index 0)
-    const url = `https://youtube-v2.p.rapidapi.com/channel/videos?channel_id=${encodeURIComponent(channelId)}`;
-    const options = {
+    // Step 1: Get channel ID from channel name
+    const channelUrl = `https://youtube-v2.p.rapidapi.com/channel/id?channel_name=${encodeURIComponent(channelNameClean)}`;
+    const channelOptions = {
       method: 'GET',
       headers: {
         'x-rapidapi-key': RAPIDAPI_KEY,
@@ -721,13 +734,48 @@ async function fetchYouTubeData(channelId: string) {
       }
     };
     
-    const response = await fetch(url, options);
-    const result = await response.text();
-    console.log('YouTube Channel Videos API Response:', result);
+    const channelResponse = await fetch(channelUrl, channelOptions);
+    const channelResult = await channelResponse.text();
+    console.log('YouTube Channel ID API Response:', channelResult);
+    
+    let channelData;
+    try {
+      channelData = JSON.parse(channelResult);
+      console.log('YouTube channelData parsed successfully');
+    } catch (parseError) {
+      console.error('Failed to parse YouTube channel API response:', parseError);
+      throw new Error('Failed to get channel data');
+    }
+    
+    console.log('YouTube channel data structure:', channelData);
+    console.log('YouTube channel data keys:', Object.keys(channelData || {}));
+    
+    // Extract channel ID
+    const channelId = channelData?.channel_id;
+    if (!channelId) {
+      console.error('No channel_id found in channel data:', channelData);
+      throw new Error('Channel not found or no channel_id available');
+    }
+    
+    console.log('YouTube Channel ID:', channelId);
+    
+    // Step 2: Get videos from channel
+    const videosUrl = `https://youtube-v2.p.rapidapi.com/channel/videos?channel_id=${channelId}`;
+    const videosOptions = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': RAPIDAPI_KEY,
+        'x-rapidapi-host': 'youtube-v2.p.rapidapi.com'
+      }
+    };
+    
+    const videosResponse = await fetch(videosUrl, videosOptions);
+    const videosResult = await videosResponse.text();
+    console.log('YouTube Channel Videos API Response:', videosResult);
     
     let videosData;
     try {
-      videosData = JSON.parse(result);
+      videosData = JSON.parse(videosResult);
       console.log('YouTube videosData parsed successfully');
     } catch (parseError) {
       console.error('Failed to parse YouTube videos API response:', parseError);
@@ -756,7 +804,7 @@ async function fetchYouTubeData(channelId: string) {
     
     console.log('YouTube extracted video_id:', videoId);
     
-    // Step 2: Get subtitles using the video_id
+    // Step 3: Get subtitles using the video_id
     const subtitlesUrl = `https://youtube-v2.p.rapidapi.com/video/subtitles?video_id=${videoId}`;
     const subtitlesOptions = {
       method: 'GET',
@@ -897,17 +945,17 @@ async function fetchYouTubeData(channelId: string) {
     console.log('YouTube API error details:', {
       message: error.message,
       stack: error.stack,
-      channelId: channelId
+      channelName: channelName
     });
     
     // Fallback to mock data if API fails
-  return {
-    data: [
-      {
-        text: "New tutorial video is live! Check out how to build this feature step by step.",
-        posted: new Date().toISOString(),
-        images: [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
-        likes: 156,
+    return {
+      data: [
+        {
+          text: "New tutorial video is live! Check out how to build this feature step by step.",
+          posted: new Date().toISOString(),
+          images: [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
+          likes: 156,
           comments: 23,
           views: 1000,
           video_length: "10:30",
