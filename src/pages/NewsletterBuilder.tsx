@@ -514,58 +514,26 @@ async function fetchInstagramData(profileOrUrl: string) {
   console.log('Instagram: Processing username:', username);
   
   try {
-    // Step 1: Get user ID by username
-    const userUrl = `https://instagram-scrapper-posts-reels-stories-downloader.p.rapidapi.com/user_id_by_username?username=${encodeURIComponent(username)}`;
-    const userOptions = {
+    // Use the new Instagram API endpoint
+    const url = `https://instagram-social-api.p.rapidapi.com/v1/posts?username_or_id_or_url=${encodeURIComponent(username)}`;
+    const options = {
       method: 'GET',
       headers: {
         'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'instagram-scrapper-posts-reels-stories-downloader.p.rapidapi.com'
+        'x-rapidapi-host': 'instagram-social-api.p.rapidapi.com'
       }
     };
     
-    const userResponse = await fetch(userUrl, userOptions);
-    const userResult = await userResponse.text();
-    console.log('Instagram User API Response:', userResult);
-    
-    let userData;
-    try {
-      userData = JSON.parse(userResult);
-      console.log('Instagram userData parsed successfully');
-    } catch (parseError) {
-      console.error('Failed to parse Instagram user API response:', parseError);
-      throw new Error('Failed to get user data');
-    }
-    
-    // Extract user ID
-    const userId = userData?.UserID;
-    if (!userId) {
-      console.error('No UserID found in user data:', userData);
-      throw new Error('User not found or no UserID available');
-    }
-    
-    console.log('Instagram User ID:', userId);
-    
-    // Step 2: Get posts using user ID
-    const postsUrl = `https://instagram-scrapper-posts-reels-stories-downloader.p.rapidapi.com/posts_by_user_id?user_id=${userId}`;
-    const postsOptions = {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'instagram-scrapper-posts-reels-stories-downloader.p.rapidapi.com'
-      }
-    };
-    
-    const postsResponse = await fetch(postsUrl, postsOptions);
-    const postsResult = await postsResponse.text();
-    console.log('Instagram Posts API Response:', postsResult);
+    const response = await fetch(url, options);
+    const result = await response.text();
+    console.log('Instagram API Response:', result);
     
     let postsData;
     try {
-      postsData = JSON.parse(postsResult);
+      postsData = JSON.parse(result);
       console.log('Instagram postsData parsed successfully');
     } catch (parseError) {
-      console.error('Failed to parse Instagram posts API response:', parseError);
+      console.error('Failed to parse Instagram API response:', parseError);
       throw new Error('Failed to get posts data');
     }
     
@@ -575,13 +543,12 @@ async function fetchInstagramData(profileOrUrl: string) {
     // Extract posts from the response
     let posts: any[] = [];
     
-    if (postsData?.items && Array.isArray(postsData.items)) {
-      console.log('Instagram: Found', postsData.items.length, 'posts');
-      posts = postsData.items.slice(0, 3); // Get top 3 posts
-      console.log('Instagram: Using top 3 posts');
-    } else if (postsData?.data && Array.isArray(postsData.data)) {
-      console.log('Instagram: Found', postsData.data.length, 'posts in data array');
-      posts = postsData.data.slice(0, 3);
+    if (postsData?.data && Array.isArray(postsData.data)) {
+      console.log('Instagram: Found', postsData.data.length, 'posts');
+      posts = postsData.data.slice(0, 3); // Get top 3 posts
+    } else if (postsData?.posts && Array.isArray(postsData.posts)) {
+      console.log('Instagram: Found', postsData.posts.length, 'posts');
+      posts = postsData.posts.slice(0, 3);
     } else if (Array.isArray(postsData)) {
       console.log('Instagram: Found', postsData.length, 'posts in root array');
       posts = postsData.slice(0, 3);
@@ -600,9 +567,7 @@ async function fetchInstagramData(profileOrUrl: string) {
     const transformedPosts = posts.map((post: any) => {
       // Extract text/caption from the post
       let text = '';
-      if (post.caption?.text) {
-        text = post.caption.text;
-      } else if (post.caption) {
+      if (post.caption) {
         text = typeof post.caption === 'string' ? post.caption : '';
       } else if (post.text) {
         text = post.text;
@@ -625,13 +590,12 @@ async function fetchInstagramData(profileOrUrl: string) {
       
       // Extract date
       let posted = '';
-      if (post.taken_at) {
-        // Instagram uses Unix timestamp
-        posted = new Date(post.taken_at * 1000).toISOString();
-      } else if (post.created_at) {
+      if (post.created_at) {
         posted = new Date(post.created_at).toISOString();
       } else if (post.timestamp) {
         posted = new Date(post.timestamp).toISOString();
+      } else if (post.date) {
+        posted = new Date(post.date).toISOString();
       } else {
         posted = new Date().toISOString();
       }
@@ -639,32 +603,19 @@ async function fetchInstagramData(profileOrUrl: string) {
       // Extract images
       const images = [];
       
-      // Check for image_versions2.candidates (Instagram's image structure)
-      if (post.image_versions2?.candidates && Array.isArray(post.image_versions2.candidates)) {
-        // Get the highest quality image (usually the first one)
-        const bestImage = post.image_versions2.candidates[0];
-        if (bestImage?.url) {
-          images.push({ url: bestImage.url });
-        }
-      }
-      
-      // Check for carousel_media (multiple images)
-      if (post.carousel_media && Array.isArray(post.carousel_media)) {
-        post.carousel_media.forEach((media: any) => {
-          if (media.image_versions2?.candidates && media.image_versions2.candidates.length > 0) {
-            const bestImage = media.image_versions2.candidates[0];
-            if (bestImage?.url) {
-              images.push({ url: bestImage.url });
-            }
-          }
-        });
-      }
-      
-      // Check for direct image fields
-      if (post.images && Array.isArray(post.images)) {
+      // Check for image URLs in various possible fields
+      if (post.image_url) {
+        images.push({ url: post.image_url });
+      } else if (post.images && Array.isArray(post.images)) {
         post.images.forEach((img: any) => {
           if (img.url) {
             images.push({ url: img.url });
+          }
+        });
+      } else if (post.media && Array.isArray(post.media)) {
+        post.media.forEach((media: any) => {
+          if (media.url) {
+            images.push({ url: media.url });
           }
         });
       }
@@ -675,11 +626,11 @@ async function fetchInstagramData(profileOrUrl: string) {
       }
       
       // Extract engagement metrics
-      const likes = post.like_count || post.likes || post.like_count || 0;
-      const comments = post.comment_count || post.comments || post.comment_count || 0;
+      const likes = post.likes || post.like_count || 0;
+      const comments = post.comments || post.comment_count || 0;
       
       // Determine if it's a video
-      const isVideo = post.media_type === 2 || post.media_type === 8 || post.is_video || false;
+      const isVideo = post.media_type === 'VIDEO' || post.is_video || false;
       
       const transformedPost = {
         text: text,
@@ -687,16 +638,13 @@ async function fetchInstagramData(profileOrUrl: string) {
         images: images,
         likes: likes,
         comments: comments,
-        url: `https://instagram.com/p/${post.code || post.shortcode || post.id}`,
+        url: post.url || `https://instagram.com/p/${post.id || post.shortcode || 'sample'}`,
         is_video: isVideo,
         platform: 'instagram'
       };
       
       console.log('Instagram post transformation:', {
         originalPostKeys: Object.keys(post),
-        code: post.code,
-        shortcode: post.shortcode,
-        mediaType: post.media_type,
         extractedText: text?.substring(0, 100) + '...',
         textLength: text?.length || 0,
         extractedDate: posted,
@@ -733,13 +681,13 @@ async function fetchInstagramData(profileOrUrl: string) {
     });
     
     // Fallback to mock data if API fails
-  return {
-    data: [
-      {
-        text: "Behind the scenes of our latest project 📸",
-        posted: new Date().toISOString(),
-        images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
-        likes: 89,
+    return {
+      data: [
+        {
+          text: "Behind the scenes of our latest project 📸",
+          posted: new Date().toISOString(),
+          images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
+          likes: 89,
           comments: 12,
           url: `https://instagram.com/p/sample_post_id`,
           is_video: false,
