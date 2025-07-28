@@ -269,7 +269,7 @@ app.post('/api/scrape-socials', async (req, res) => {
   res.json({ posts, newsletter, summary: { totalLinks: links.length, processedLinks: posts.length, platforms: posts.map(p => p.platform) } });
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
 }); 

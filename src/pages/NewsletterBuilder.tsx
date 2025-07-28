@@ -51,7 +51,7 @@ interface TempData {
   twitter?: any[];
   instagram?: any[];
   youtube?: any[];
-  allImages?: Array<{url: string, postText: string, postDate: string, platform: string}>;
+  allImages?: Array<{url: string, postText: string, postDate: string, platform: string, likes?: number, comments?: number}>;
   allText?: string;
   dataFile?: string; // Virtual file containing all formatted data
   youtubeSummaries?: {[key: string]: string};
@@ -1540,7 +1540,9 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
               url: img.url,
               postText: post.text,
               postDate: post.posted,
-              platform: 'instagram'
+              platform: 'instagram',
+              likes: post.likes || 0,
+              comments: post.comments || 0
             }));
           });
           tempData.allImages = [...(tempData.allImages || []), ...images];
@@ -1573,7 +1575,9 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
               url: img.url,
               postText: post.text,
               postDate: post.posted,
-              platform: 'instagram'
+              platform: 'instagram',
+              likes: post.likes || 0,
+              comments: post.comments || 0
             }));
           });
           tempData.allImages = [...(tempData.allImages || []), ...images];
@@ -1606,7 +1610,9 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
             url: img.url,
             postText: post.text,
             postDate: post.posted,
-            platform: 'instagram'
+            platform: 'instagram',
+            likes: post.likes || 0,
+            comments: post.comments || 0
           }));
         });
         tempData.allImages = [...(tempData.allImages || []), ...images];
@@ -2143,7 +2149,7 @@ function extractCSSFromTemplate(templateHtml: string): string {
 }
 
 // Function to replace sections in the cleaned newsletter template
-const replaceNewsletterSections = (templateHtml: string, summaries: { [platform: string]: string[] }, images: Array<{url: string, postText: string, postDate: string, platform: string}>): string => {
+const replaceNewsletterSections = (templateHtml: string, summaries: { [platform: string]: string[] }, images: Array<{url: string, postText: string, postDate: string, platform: string, likes?: number, comments?: number}>): string => {
   console.log('🔧 replaceNewsletterSections called with:');
   console.log('  - Template HTML length:', templateHtml.length);
   console.log('  - Summaries:', Object.keys(summaries).map(p => `${p}: ${summaries[p].length}`));
@@ -2196,23 +2202,72 @@ const replaceNewsletterSections = (templateHtml: string, summaries: { [platform:
     modifiedHtml = modifiedHtml.replace(instagramSectionRegex, '<!-- SECTION: Content Placeholder -->');
   }
   
-  // Replace images section
-  if (images.length > 0) {
-    const imageHtml = images.map(image => 
-      `<img src="${image.url}" alt="${image.postText.substring(0, 50)}" style="max-width: 200px; margin: 10px; border-radius: 8px;" />`
-    ).join('');
+  // Replace images section with Instagram collage
+  const instagramImages = images.filter(img => img.platform === 'instagram');
+  if (instagramImages.length > 0) {
+    console.log('📸 Creating Instagram collage with:', instagramImages.length, 'images');
     
-    console.log('🖼️ Replacing images section with:', images.length, 'images');
+    // Create a beautiful Instagram collage HTML
+    const collageHtml = `
+      <div style="margin: 2rem 0;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.5rem; font-weight: bold; color: #1a1a1a; margin-bottom: 0.5rem;">Instagram Highlights</h2>
+          <p style="color: #666; font-size: 0.9rem;">A glimpse into my visual journey</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; max-width: 100%;">
+          ${instagramImages.map((image, index) => `
+            <div style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
+              <img 
+                src="${image.url}" 
+                alt="${image.postText ? image.postText.substring(0, 50) : 'Instagram post'}"
+                style="width: 100%; height: 200px; object-fit: cover;"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              />
+              <div style="display: none; width: 100%; height: 200px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); align-items: center; justify-content: center;">
+                <span style="color: white; font-size: 2rem;">📸</span>
+              </div>
+              
+              ${image.postText ? `
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 1rem; color: white;">
+                  <p style="font-size: 0.8rem; margin: 0; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                    ${image.postText}
+                  </p>
+                  ${image.postDate ? `
+                    <p style="font-size: 0.7rem; margin: 0.5rem 0 0 0; opacity: 0.8;">
+                      ${new Date(image.postDate).toLocaleDateString()}
+                    </p>
+                  ` : ''}
+                </div>
+              ` : ''}
+              
+              <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+                <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 12px; font-weight: 500;">
+                  Instagram
+                </span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div style="text-align: center; margin-top: 1.5rem; color: #666; font-size: 0.8rem;">
+          <span style="margin: 0 1rem;">📸 ${instagramImages.length} posts</span>
+          <span style="margin: 0 1rem;">❤️ ${instagramImages.reduce((sum, img) => sum + (img.likes || 0), 0)} total likes</span>
+          <span style="margin: 0 1rem;">💬 ${instagramImages.reduce((sum, img) => sum + (img.comments || 0), 0)} total comments</span>
+        </div>
+      </div>
+    `;
+    
     modifiedHtml = modifiedHtml.replace(
       '<!-- SECTION: IMAGES HERE -->',
-      imageHtml
+      collageHtml
     );
   } else {
-    console.log('🖼️ No images, showing placeholder');
+    console.log('📸 No Instagram images, showing placeholder');
     // Hide images section if no images
     modifiedHtml = modifiedHtml.replace(
       '<!-- SECTION: IMAGES HERE -->',
-      '<p style="text-align: center; color: #666;">No images available</p>'
+      '<p style="text-align: center; color: #666;">No Instagram images available</p>'
     );
   }
   
@@ -2347,7 +2402,7 @@ export default function NewsletterBuilder() {
   // New function for step-by-step processing
   const processSocialMediaStepByStep = async (selected: any, inputs: any, timelineOptions?: any): Promise<{
     summaries: { [platform: string]: string[] };
-    images: Array<{url: string, postText: string, postDate: string, platform: string}>;
+    images: Array<{url: string, postText: string, postDate: string, platform: string, likes?: number, comments?: number}>;
     processingTime: number;
   }> => {
     const startTime = Date.now();
