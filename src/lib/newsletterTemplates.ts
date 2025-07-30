@@ -71,11 +71,9 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
 ];
 
 // Helper function to get template by ID
-export function getTemplateById(id: string): NewsletterTemplate | undefined {
-  console.log('🔍 Looking for template with ID:', id);
-  const template = NEWSLETTER_TEMPLATES.find(template => template.id === id);
-  console.log('📋 Template found:', template ? template.name : 'Not found');
-  return template;
+export function getTemplateById(id: string) {
+  const template = NEWSLETTER_TEMPLATES.find(t => t.id === id);
+  return template || null;
 }
 
 // Helper function to get enabled templates only
@@ -89,59 +87,37 @@ export function getTemplatesByStyle(style: string): NewsletterTemplate[] {
 }
 
 // Function to load template HTML content
-export async function loadTemplateHTML(template: NewsletterTemplate): Promise<string> {
-  console.log('📄 Loading template HTML:', template.htmlPath);
-  console.log('📄 Template name:', template.name);
-  console.log('📄 Current URL:', window.location.href);
-  console.log('📄 Base URL:', window.location.origin);
+export async function loadTemplateHTML(template: any): Promise<string> {
+  if (!template || !template.htmlPath) {
+    throw new Error('Invalid template or missing HTML path');
+  }
+
+  const fullUrl = `${window.location.origin}${template.htmlPath}`;
   
   try {
-    // Try to load the template
-    const fullUrl = `${window.location.origin}${template.htmlPath}`;
-    console.log('📄 Full URL:', fullUrl);
-    
-    const response = await fetch(template.htmlPath);
-    console.log('📄 Response status:', response.status);
-    console.log('📄 Response ok:', response.ok);
+    const response = await fetch(fullUrl);
     
     if (!response.ok) {
-      console.error('❌ Template loading failed:', response.status, response.statusText);
       throw new Error(`Failed to load template: ${response.status} ${response.statusText}`);
     }
     
     const htmlContent = await response.text();
-    console.log('✅ Template loaded successfully, length:', htmlContent.length);
-    console.log('✅ First 200 characters:', htmlContent.substring(0, 200));
-    
     return htmlContent;
   } catch (error) {
-    console.error('❌ Error loading template HTML:', error);
-    console.error('❌ Template path:', template.htmlPath);
-    console.error('❌ Template name:', template.name);
-    
-    // Provide more specific error messages
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error(`Network error loading template ${template.name}. Check if the file exists at ${template.htmlPath}`);
-    }
-    
-    throw new Error(`Failed to load template ${template.name}: ${error.message}`);
+    throw new Error(`Error loading template HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
 // Test function to verify template loading
 export async function testTemplateLoading(): Promise<void> {
-  console.log('🧪 Testing template loading...');
-  
-  const enabledTemplates = getEnabledTemplates();
-  console.log('🧪 Enabled templates:', enabledTemplates.map(t => t.name));
+  const enabledTemplates = NEWSLETTER_TEMPLATES.filter(t => t.enabled);
   
   for (const template of enabledTemplates) {
-    console.log(`🧪 Testing template: ${template.name}`);
     try {
       const html = await loadTemplateHTML(template);
-      console.log(`✅ Template ${template.name} loaded successfully (${html.length} chars)`);
+      // Silent success - no logging
     } catch (error) {
-      console.error(`❌ Template ${template.name} failed to load:`, error);
+      // Silent error - no logging
     }
   }
 } 

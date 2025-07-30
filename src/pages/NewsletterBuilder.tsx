@@ -65,1155 +65,158 @@ interface ValidationErrors {
 
 // Helper functions for fetching data from different platforms
 async function fetchXData(handleOrUrl: string) {
-  // Check if API key is available
-  const rapidApiValidation = configManager.validateRapidAPIKey();
-  if (!rapidApiValidation.isValid) {
-    console.error('RapidAPI key not configured');
-    throw new Error(rapidApiValidation.error);
-  }
-  
-  const RAPIDAPI_KEY = configManager.getRapidAPIKey();
-  
-  // Extract handle from URL or @handle format
-  let handle = handleOrUrl;
-  if (handleOrUrl.includes('twitter.com/') || handleOrUrl.includes('x.com/')) {
-    const match = handleOrUrl.match(/(?:twitter\.com|x\.com)\/([^\/\?]+)/);
-    handle = match ? match[1] : handleOrUrl;
-  } else if (handleOrUrl.startsWith('@')) {
-    handle = handleOrUrl.substring(1);
-  }
-  
-  console.log('X: Processing handle:', handle);
-  
   try {
-    // Step 1: Get user ID by username
-    const userUrl = `https://twitter241.p.rapidapi.com/user?username=${encodeURIComponent(handle)}`;
-    const userOptions = {
-      method: 'GET',
+    // Use server endpoint instead of direct API call
+    const response = await fetch('/api/rapidapi/twitter', {
+      method: 'POST',
       headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'twitter241.p.rapidapi.com'
-      }
-    };
-    
-    const userResponse = await fetch(userUrl, userOptions);
-    const userResult = await userResponse.text();
-    console.log('X User API Response:', userResult);
-    
-    let userData;
-    try {
-      userData = JSON.parse(userResult);
-      console.log('X userData parsed successfully');
-    } catch (parseError) {
-      console.error('Failed to parse X user API response:', parseError);
-      throw new Error('Failed to get user data');
-    }
-    
-    // Extract rest_id from user data - handle different response structures
-    let restId = userData?.result?.data?.user?.result?.rest_id;
-    console.log('X restId from path 1:', restId);
-    
-    // Try alternative paths if the first one doesn't work
-    if (!restId) {
-      restId = userData?.data?.user?.result?.rest_id;
-      console.log('X restId from path 2:', restId);
-    }
-    if (!restId) {
-      restId = userData?.data?.user?.rest_id;
-      console.log('X restId from path 3:', restId);
-    }
-    if (!restId) {
-      restId = userData?.user?.rest_id;
-      console.log('X restId from path 4:', restId);
-    }
-    if (!restId) {
-      restId = userData?.rest_id;
-      console.log('X restId from path 5:', restId);
-    }
-    if (!restId) {
-      restId = userData?.data?.rest_id;
-      console.log('X restId from path 6:', restId);
-    }
-    if (!restId) {
-      // Search through the entire response for rest_id
-      const searchForRestId = (obj: any): string | null => {
-        if (typeof obj !== 'object' || obj === null) return null;
-        if (obj.rest_id) return obj.rest_id;
-        for (const key in obj) {
-          const result = searchForRestId(obj[key]);
-          if (result) return result;
-        }
-        return null;
-      };
-      restId = searchForRestId(userData);
-      console.log('X restId from search:', restId);
-    }
-    
-    if (!restId) {
-      console.error('No rest_id found in user data:', userData);
-      console.log('Available keys in userData:', Object.keys(userData || {}));
-      console.log('Available keys in userData.data:', Object.keys(userData?.data || {}));
-      console.log('Full userData structure:', JSON.stringify(userData, null, 2));
-      throw new Error('User not found or no rest_id available');
-    }
-    
-    console.log('X User rest_id:', restId);
-    
-    // Step 2: Get tweets using rest_id
-    const tweetsUrl = `https://twitter241.p.rapidapi.com/user-tweets?user=${restId}&count=20`;
-    const tweetsOptions = {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'twitter241.p.rapidapi.com'
-      }
-    };
-    
-    const tweetsResponse = await fetch(tweetsUrl, tweetsOptions);
-    const tweetsResult = await tweetsResponse.text();
-    console.log('X Tweets API Response:', tweetsResult);
-    
-    let tweetsData;
-    try {
-      tweetsData = JSON.parse(tweetsResult);
-      console.log('X tweetsData parsed successfully');
-    } catch (parseError) {
-      console.error('Failed to parse X tweets API response:', parseError);
-      throw new Error('Failed to get tweets data');
-    }
-    
-    // Transform the response to match our expected format
-    console.log('X tweets data structure:', tweetsData);
-    console.log('X tweets data keys:', Object.keys(tweetsData || {}));
-    
-    let posts: any[] = [];
-    
-    // Handle the specific structure from the twitter241 API
-    // The response structure is: result.timeline.instructions[].entry.content.itemContent.tweet_results.result
-    if (tweetsData?.result?.timeline?.instructions && Array.isArray(tweetsData.result.timeline.instructions)) {
-      console.log('X: Using twitter241 API timeline structure');
-      
-      // Extract tweets from timeline instructions
-      const extractedTweets: any[] = [];
-      
-      for (const instruction of tweetsData.result.timeline.instructions) {
-        if (instruction.type === 'TimelinePinEntry' && instruction.entry) {
-          // Handle pinned tweets
-          const tweetResult = instruction.entry.content?.itemContent?.tweet_results?.result;
-          if (tweetResult && tweetResult.__typename === 'Tweet') {
-            extractedTweets.push(tweetResult);
-          }
-        } else if (instruction.type === 'TimelineAddEntries' && instruction.entries && Array.isArray(instruction.entries)) {
-          // Handle regular timeline entries
-          for (const entry of instruction.entries) {
-            if (entry.content?.entryType === 'TimelineTimelineItem' && entry.content.itemContent?.itemType === 'TimelineTweet') {
-              const tweetResult = entry.content.itemContent.tweet_results?.result;
-              if (tweetResult && tweetResult.__typename === 'Tweet') {
-                extractedTweets.push(tweetResult);
-              }
-            }
-          }
-        }
-      }
-      
-      posts = extractedTweets;
-      console.log('X: Found', posts.length, 'posts in timeline structure');
-      
-      if (posts.length > 0) {
-        console.log('X: Sample post keys:', Object.keys(posts[0] || {}));
-        console.log('X: Sample post core keys:', Object.keys(posts[0]?.core || {}));
-        console.log('X: Sample post legacy keys:', Object.keys(posts[0]?.legacy || {}));
-      }
-    } 
-    // Fallback to try multiple possible response structures
-    else if (tweetsData?.data?.tweets && Array.isArray(tweetsData.data.tweets)) {
-      console.log('X: Using main response structure');
-      posts = tweetsData.data.tweets;
-      console.log('X: Found', posts.length, 'posts in data.tweets');
-      console.log('X: Sample post keys:', Object.keys(posts[0] || {}));
-    } else if (tweetsData?.data && Array.isArray(tweetsData.data)) {
-      console.log('X: Using alternative response structure');
-      posts = tweetsData.data;
-      console.log('X: Found', posts.length, 'posts in data');
-      console.log('X: Sample post keys:', Object.keys(posts[0] || {}));
-    } else if (tweetsData?.tweets && Array.isArray(tweetsData.tweets)) {
-      console.log('X: Using tweets direct structure');
-      posts = tweetsData.tweets;
-      console.log('X: Found', posts.length, 'posts in tweets');
-      console.log('X: Sample post keys:', Object.keys(posts[0] || {}));
-    } else if (Array.isArray(tweetsData)) {
-      console.log('X: Using array structure');
-      posts = tweetsData;
-      console.log('X: Found', posts.length, 'posts in root array');
-      console.log('X: Sample post keys:', Object.keys(posts[0] || {}));
-    } else {
-      console.log('X: No recognizable structure found, trying to extract from any array');
-      // Search for any array in the response that might contain tweets
-      const findTweetArray = (obj: any): any[] | null => {
-        if (Array.isArray(obj)) {
-          // Check if this array contains objects that look like tweets
-          if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
-            const firstItem = obj[0];
-            if (firstItem.text || firstItem.full_text || firstItem.tweet_text || firstItem.legacy?.full_text) {
-              return obj;
-            }
-          }
-        }
-        if (typeof obj === 'object' && obj !== null) {
-          for (const key in obj) {
-            const result = findTweetArray(obj[key]);
-            if (result) return result;
-          }
-        }
-        return null;
-      };
-      posts = findTweetArray(tweetsData) || [];
-      console.log('X: Found', posts.length, 'posts via search');
-      if (posts.length > 0) {
-        console.log('X: Sample post keys:', Object.keys(posts[0] || {}));
-      }
-    }
-    
-    // Log the complete structure of the first tweet for debugging
-    if (posts.length > 0) {
-      console.log('X: Complete structure of first tweet:', JSON.stringify(posts[0], null, 2));
-      console.log('X: First tweet keys:', Object.keys(posts[0]));
-      if (posts[0].legacy) {
-        console.log('X: First tweet legacy keys:', Object.keys(posts[0].legacy));
-        console.log('X: First tweet legacy.full_text:', posts[0].legacy.full_text);
-        console.log('X: First tweet legacy.created_at:', posts[0].legacy.created_at);
-        console.log('X: First tweet legacy.favorite_count:', posts[0].legacy.favorite_count);
-        console.log('X: First tweet legacy.reply_count:', posts[0].legacy.reply_count);
-        console.log('X: First tweet legacy.retweet_count:', posts[0].legacy.retweet_count);
-      }
-      if (posts[0].core) {
-        console.log('X: First tweet core keys:', Object.keys(posts[0].core));
-      }
-    }
-    
-    // Transform posts to our expected format
-    const transformedPosts = posts.map((tweet: any) => {
-      // For twitter241 API, the text is typically in legacy.full_text
-      // Try multiple possible text fields in order of preference
-      const possibleTextFields = [
-        'legacy.full_text',    // Twitter241 API primary text location
-        'full_text',           // Twitter API v1.1 full text
-        'text',                // Basic text field
-        'legacy.text',         // Legacy text field
-        'tweet_text',          // Alternative text field
-        'content',             // Generic content field
-        'note_tweet.text',     // Note tweet text for long tweets
-        'note_tweet_text',     // Note tweet text for long tweets
-        'extended_tweet_text', // Extended tweet text
-        'retweeted_status_text', // Retweeted status text
-        'quoted_status_text',  // Quoted status text
-        'display_text_range',  // Display text range
-        'tweet_content',       // Tweet content
-        'body',                // Body field
-        'message'              // Message field
-      ];
-      
-      let text = '';
-      for (const field of possibleTextFields) {
-        let fieldValue;
-        
-        // Handle nested field paths like 'legacy.full_text'
-        if (field.includes('.')) {
-          const parts = field.split('.');
-          fieldValue = tweet;
-          for (const part of parts) {
-            fieldValue = fieldValue?.[part];
-            if (!fieldValue) break;
-          }
-        } else {
-          fieldValue = tweet[field] || tweet.legacy?.[field] || tweet.note_tweet?.[field];
-        }
-        
-        if (fieldValue && typeof fieldValue === 'string' && fieldValue.trim().length > 0) {
-          text = fieldValue;
-          console.log(`X: Found text in field "${field}":`, text.substring(0, 100) + '...');
-          break;
-        }
-      }
-      
-      // If still no text found, try to extract from nested objects
-      if (!text) {
-        const searchForText = (obj: any, path: string = ''): string => {
-          if (typeof obj === 'string' && obj.trim().length > 10) {
-            console.log(`X: Found text in nested path "${path}":`, obj.substring(0, 100) + '...');
-            return obj;
-          }
-          if (typeof obj === 'object' && obj !== null) {
-            for (const key in obj) {
-              if (key.toLowerCase().includes('text') || key.toLowerCase().includes('content')) {
-                const result = searchForText(obj[key], `${path}.${key}`);
-                if (result) return result;
-              }
-            }
-          }
-          return '';
-        };
-        text = searchForText(tweet);
-      }
-      
-      // Try multiple possible date fields
-      const possibleDateFields = [
-        'legacy.created_at',   // Twitter241 API primary date location
-        'created_at',
-        'date',
-        'posted_at',
-        'timestamp',
-        'created_time',
-        'publish_time',
-        'post_date'
-      ];
-      
-      let posted = '';
-      for (const field of possibleDateFields) {
-        let fieldValue;
-        
-        // Handle nested field paths like 'legacy.created_at'
-        if (field.includes('.')) {
-          const parts = field.split('.');
-          fieldValue = tweet;
-          for (const part of parts) {
-            fieldValue = fieldValue?.[part];
-            if (!fieldValue) break;
-          }
-        } else {
-          fieldValue = tweet[field] || tweet.legacy?.[field];
-        }
-        
-        if (fieldValue) {
-          posted = fieldValue;
-          break;
-        }
-      }
-      
-      if (!posted) {
-        posted = new Date().toISOString();
-      }
-      
-      // Try multiple possible image fields
-      const images = [];
-      
-      // Check legacy.extended_entities.media first (twitter241 API)
-      if (tweet.legacy?.extended_entities?.media) {
-        const media = tweet.legacy.extended_entities.media.filter((m: any) => m.type === 'photo');
-        images.push(...media.map((m: any) => ({ url: m.media_url_https || m.url })));
-      }
-      
-      // Check extended_entities.media
-      if (tweet.extended_entities?.media) {
-        const media = tweet.extended_entities.media.filter((m: any) => m.type === 'photo');
-        images.push(...media.map((m: any) => ({ url: m.media_url_https || m.url })));
-      }
-      
-      // Check media array
-      if (tweet.media && Array.isArray(tweet.media)) {
-        const media = tweet.media.filter((m: any) => m.type === 'photo');
-        images.push(...media.map((m: any) => ({ url: m.media_url_https || m.url })));
-      }
-      
-      // Check attachments
-      if (tweet.attachments?.media) {
-        const media = tweet.attachments.media.filter((m: any) => m.type === 'photo');
-        images.push(...media.map((m: any) => ({ url: m.media_url_https || m.url })));
-      }
-      
-      const transformedPost = {
-        text: text,
-        posted: posted,
-        images: images,
-        likes: tweet.legacy?.favorite_count || tweet.favorite_count || tweet.likes || 0,
-        comments: tweet.legacy?.reply_count || tweet.reply_count || tweet.comments || 0,
-        retweets: tweet.legacy?.retweet_count || tweet.retweet_count || tweet.retweets || 0,
-        url: tweet.url || `https://x.com/${handle}/status/${tweet.rest_id || tweet.id_str || tweet.id || tweet.legacy?.id_str}`,
-        is_video: tweet.legacy?.extended_entities?.media?.some((m: any) => m.type === 'video') || 
-                  tweet.extended_entities?.media?.some((m: any) => m.type === 'video') || 
-                  tweet.media?.some((m: any) => m.type === 'video') || false
-      };
-      
-      console.log('X post transformation detailed:', {
-        originalTweetKeys: Object.keys(tweet),
-        legacyKeys: Object.keys(tweet.legacy || {}),
-        coreKeys: Object.keys(tweet.core || {}),
-        restId: tweet.rest_id,
-        extractedText: text?.substring(0, 100) + '...',
-        textLength: text?.length || 0,
-        extractedDate: posted,
-        hasValidText: text && text.trim().length > 0,
-        hasValidDate: posted && posted !== 'Invalid Date',
-        imagesCount: images.length,
-        rawLegacyData: {
-          full_text: tweet.legacy?.full_text?.substring(0, 50) + '...',
-          created_at: tweet.legacy?.created_at,
-          favorite_count: tweet.legacy?.favorite_count,
-          reply_count: tweet.legacy?.reply_count,
-          retweet_count: tweet.legacy?.retweet_count
-        },
-        transformedPost: {
-          text: transformedPost.text?.substring(0, 50) + '...',
-          posted: transformedPost.posted,
-          images: transformedPost.images.length,
-          likes: transformedPost.likes,
-          comments: transformedPost.comments,
-          retweets: transformedPost.retweets
-        }
-      });
-      
-      return transformedPost;
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ handle: handleOrUrl })
     });
-    
-    console.log('X posts transformed:', transformedPosts.length);
-    console.log('X sample transformed post:', transformedPosts[0]);
-    
-    return { data: transformedPosts };
-    
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch Twitter data');
+    }
+
+    const result = await response.json();
+    return result.data || [];
   } catch (error) {
-    console.error('X API error:', error);
-    console.log('X API error details:', {
-      message: error.message,
-      stack: error.stack,
-      userInput: handleOrUrl
-    });
-    
-    // Fallback to mock data if API fails
-    return {
-      data: [
-        {
-          text: "Just launched a new feature! 🚀 Excited to see how it performs.",
-          posted: new Date().toISOString(),
-          images: [{ url: "https://placehold.co/400x300?text=X+Post" }],
-          likes: 42,
-          comments: 5,
-          retweets: 8,
-          url: `https://x.com/${handleOrUrl.replace('@', '')}/status/123456789`,
-          is_video: false
-        }
-      ]
-    };
+    throw new Error(`X API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
-async function fetchInstagramData(profileOrUrl: string) {
-  // Check if API key is available
-  const rapidApiValidation = configManager.validateRapidAPIKey();
-  if (!rapidApiValidation.isValid) {
-    console.error('RapidAPI key not configured for Instagram');
-    throw new Error(rapidApiValidation.error);
-  }
-  
-  const RAPIDAPI_KEY = configManager.getRapidAPIKey();
-  
-  // Extract username from URL or use as-is
-  let username = profileOrUrl;
-  if (profileOrUrl.includes('instagram.com')) {
-    const match = profileOrUrl.match(/instagram\.com\/([^\/\?]+)/);
-    username = match ? match[1] : profileOrUrl;
-  }
-  
-  console.log('Instagram: Processing username:', username);
-  
+async function fetchInstagramData(usernameOrUrl: string) {
   try {
-    // Use the new Instagram API endpoint
-    const url = `https://instagram-social-api.p.rapidapi.com/v1/posts?username_or_id_or_url=${encodeURIComponent(username)}`;
-    const options = {
-      method: 'GET',
+    // Extract username from URL if needed
+    let username = usernameOrUrl;
+    if (usernameOrUrl.includes('instagram.com/')) {
+      username = usernameOrUrl.split('instagram.com/')[1]?.split('/')[0] || usernameOrUrl;
+    }
+
+    // Use server endpoint instead of direct API call
+    const response = await fetch('/api/rapidapi/instagram', {
+      method: 'POST',
       headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'instagram-social-api.p.rapidapi.com'
-      }
-    };
-    
-    const response = await fetch(url, options);
-    const result = await response.text();
-    console.log('Instagram API Response:', result);
-    
-    let postsData;
-    try {
-      postsData = JSON.parse(result);
-      console.log('Instagram postsData parsed successfully');
-    } catch (parseError) {
-      console.error('Failed to parse Instagram API response:', parseError);
-      throw new Error('Failed to get posts data');
-    }
-    
-    console.log('Instagram posts data structure:', postsData);
-    console.log('Instagram posts data keys:', Object.keys(postsData || {}));
-    
-    // Extract posts from the response
-    let posts: any[] = [];
-    
-    if (postsData?.data && Array.isArray(postsData.data)) {
-      console.log('Instagram: Found', postsData.data.length, 'posts');
-      posts = postsData.data.slice(0, 3); // Get top 3 posts
-    } else if (postsData?.posts && Array.isArray(postsData.posts)) {
-      console.log('Instagram: Found', postsData.posts.length, 'posts');
-      posts = postsData.posts.slice(0, 3);
-    } else if (Array.isArray(postsData)) {
-      console.log('Instagram: Found', postsData.length, 'posts in root array');
-      posts = postsData.slice(0, 3);
-    } else {
-      console.log('Instagram: No recognizable structure found');
-      posts = [];
-    }
-    
-    // Log the complete structure of the first post for debugging
-    if (posts.length > 0) {
-      console.log('Instagram: Complete structure of first post:', JSON.stringify(posts[0], null, 2));
-      console.log('Instagram: First post keys:', Object.keys(posts[0]));
-    }
-    
-    // Transform posts to our expected format
-    const transformedPosts = posts.map((post: any) => {
-      // Extract text/caption from the post
-      let text = '';
-      if (post.caption && post.caption.text) {
-        text = post.caption.text;
-      } else if (post.caption) {
-        text = typeof post.caption === 'string' ? post.caption : '';
-      } else if (post.text) {
-        text = post.text;
-      } else if (post.description) {
-        text = post.description;
-      }
-      
-      // Clean up the text
-      if (text) {
-        text = text.replace(/&#39;/g, "'")
-                   .replace(/&quot;/g, '"')
-                   .replace(/&amp;/g, '&')
-                   .trim();
-      }
-      
-      // If no text, create a default description
-      if (!text) {
-        text = `New post from ${username} 📸`;
-      }
-      
-      // Extract date
-      let posted = '';
-      if (post.taken_at_ts) {
-        posted = new Date(post.taken_at_ts * 1000).toISOString();
-      } else if (post.created_at) {
-        posted = new Date(post.created_at).toISOString();
-      } else if (post.timestamp) {
-        posted = new Date(post.timestamp).toISOString();
-      } else if (post.date) {
-        posted = new Date(post.date).toISOString();
-      } else {
-        posted = new Date().toISOString();
-      }
-      
-      // Extract images from carousel_media structure
-      const images = [];
-      
-      // Handle carousel media (multiple images in one post)
-      if (post.carousel_media && Array.isArray(post.carousel_media)) {
-        post.carousel_media.forEach((carouselItem: any) => {
-          if (carouselItem.image_versions && Array.isArray(carouselItem.image_versions)) {
-            // Handle new API structure with items array
-            if (carouselItem.image_versions.items && Array.isArray(carouselItem.image_versions.items)) {
-              // Get the highest quality image (usually the first one)
-              const bestImage = carouselItem.image_versions.items[0];
-              if (bestImage && bestImage.url) {
-                images.push({ url: bestImage.url });
-              }
-            } else {
-              // Handle old API structure (direct array)
-              const bestImage = carouselItem.image_versions[0];
-              if (bestImage && bestImage.url) {
-                images.push({ url: bestImage.url });
-              }
-            }
-          }
-        });
-      }
-      
-      // Handle single image posts
-      if (images.length === 0) {
-        if (post.image_versions && Array.isArray(post.image_versions)) {
-          // Handle new API structure with items array
-          if (post.image_versions.items && Array.isArray(post.image_versions.items)) {
-            // Get the highest quality image (usually the first one)
-            const bestImage = post.image_versions.items[0];
-            if (bestImage && bestImage.url) {
-              images.push({ url: bestImage.url });
-            }
-          } else {
-            // Handle old API structure (direct array)
-            const bestImage = post.image_versions[0];
-            if (bestImage && bestImage.url) {
-              images.push({ url: bestImage.url });
-            }
-          }
-        } else if (post.image_url) {
-          images.push({ url: post.image_url });
-        } else if (post.images && Array.isArray(post.images)) {
-          post.images.forEach((img: any) => {
-            if (img.url) {
-              images.push({ url: img.url });
-            }
-          });
-        } else if (post.media && Array.isArray(post.media)) {
-          post.media.forEach((media: any) => {
-            if (media.url) {
-              images.push({ url: media.url });
-            }
-          });
-        }
-      }
-      
-      // If no images found, use a placeholder
-      if (images.length === 0) {
-        images.push({ url: "https://placehold.co/400x300?text=Instagram+Post" });
-      }
-      
-      // Extract engagement metrics
-      const likes = post.like_count || post.likes || 0;
-      const comments = post.comment_count || post.comments || 0;
-      
-      // Determine if it's a video
-      const isVideo = post.media_type === 2 || post.is_video || false;
-      
-      const transformedPost = {
-        text: text,
-        posted: posted,
-        images: images,
-        likes: likes,
-        comments: comments,
-        url: post.url || `https://instagram.com/p/${post.code || post.id || post.shortcode || 'sample'}`,
-        is_video: isVideo,
-        platform: 'instagram'
-      };
-      
-      console.log('Instagram post transformation:', {
-        originalPostKeys: Object.keys(post),
-        extractedText: text?.substring(0, 100) + '...',
-        textLength: text?.length || 0,
-        extractedDate: posted,
-        hasValidText: text && text.trim().length > 0,
-        hasValidDate: posted && posted !== 'Invalid Date',
-        imagesCount: images.length,
-        likes: likes,
-        comments: comments,
-        isVideo: isVideo,
-        transformedPost: {
-          text: transformedPost.text?.substring(0, 50) + '...',
-          posted: transformedPost.posted,
-          images: transformedPost.images.length,
-          likes: transformedPost.likes,
-          comments: transformedPost.comments,
-          url: transformedPost.url
-        }
-      });
-      
-      return transformedPost;
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username })
     });
-    
-    console.log('Instagram posts transformed:', transformedPosts.length);
-    console.log('Instagram sample transformed post:', transformedPosts[0]);
-    
-    // Debug: Log the first post's image structure
-    if (transformedPosts.length > 0) {
-      const firstPost = transformedPosts[0];
-      console.log('📸 Instagram first post image structure:', {
-        hasImages: !!firstPost.images,
-        imagesLength: firstPost.images?.length || 0,
-        images: firstPost.images,
-        imageUrls: firstPost.images?.map((img: any) => img.url) || []
-      });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch Instagram data');
     }
-    
-    return { data: transformedPosts };
-    
+
+    const result = await response.json();
+    return result.data || [];
   } catch (error) {
-    console.error('Instagram API error:', error);
-    console.log('Instagram API error details:', {
-      message: error.message,
-      stack: error.stack,
-      userInput: profileOrUrl
-    });
-    
-    // Fallback to mock data if API fails
-  return {
-    data: [
-      {
-        text: "Behind the scenes of our latest project 📸 Excited to share the process with you all!",
-        posted: new Date().toISOString(),
-        images: [{ url: "https://placehold.co/400x300?text=Instagram+Post" }],
-        likes: 89,
-          comments: 12,
-          url: `https://instagram.com/p/sample_post_id`,
-          is_video: false,
-          platform: 'instagram'
-        }
-      ]
-    };
+    throw new Error(`Instagram API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
-async function fetchYouTubeData(channelName: string) {
-  // Check if API key is available
-  const rapidApiValidation = configManager.validateRapidAPIKey();
-  if (!rapidApiValidation.isValid) {
-    console.error('RapidAPI key not configured');
-    throw new Error(rapidApiValidation.error);
-  }
-  
-  const RAPIDAPI_KEY = configManager.getRapidAPIKey();
-  
-  // Clean the channel name - remove @ if present and extract from various formats
-  let channelNameClean = channelName;
-  if (channelName.startsWith('@')) {
-    channelNameClean = channelName.substring(1);
-  } else if (channelName.includes('youtube.com/')) {
-    // Extract from YouTube URL
-    const urlMatch = channelName.match(/youtube\.com\/(?:channel\/|c\/|@)?([^\/\?]+)/);
-    if (urlMatch) {
-      channelNameClean = urlMatch[1];
-    }
-  }
-  
-  console.log('YouTube: Processing channel name:', channelNameClean);
-  
+async function fetchYouTubeData(url: string) {
   try {
-    // Step 1: Get channel ID from channel name
-    const channelUrl = `https://youtube-v2.p.rapidapi.com/channel/id?channel_name=${encodeURIComponent(channelNameClean)}`;
-    const channelOptions = {
-      method: 'GET',
+    // Use server endpoint instead of direct API call
+    const response = await fetch('/api/rapidapi/youtube', {
+      method: 'POST',
       headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'youtube-v2.p.rapidapi.com'
-      }
-    };
-    
-    console.log('YouTube: Fetching channel ID for:', channelNameClean);
-    console.log('YouTube Channel ID API URL:', channelUrl);
-    
-    const channelResponse = await fetch(channelUrl, channelOptions);
-    const channelResult = await channelResponse.text();
-    console.log('YouTube Channel ID API Response:', channelResult);
-    
-    let channelData;
-    try {
-      channelData = JSON.parse(channelResult);
-      console.log('YouTube channelData parsed successfully');
-    } catch (parseError) {
-      console.error('Failed to parse YouTube channel API response:', parseError);
-      throw new Error('Failed to get channel data');
-    }
-    
-    console.log('YouTube channel data structure:', channelData);
-    console.log('YouTube channel data keys:', Object.keys(channelData || {}));
-    
-    // Check if the API returned an error
-    if (channelData.detail) {
-      console.error('YouTube channel API error:', channelData.detail);
-      throw new Error(`Channel not found: ${channelData.detail}`);
-    }
-    
-    // Extract channel ID
-    const channelId = channelData.channel_id;
-    if (!channelId) {
-      console.error('No channel_id found in channel response:', channelData);
-      throw new Error('No channel_id found in channel response');
-    }
-    
-    // Log the full channel data for debugging
-    console.log('YouTube full channel data:', JSON.stringify(channelData, null, 2));
-    
-    console.log('YouTube extracted channel_id:', channelId);
-    console.log('YouTube channel_id type:', typeof channelId);
-    console.log('YouTube channel_id length:', channelId.length);
-    
-    // Step 2: Get videos using the channel ID
-    const videosUrl = `https://youtube-v2.p.rapidapi.com/channel/videos?channel_id=${channelId}`;
-    const videosOptions = {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'youtube-v2.p.rapidapi.com'
-      }
-    };
-    
-    console.log('YouTube: Fetching videos for channel ID:', channelId);
-    console.log('YouTube Videos API URL:', videosUrl);
-    
-    const videosResponse = await fetch(videosUrl, videosOptions);
-    const videosResult = await videosResponse.text();
-    console.log('YouTube Channel Videos API Response:', videosResult);
-    
-    let videosData;
-    try {
-      videosData = JSON.parse(videosResult);
-      console.log('YouTube videosData parsed successfully');
-    } catch (parseError) {
-      console.error('Failed to parse YouTube videos API response:', parseError);
-      throw new Error('Failed to get videos data');
-    }
-    
-    console.log('YouTube videos data structure:', videosData);
-    console.log('YouTube videos data keys:', Object.keys(videosData || {}));
-    
-    // Check if the videos API returned an error
-    if (videosData.detail) {
-      console.error('YouTube videos API error:', videosData.detail);
-      throw new Error(`Failed to fetch videos: ${videosData.detail}`);
-    }
-    
-    // Extract the first video (index 0)
-    if (!videosData.videos || !Array.isArray(videosData.videos) || videosData.videos.length === 0) {
-      console.error('No videos found in channel response:', videosData);
-      throw new Error('No videos found in channel');
-    }
-    
-    const firstVideo = videosData.videos[0];
-    console.log('YouTube first video:', firstVideo);
-    console.log('YouTube first video keys:', Object.keys(firstVideo));
-    
-    // Extract video_id from the first video
-    const videoId = firstVideo.video_id;
-    if (!videoId) {
-      console.error('No video_id found in first video:', firstVideo);
-      throw new Error('No video_id found in first video');
-    }
-    
-    console.log('YouTube extracted video_id:', videoId);
-    
-    // Step 3: Get subtitles using the video_id
-    const subtitlesUrl = `https://youtube-v2.p.rapidapi.com/video/subtitles?video_id=${videoId}`;
-    const subtitlesOptions = {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'youtube-v2.p.rapidapi.com'
-      }
-    };
-    
-    let subtitlesText = '';
-    let videoSummary = '';
-    
-    try {
-      const subtitlesResponse = await fetch(subtitlesUrl, subtitlesOptions);
-      const subtitlesResult = await subtitlesResponse.text();
-      console.log('YouTube Subtitles API Response:', subtitlesResult);
-      
-      let subtitlesData;
-      try {
-        subtitlesData = JSON.parse(subtitlesResult);
-        console.log('YouTube subtitlesData parsed successfully');
-      } catch (parseError) {
-        console.error('Failed to parse YouTube subtitles API response:', parseError);
-        console.log('Using video title as fallback content');
-        subtitlesText = `Video: ${firstVideo.title}`;
-      }
-      
-      console.log('YouTube subtitles data structure:', subtitlesData);
-      console.log('YouTube subtitles data keys:', Object.keys(subtitlesData || {}));
-      
-      // Extract subtitles text
-      if (subtitlesData && subtitlesData.is_available && subtitlesData.subtitles && Array.isArray(subtitlesData.subtitles)) {
-        console.log('YouTube: Found', subtitlesData.subtitles.length, 'subtitle segments');
-        
-        // Combine all subtitle text with better filtering
-        subtitlesText = subtitlesData.subtitles
-          .map((subtitle: any) => subtitle.text)
-          .filter((text: string) => {
-            const cleanText = text.trim();
-            // Filter out music indicators, short sounds, and empty text
-            return cleanText && 
-                   cleanText !== '[Music]' && 
-                   cleanText !== 'Oh' && 
-                   cleanText !== '[Applause]' &&
-                   cleanText !== '[Laughter]' &&
-                   cleanText.length > 2;
-          })
-          .join(' ')
-          .replace(/&#39;/g, "'")
-          .replace(/&quot;/g, '"')
-          .replace(/&amp;/g, '&')
-          .replace(/\s+/g, ' ') // Remove extra whitespace
-          .trim();
-        
-        console.log('YouTube extracted subtitles length:', subtitlesText.length);
-        console.log('YouTube subtitles preview:', subtitlesText.substring(0, 200) + '...');
-        
-        // Always use ChatGPT to summarize the video content (even for short subtitles)
-        const openaiValidation = configManager.validateOpenAIKey();
-        if (subtitlesText.length > 10 && openaiValidation.isValid) {
-          const OPENAI_API_KEY = configManager.getOpenAIKey();
-          try {
-            const summaryPrompt = `Summarize this YouTube video transcript in 2-3 sentences, written in first person as if the video creator is describing their video for a newsletter. Keep it engaging and highlight the main points or value provided. Make it sound natural and conversational:\n\n${subtitlesText}`;
-            
-            const summaryBody = {
-              model: "gpt-4o",
-              messages: [
-                { role: "system", content: "You are a professional newsletter writer helping to summarize video content in first person." },
-                { role: "user", content: summaryPrompt }
-              ],
-              max_tokens: 150,
-              temperature: 0.7
-            };
-            
-            const summaryResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${OPENAI_API_KEY}`
-              },
-              body: JSON.stringify(summaryBody)
-            });
-            
-            const summaryData = await summaryResponse.json();
-            videoSummary = summaryData.choices?.[0]?.message?.content?.trim() || '';
-            console.log('YouTube video summary generated:', videoSummary);
-            
-          } catch (summaryError) {
-            console.error('Failed to generate video summary:', summaryError);
-            videoSummary = `I shared a new video titled "${firstVideo.title}" covering important topics and insights.`;
-          }
-        } else {
-          videoSummary = `I shared a new video titled "${firstVideo.title}" - check it out for valuable insights!`;
-        }
-      } else {
-        console.log('YouTube: No subtitles available or invalid response structure');
-        subtitlesText = `Video: ${firstVideo.title}`;
-        videoSummary = `I published a new video: "${firstVideo.title}". While subtitles aren't available, this video covers valuable content worth checking out!`;
-      }
-      
-    } catch (subtitlesError) {
-      console.error('YouTube subtitles API error:', subtitlesError);
-      subtitlesText = `Video: ${firstVideo.title}`;
-      videoSummary = `I shared a new video titled "${firstVideo.title}" - check it out for valuable insights!`;
-    }
-    
-    // Transform the video data to match our expected format
-    const transformedPost = {
-      text: videoSummary || `New video: "${firstVideo.title}" - ${firstVideo.description || 'Check out my latest video!'}`,
-      posted: firstVideo.published_time || new Date().toISOString(),
-      images: firstVideo.thumbnails && firstVideo.thumbnails.length > 0 
-        ? [{ url: firstVideo.thumbnails[firstVideo.thumbnails.length - 1].url }] // Use the largest thumbnail
-        : [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
-      likes: 0, // YouTube API doesn't provide likes in this response
-      comments: 0, // YouTube API doesn't provide comments in this response
-      views: firstVideo.number_of_views || 0,
-      video_length: firstVideo.video_length || '',
-      video_id: videoId,
-      url: `https://youtube.com/watch?v=${videoId}`,
-      is_video: true,
-      subtitles: subtitlesText, // Store original subtitles for reference
-      video_summary: videoSummary // Store the AI-generated summary
-    };
-    
-    console.log('YouTube post transformation:', {
-      originalVideoKeys: Object.keys(firstVideo),
-      videoId: videoId,
-      title: firstVideo.title,
-      views: firstVideo.number_of_views,
-      publishedTime: firstVideo.published_time,
-      thumbnailsCount: firstVideo.thumbnails?.length || 0,
-      subtitlesLength: subtitlesText.length,
-      hasSummary: !!videoSummary,
-      transformedPost: {
-        text: transformedPost.text.substring(0, 100) + '...',
-        posted: transformedPost.posted,
-        images: transformedPost.images.length,
-        views: transformedPost.views,
-        video_length: transformedPost.video_length,
-        subtitles_preview: subtitlesText.substring(0, 100) + '...',
-        summary_preview: videoSummary.substring(0, 100) + '...'
-      }
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url })
     });
-    
-    return { data: [transformedPost] };
-    
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch YouTube data');
+    }
+
+    const result = await response.json();
+    return result.data || [];
   } catch (error) {
-    console.error('YouTube API error:', error);
-    console.log('YouTube API error details:', {
-      message: error.message,
-      stack: error.stack,
-      channelName: channelName
-    });
-    
-    // Fallback to mock data if API fails
-  return {
-    data: [
-      {
-        text: "New tutorial video is live! Check out how to build this feature step by step.",
-        posted: new Date().toISOString(),
-        images: [{ url: "https://placehold.co/400x300?text=YouTube+Video" }],
-        likes: 156,
-          comments: 23,
-          views: 1000,
-          video_length: "10:30",
-          video_id: "sample_video_id",
-          url: `https://youtube.com/watch?v=sample_video_id`,
-          is_video: true,
-          subtitles: "This is a sample video about building features step by step.",
-          video_summary: "I created a comprehensive tutorial showing how to build this feature from scratch, covering all the essential steps and best practices."
-        }
-      ]
-    };
+    throw new Error(`YouTube API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
 async function summarizeText(text: string): Promise<string> {
-  const openaiValidation = configManager.validateOpenAIKey();
-  if (!openaiValidation.isValid) {
-    console.error('❌ OpenAI API key validation failed:', openaiValidation.error);
-    return text;
-  }
-  
-  const OPENAI_API_KEY = configManager.getOpenAIKey();
-  console.log('🔑 OpenAI API key found, length:', OPENAI_API_KEY?.length || 0);
-  
-  const prompt = `Transform this social media post into a bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided:\n\n${text}`;
-  const body = {
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: "You are a professional newsletter writer helping to transform social media content into engaging bullet-point summaries in first person." },
-      { role: "user", content: prompt }
-    ],
-    max_tokens: 150,
-    temperature: 0.7
-  };
-  
-  // Add timeout to prevent hanging
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-  
   try {
-    console.log('🚀 Making OpenAI API request...');
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
+    const prompt = `Transform this social media post into a bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided:\n\n${text}`;
+    
+    const response = await fetch('/api/openai/summarize', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
-      signal: controller.signal
+      body: JSON.stringify({
+        content: text,
+        prompt: prompt
+      })
     });
-    
-    clearTimeout(timeoutId);
-    
-    if (!resp.ok) {
-      console.error('❌ OpenAI API error:', resp.status, resp.statusText);
-      const errorText = await resp.text();
-      console.error('❌ Error details:', errorText);
-      return text;
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to summarize text');
     }
-    
-    const data = await resp.json();
-    console.log('✅ OpenAI API response received');
-    
-    if (data.error) {
-      console.error('❌ OpenAI API returned error:', data.error);
-      return text;
-    }
-    
-    const result = data.choices?.[0]?.message?.content?.trim() || text;
-    console.log('✅ Summarization completed, length:', result.length);
-    return result;
+
+    const result = await response.json();
+    return result.summary || text;
   } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('❌ OpenAI API request failed:', error);
     return text;
   }
 }
 
 // Batch summarization for better performance
 async function summarizeTextBatch(allTexts: string, postCount: number): Promise<string> {
-  const openaiValidation = configManager.validateOpenAIKey();
-  if (!openaiValidation.isValid) return allTexts;
-  
-  const OPENAI_API_KEY = configManager.getOpenAIKey();
-  const prompt = `Transform these ${postCount} social media posts into bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided. Separate each post summary with "---" on its own line:\n\n${allTexts}`;
-  const body = {
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: "You are a professional newsletter writer helping to transform social media content into engaging bullet-point summaries in first person." },
-      { role: "user", content: prompt }
-    ],
-    max_tokens: Math.min(150 * postCount, 1000), // Cap at 1000 tokens max
-    temperature: 0.7
-  };
-  
-  // Add timeout to prevent hanging
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-  
   try {
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
+    const prompt = `Transform these ${postCount} social media posts into bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided. Separate each post summary with "---" on its own line:\n\n${allTexts}`;
+    
+    const response = await fetch('/api/openai/summarize', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
-      signal: controller.signal
+      body: JSON.stringify({
+        content: allTexts,
+        prompt: prompt
+      })
     });
-    
-    clearTimeout(timeoutId);
-    
-    if (!resp.ok) {
-      console.error('OpenAI API error:', resp.status, resp.statusText);
-      return allTexts;
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to summarize text batch');
     }
-    
-    const data = await resp.json();
-    return data.choices?.[0]?.message?.content?.trim() || allTexts;
+
+    const result = await response.json();
+    return result.summary || allTexts;
   } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('OpenAI API request failed:', error);
     return allTexts;
   }
 }
 
 async function summarizeYouTubeContent(text: string): Promise<string> {
-  const openaiValidation = configManager.validateOpenAIKey();
-  if (!openaiValidation.isValid) return text;
-  
-  const OPENAI_API_KEY = configManager.getOpenAIKey();
-  const prompt = `Transform this YouTube video content into bullet points written in first person. Write as if the YouTuber is describing what they created and shared for a newsletter. Use bullet points (•) and highlight the key insights, value, or main topics covered. Keep each point concise and engaging:\n\n${text}`;
-  const body = {
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: "You are a professional newsletter writer helping to transform YouTube content into engaging bullet-point summaries in first person." },
-      { role: "user", content: prompt }
-    ],
-    max_tokens: 200,
-    temperature: 0.7
-  };
-  
-  // Add timeout to prevent hanging
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
-  
   try {
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
+    const prompt = `Transform this YouTube video content into bullet points written in first person. Write as if the YouTuber is describing what they created and shared for a newsletter. Use bullet points (•) and highlight the key insights, value, or main topics covered. Keep each point concise and engaging:\n\n${text}`;
+    
+    const response = await fetch('/api/openai/summarize', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
-      signal: controller.signal
+      body: JSON.stringify({
+        content: text,
+        prompt: prompt
+      })
     });
-    
-    clearTimeout(timeoutId);
-    
-    if (!resp.ok) {
-      console.error('OpenAI API error:', resp.status, resp.statusText);
-      return text;
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to summarize YouTube content');
     }
-    
-    const data = await resp.json();
-    return data.choices?.[0]?.message?.content?.trim() || text;
+
+    const result = await response.json();
+    return result.summary || text;
   } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('OpenAI API request failed:', error);
     return text;
   }
 }
@@ -1333,31 +336,31 @@ const validateXInput = (input: string): boolean => {
 };
 
 async function summarizePostsWithHeadings(posts: any[]): Promise<string> {
-  const openaiValidation = configManager.validateOpenAIKey();
-  if (!openaiValidation.isValid) return posts.map(p => p.text).join('\n\n');
-  
-  const OPENAI_API_KEY = configManager.getOpenAIKey();
-  const allText = posts.map((p) => p.text).join('\n');
-  const prompt = `just reply with what is asked, nothing else. use all the text to make a newsletter about the updates, post, etc. that are present about the person. write in a first person perspective. write very short paragraphs for quick updates and keep things clean. use headings to divide everything in neat areas and return everything in html code as it needs to be embedded in mails later on. make sure the response is in plain text but html code. make dark themed with #101118 as the background color. use an appropriate color palette. add emojis to make it a lot more engaging. shorten the length of all paragraphs.\n\n${allText}`;
-  const body = {
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: "You are a professional newsletter writer." },
-      { role: "user", content: prompt }
-    ],
-    max_tokens: 1200,
-    temperature: 0.7
-  };
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await resp.json();
-  return data.choices?.[0]?.message?.content?.trim() || '';
+  try {
+    const allText = posts.map((p) => p.text).join('\n');
+    const prompt = `just reply with what is asked, nothing else. use all the text to make a newsletter about the updates, post, etc. that are present about the person. write in a first person perspective. write very short paragraphs for quick updates and keep things clean. use headings to divide everything in neat areas and return everything in html code as it needs to be embedded in mails later on. make sure the response is in plain text but html code. make dark themed with #101118 as the background color. use an appropriate color palette. add emojis to make it a lot more engaging. shorten the length of all paragraphs.\n\n${allText}`;
+    
+    const response = await fetch('/api/openai/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content: allText,
+        prompt: prompt
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to summarize posts with headings');
+    }
+
+    const result = await response.json();
+    return result.summary || posts.map(p => p.text).join('\n\n');
+  } catch (error) {
+    return posts.map(p => p.text).join('\n\n');
+  }
 }
 
 // Helper function to filter posts by timeline options
@@ -1430,11 +433,11 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
         console.log('Processing X input:', input);
         const raw = await fetchXData(input);
         
-        if (raw && Array.isArray(raw.data)) {
+        if (raw && Array.isArray(raw)) {
           // Filter posts more carefully - check for non-empty text and valid dates
-          const posts = raw.data.filter(post => {
+          const posts = raw.filter(post => {
             const hasText = post.text && post.text.trim().length > 0;
-            const hasDate = post.posted && post.posted !== 'Invalid Date';
+            const hasDate = post.created_at && post.created_at !== 'Invalid Date';
             return hasText && hasDate;
           });
           console.log('X filtered posts:', posts.length);
@@ -1538,18 +541,16 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
         console.log('📸 Processing Instagram input:', input);
         const raw = await fetchInstagramData(input);
         
-        if (raw && Array.isArray(raw.data)) {
+        if (raw && Array.isArray(raw)) {
           // Filter posts that have images and descriptions
-          const posts = raw.data.filter(post => {
-            const hasImages = post.images && post.images.length > 0;
+          const posts = raw.filter(post => {
+            const hasImages = post.entities?.media && post.entities.media.length > 0;
             const hasDescription = post.text && post.text.trim().length > 0;
-            const hasDate = post.posted && post.posted !== 'Invalid Date';
+            const hasDate = post.created_at && post.created_at !== 'Invalid Date';
             return hasImages && hasDescription && hasDate;
           });
           
-          console.log('📸 Instagram posts with images and descriptions:', posts.length);
-          
-          const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
+          const sortedPosts = posts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           
           // Apply timeline filtering
           const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'instagram', timelineOptions);
@@ -1658,17 +659,15 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
         console.log('🎬 Processing YouTube input:', input);
         const raw = await fetchYouTubeData(input);
         
-        if (raw && Array.isArray(raw.data)) {
+        if (raw && Array.isArray(raw)) {
           // Filter posts that have subtitles/text content
-          const posts = raw.data.filter(post => {
+          const posts = raw.filter(post => {
             const hasSubtitles = post.text && post.text.trim().length > 0;
-            const hasDate = post.posted && post.posted !== 'Invalid Date';
+            const hasDate = post.created_at && post.created_at !== 'Invalid Date';
             return hasSubtitles && hasDate;
           });
           
-          console.log('🎬 YouTube videos with subtitles:', posts.length);
-          
-          const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
+          const sortedPosts = posts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           
           // Apply timeline filtering
           const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'youtube', timelineOptions);
@@ -2473,22 +1472,22 @@ export default function NewsletterBuilder() {
         switch (platform) {
           case 'twitter':
             const twitterData = await fetchXData(inputs.twitter);
-            if (twitterData && twitterData.data) {
-              platformData = twitterData.data;
+            if (twitterData && Array.isArray(twitterData)) {
+              platformData = twitterData;
             }
             break;
             
           case 'instagram':
             const instagramData = await fetchInstagramData(inputs.instagram);
-            if (instagramData && instagramData.data) {
-              platformData = instagramData.data;
+            if (instagramData && Array.isArray(instagramData)) {
+              platformData = instagramData;
             }
             break;
             
           case 'youtube':
             const youtubeData = await fetchYouTubeData(inputs.youtube);
-            if (youtubeData && youtubeData.data) {
-              platformData = youtubeData.data;
+            if (youtubeData && Array.isArray(youtubeData)) {
+              platformData = youtubeData;
             }
             break;
         }
@@ -2525,10 +1524,10 @@ export default function NewsletterBuilder() {
                 images.push({
                   url: imageUrl,
                   postText: post.text || '',
-                  postDate: post.posted || '',
+                  postDate: post.created_at || '',
                   platform: platform,
-                  likes: post.likes || 0,
-                  comments: post.comments || 0
+                  likes: post.favorite_count || 0,
+                  comments: post.reply_count || 0
                 });
                 console.log(`✅ Added image to collection:`, imageUrl);
               } else {
@@ -2749,16 +1748,8 @@ export default function NewsletterBuilder() {
     console.log('Inputs:', inputs);
     console.log('Selected template:', selectedTemplate);
 
-    // Check API configuration first
-    const apiValidation = configManager.validateAllKeys();
-    if (!apiValidation.isValid) {
-      console.error('❌ API configuration error:', apiValidation.error);
-      setError(`${apiValidation.error}\n\n${configManager.getEnvironmentErrorMessage()}`);
-      return;
-    }
-
-    console.log('✅ API configuration validated');
-    console.log('Environment:', configManager.isProduction() ? 'Production' : 'Development');
+    // API calls are now handled server-side, no need to validate keys on frontend
+    console.log('✅ API calls handled server-side');
 
     // If no template is selected, show template selection
     if (!selectedTemplate) {
@@ -2814,8 +1805,7 @@ export default function NewsletterBuilder() {
       } catch (error: any) {
         console.error('Newsletter generation error:', error);
         const errorMessage = error.message || "Unknown error";
-        const environmentMessage = configManager.getEnvironmentErrorMessage();
-        setError(`${errorMessage}\n\n${environmentMessage}`);
+        setError(errorMessage);
         setTempData({});
         setLoading(false);
         setIsTemplateSelectionPhase(false);
@@ -3062,7 +2052,6 @@ export default function NewsletterBuilder() {
     console.log('📊 Data keys:', Object.keys(data));
     
     try {
-      const OPENAI_API_KEY = configManager.getOpenAIKey();
       
       // Progress step 1: Initializing
       setGenerationProgress(10);
@@ -3127,23 +2116,14 @@ export default function NewsletterBuilder() {
         const sectionPrompt = createSectionSpecificPrompt(sectionId, sectionNumber, data, populatedHtml);
         
         try {
-          const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          const response = await fetch('/api/openai/summarize', {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${OPENAI_API_KEY}`
+              "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: "gpt-4o",
-              messages: [
-                { 
-                  role: "system", 
-                  content: `You are a newsletter section editor. Populate section ${sectionNumber} with social media data. Return ONLY the complete HTML document. Exchange ${exchangeCount + 1}/${maxExchanges}.` 
-                },
-                { role: "user", content: sectionPrompt }
-              ],
-              max_tokens: 4000,
-              temperature: 0.1
+              content: sectionPrompt,
+              prompt: `You are a newsletter section editor. Populate section ${sectionNumber} with social media data. Return ONLY the complete HTML document. Exchange ${exchangeCount + 1}/${maxExchanges}.`
             }),
             signal: controller.signal
           });

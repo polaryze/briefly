@@ -1,911 +1,212 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { ArrowRight, Sparkles, Zap, Users, Menu, X, LogIn, DollarSign, HelpCircle, Wand2, LogOut } from 'lucide-react';
-import { CursorWander } from '@/components/ui/cursor-wander';
-import { useSmoothNavigate } from '../hooks/useSmoothNavigate';
-import StyledButton from '../components/StyledButton';
-import ScrollToGenerate from '../components/ScrollToGenerate';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Mail, Sparkles, Users, Clock, CheckCircle } from "lucide-react";
 
-const SOCIALS = [
-  { key: "twitter", label: "Twitter", placeholder: "@alexkumar", default: "@alexkumar" },
-  { key: "instagram", label: "Instagram", placeholder: "@alex.gram", default: "@alex.gram" },
-  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/alexkumar", default: "https://linkedin.com/in/alexkumar" },
-  { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@alexkumar", default: "https://youtube.com/@alexkumar" },
-];
+export default function IndexNew() {
+  const [email, setEmail] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-const TIME_RANGES = [
-  { label: "Past week", value: "week" },
-  { label: "Past month", value: "month" },
-];
-
-// Newsletter Example Component
-const NewsletterExample = () => {
-  const Section = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-    <section className="mb-6 sm:mb-10 bg-gray-50 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
-      <h2 className="flex items-center gap-2 text-lg sm:text-2xl font-bold mb-3 sm:mb-4 tracking-tight">
-        <span className="text-xl sm:text-3xl">{icon}</span> {title}
-      </h2>
-      {children}
-    </section>
-  );
-
-  return (
-    <div className="min-h-screen flex flex-col items-center bg-[#f7f7fa] py-6 sm:py-12 px-2 sm:px-4">
-      <article className="prose prose-neutral max-w-2xl w-full bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200 notion-style overflow-hidden">
-        {/* Header */}
-        <header className="bg-white px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-2 border-b border-gray-200">
-          <h1 className="mb-2 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-gray-900">Alex's Weekly Recap <span className="text-lg sm:text-xl lg:text-2xl font-normal text-gray-500">(July 7, 2025)</span></h1>
-          <div className="flex items-center gap-3 sm:gap-4 text-sm sm:text-base text-gray-700 opacity-90 mb-2">
-            <img 
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face&auto=format" 
-              alt="Alex Kumar" 
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200 bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-medium hidden">
-              AK
-            </div>
-            <span className="font-medium">by Alex Kumar</span>
-            <span className="opacity-60">·</span>
-            <span className="opacity-80">Week 27, 2025</span>
-          </div>
-          <div className="text-base sm:text-lg mt-1 opacity-90 font-light text-gray-700">Hey friends! Here's what I've been up to this week as a creator, entrepreneur, and engineer. Thanks for following along on my journey!</div>
-        </header>
-        
-        {/* Hero Image */}
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Newsletter Hero" className="w-full h-40 sm:h-60 object-cover" />
-        
-        <main className="px-4 sm:px-6 lg:px-10 py-6 sm:py-10">
-          <Section title="New Project: IndieHub" icon="🚀">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
-              <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=200&q=80" alt="IndieHub" className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl shadow" />
-              <div>
-                <p className="text-sm sm:text-base text-gray-700 mb-2">This week I launched <span className="font-bold text-blue-700">IndieHub</span>, a platform for indie makers to share their projects and get feedback. We hit <b>120 signups</b> in the first 3 days! 🎉</p>
-                <code className="block bg-gray-100 text-gray-700 rounded px-2 py-1 text-xs sm:text-sm mb-1">Built with Next.js, Supabase, and Tailwind CSS</code>
-              </div>
-            </div>
-          </Section>
-          
-          <Section title="Social Growth" icon="📈">
-            <div className="flex gap-4 sm:gap-8 justify-center mb-2">
-              <div className="flex flex-col items-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" className="w-8 h-8 sm:w-10 sm:h-10 mb-1" />
-                <span className="font-bold text-lg sm:text-xl">+320</span>
-                <span className="text-xs text-gray-500">New X Followers</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="Instagram" className="w-8 h-8 sm:w-10 sm:h-10 mb-1" />
-                <span className="font-bold text-lg sm:text-xl">+210</span>
-                <span className="text-xs text-gray-500">New IG Followers</span>
-              </div>
-            </div>
-          </Section>
-
-          {/* Footer CTA */}
-          <div className="text-center mt-6 sm:mt-8 mb-2">
-            <a href="#" className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-full font-semibold shadow hover:bg-blue-700 transition text-sm sm:text-base">Reply & let me know what you're working on! →</a>
-          </div>
-          <div className="text-center text-xs text-gray-400 mb-2">© 2025 Alex Kumar. Thanks for reading!</div>
-        </main>
-      </article>
-    </div>
-  );
-};
-
-// Interactive Newsletter Demo Component
-const InteractiveNewsletterDemo = ({ scrollY }: { scrollY: number }) => {
-  const [name, setName] = useState("Alex Kumar");
-  const [socials, setSocials] = useState({
-    twitter: true,
-    instagram: true,
-    linkedin: false,
-    youtube: true,
-  });
-  const [socialInputs, setSocialInputs] = useState({
-    twitter: "@alexkumar",
-    instagram: "@alex.gram",
-    linkedin: "https://linkedin.com/in/alexkumar",
-    youtube: "https://youtube.com/@alexkumar",
-  });
-  const [timeRange, setTimeRange] = useState("week");
-  const [loading, setLoading] = useState(false);
-  const [showGeneration, setShowGeneration] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  const handleSocialCheck = (key: string) => {
-    setSocials((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
-  };
-
-  const handleInputChange = (key: string, value: string) => {
-    setSocialInputs((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setShowGeneration(false);
-    setProgress(0);
+    setIsLoading(true);
     
-    // Animate progress bar over 5-9 seconds
-    const totalDuration = Math.floor(Math.random() * 4000) + 5000; // 5000-9000 ms
-    const start = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const percent = Math.min(100, (elapsed / totalDuration) * 100);
-      setProgress(percent);
-      if (percent >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setLoading(false);
-          setShowGeneration(true);
-        }, 400);
-      }
-    }, 50);
-  };
-
-  const isBlackBackground = scrollY > 400;
-  
-  return (
-    <div className="flex flex-col items-center px-4">
-      <Card 
-        className={`max-w-xl w-full p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 transition-all duration-500 ${
-          isBlackBackground ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
-        }`}
-        style={{
-          transform: `translate3d(0, ${Math.max(0, scrollY - 700) * 0.1}px, 0)`,
-          willChange: 'transform'
-        }}
-      >
-        <h2 className={`text-xl sm:text-2xl font-bold mb-3 sm:mb-4 transition-colors duration-500 ${
-          isBlackBackground ? 'text-white' : 'text-gray-800'
-        }`}>Build Your Weekly Newsletter</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4">
-          <div>
-            <label className={`block text-sm mb-1 transition-colors duration-500 ${
-              isBlackBackground ? 'text-gray-300' : 'text-gray-700'
-            }`}>Your Name</label>
-            <Input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className={`w-full transition-all duration-500 ${
-                isBlackBackground ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
-              }`}
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <label className={`block text-sm mb-1 transition-colors duration-500 ${
-              isBlackBackground ? 'text-gray-300' : 'text-gray-700'
-            }`}>Socials to include</label>
-            <div className="flex gap-3 sm:gap-4 flex-wrap">
-              {SOCIALS.map((s) => (
-                <label key={s.key} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={socials[s.key as keyof typeof socials]}
-                    onChange={() => handleSocialCheck(s.key)}
-                    disabled={loading}
-                    className="accent-pink-400 w-4 h-4 rounded focus:ring-2 focus:ring-pink-400"
-                  />
-                  <span className={`text-sm sm:text-base capitalize transition-colors duration-500 ${
-                    isBlackBackground ? 'text-gray-300' : 'text-gray-800'
-                  }`}>{s.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          {/* Show prefilled input for each checked social */}
-          <div className="space-y-2">
-            {SOCIALS.map((s) =>
-              socials[s.key as keyof typeof socials] && (
-                <div key={s.key} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                  <label className={`block text-xs sm:text-sm sm:w-32 capitalize transition-colors duration-500 ${
-                    isBlackBackground ? 'text-gray-400' : 'text-gray-600'
-                  }`}>{s.label}:</label>
-                  <Input
-                    type="text"
-                    className={`flex-1 w-full transition-all duration-500 ${
-                      isBlackBackground ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                    value={socialInputs[s.key as keyof typeof socialInputs]}
-                    onChange={e => handleInputChange(s.key, e.target.value)}
-                    placeholder={s.placeholder}
-                    disabled={loading}
-                  />
-                </div>
-              )
-            )}
-          </div>
-          <div>
-            <label className={`block text-sm mb-1 transition-colors duration-500 ${
-              isBlackBackground ? 'text-gray-300' : 'text-gray-700'
-            }`}>How far back?</label>
-            <select
-              className={`border rounded px-3 py-2 text-sm sm:text-base w-full transition-all duration-500 ${
-                isBlackBackground ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
-              }`}
-              value={timeRange}
-              onChange={e => setTimeRange(e.target.value)}
-              disabled={loading}
-            >
-              {TIME_RANGES.map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className={`w-full font-medium py-3 px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 ${
-              isBlackBackground ? 'bg-white hover:bg-gray-200 text-black' : 'bg-black hover:bg-gray-800 text-white'
-            }`}
-          >
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Generating Newsletter...
-              </div>
-            ) : (
-              'Generate Newsletter'
-            )}
-          </Button>
-        </form>
-        
-        {/* Progress bar */}
-        {loading && (
-          <div className="mt-4">
-            <div className={`w-full rounded-full h-2 transition-all duration-500 ${
-              isBlackBackground ? 'bg-gray-700' : 'bg-gray-200'
-            }`}>
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className={`text-xs sm:text-sm mt-2 text-center transition-colors duration-500 ${
-              isBlackBackground ? 'text-gray-400' : 'text-gray-600'
-            }`}>Generating your newsletter...</p>
-          </div>
-        )}
-      </Card>
-
-      {/* Generated Newsletter */}
-      {showGeneration && (
-        <div 
-          className="w-full max-w-2xl"
-          style={{
-            transform: `translate3d(0, ${Math.max(0, scrollY - 800) * 0.1}px, 0)`,
-            willChange: 'transform'
-          }}
-        >
-          <NewsletterExample />
-        </div>
-      )}
-    </div>
-  );
-};
-
-const IndexNew = () => {
-  const [text, setText] = useState('');
-  const fullText = 'Newsletters reimagined';
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTyping, setIsTyping] = useState(true);
-  const [showBriefly, setShowBriefly] = useState(false);
-  const navigate = useNavigate();
-  const smoothNavigate = useSmoothNavigate();
-  const { isAuthenticated, user, logout } = useAuth0();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [reactiveDots, setReactiveDots] = useState('');
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
-  const [heroDots, setHeroDots] = useState('');
-  const [newsletterDots, setNewsletterDots] = useState('');
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      setMouseX(e.clientX);
-      setMouseY(e.clientY);
-    };
-
-    // Add event listeners to document instead of window
-    document.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    return () => {
-      document.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isProfileMenuOpen && !(event.target as Element).closest('.profile-menu')) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isProfileMenuOpen]);
-
-  // Check for auth error in URL
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('auth_error');
-    if (error) {
-      setAuthError('Authentication failed. Please try signing in again.');
-      // Clear the error from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
-
-  // Update reactive dots when mouse position changes - optimized version
-  useEffect(() => {
-    // Disable dot effects on mobile devices
-    const isMobile = window.innerWidth < 1024; // lg breakpoint
-    if (isMobile) {
-      setHeroDots('');
-      setNewsletterDots('');
-      return;
-    }
-
-    const updateHeroDots = () => {
-      const baseDot = `radial-gradient(circle at 15px 15px, rgba(0,0,0,0.08) 2px, transparent 0)`;
-      const reactiveDots = [];
-      const maxDistance = 120;
-      const gridSize = 30;
-      
-      // Only calculate dots near the mouse cursor
-      const mouseCol = Math.floor(mousePosition.x / gridSize);
-      const mouseRow = Math.floor(mousePosition.y / gridSize);
-      const affectedRange = Math.ceil(maxDistance / gridSize) + 1;
-      
-      for (let col = mouseCol - affectedRange; col <= mouseCol + affectedRange; col++) {
-        for (let row = mouseRow - affectedRange; row <= mouseRow + affectedRange; row++) {
-          const x = col * gridSize + gridSize / 2;
-          const y = row * gridSize + gridSize / 2;
-          
-          const distance = Math.sqrt(
-            Math.pow(mousePosition.x - x, 2) + 
-            Math.pow(mousePosition.y - y, 2)
-          );
-          
-          if (distance < maxDistance) {
-            const effect = Math.max(0, 1 - distance / maxDistance);
-            const size = 2 * (1 + effect * 2);
-            const opacity = 0.08 * (1 + effect * 4);
-            
-            reactiveDots.push(`radial-gradient(circle at ${x}px ${y}px, rgba(0,0,0,${opacity}) ${size}px, transparent 0)`);
-          }
-        }
-      }
-      
-      setHeroDots(`${baseDot}, ${reactiveDots.join(', ')}`);
-    };
-
-    const updateNewsletterDots = () => {
-      const baseDot = `radial-gradient(circle at 20px 20px, rgba(0,0,0,0.05) 2px, transparent 0)`;
-      const reactiveDots = [];
-      const maxDistance = 120;
-      const gridSize = 40;
-      
-      const mouseCol = Math.floor(mousePosition.x / gridSize);
-      const mouseRow = Math.floor(mousePosition.y / gridSize);
-      const affectedRange = Math.ceil(maxDistance / gridSize) + 1;
-      
-      for (let col = mouseCol - affectedRange; col <= mouseCol + affectedRange; col++) {
-        for (let row = mouseRow - affectedRange; row <= mouseRow + affectedRange; row++) {
-          const x = col * gridSize + gridSize / 2;
-          const y = row * gridSize + gridSize / 2;
-          
-          const distance = Math.sqrt(
-            Math.pow(mousePosition.x - x, 2) + 
-            Math.pow(mousePosition.y - y, 2)
-          );
-          
-          if (distance < maxDistance) {
-            const effect = Math.max(0, 1 - distance / maxDistance);
-            const size = 2 * (1 + effect * 2);
-            const opacity = 0.05 * (1 + effect * 4);
-            
-            reactiveDots.push(`radial-gradient(circle at ${x}px ${y}px, rgba(0,0,0,${opacity}) ${size}px, transparent 0)`);
-          }
-        }
-      }
-      
-      setNewsletterDots(`${baseDot}, ${reactiveDots.join(', ')}`);
-    };
-
-    // Use requestAnimationFrame for better performance without throttling
-    const animationId = requestAnimationFrame(() => {
-      updateHeroDots();
-      updateNewsletterDots();
-    });
-
-    return () => cancelAnimationFrame(animationId);
-  }, [mousePosition]);
-
-  useEffect(() => {
-    const brieflyTimeout = setTimeout(() => {
-      setShowBriefly(true);
-    }, 300);
-
-    return () => clearTimeout(brieflyTimeout);
-  }, []);
-
-  useEffect(() => {
-    if (isTyping) {
-      if (currentIndex < fullText.length) {
-        const timeout = setTimeout(() => {
-          setText(prev => prev + fullText[currentIndex]);
-          setCurrentIndex(prev => prev + 1);
-        }, 100);
-        return () => clearTimeout(timeout);
-      } else {
-        const timeout = setTimeout(() => {
-          setText('');
-          setCurrentIndex(0);
-        }, 2000);
-        return () => clearTimeout(timeout);
-      }
-    }
-  }, [currentIndex, fullText, isTyping]);
-
-  const buttons = [
-    { id: 'auth', label: isAuthenticated ? 'Profile' : 'Sign In', delay: 100, size: 'small' },
-    { id: 'generate', label: 'Generate Newsletter', delay: 150, size: 'large' },
-    { id: 'pricing', label: 'Pricing', delay: 200, size: 'small' },
-    { id: 'support', label: 'Support', delay: 250, size: 'small' }
-  ];
-
-  // Calculate dot size and opacity based on mouse distance
-  const getDotStyle = (baseSize: number, baseOpacity: number) => {
-    const maxDistance = 150; // Distance in pixels where effect starts
-    const distance = Math.sqrt(
-      Math.pow(mousePosition.x - window.innerWidth / 2, 2) + 
-      Math.pow(mousePosition.y - window.innerHeight / 2, 2)
-    );
-    
-    const effect = Math.max(0, 1 - distance / maxDistance);
-    const sizeMultiplier = 1 + effect * 1.5; // Dots can get up to 2.5x bigger
-    const opacityMultiplier = 1 + effect * 2; // Opacity can get up to 3x darker
-    
-    return {
-      size: baseSize * sizeMultiplier,
-      opacity: baseOpacity * opacityMultiplier
-    };
-  };
-
-  // Simple reactive dot effect for second section
-  const getSecondSectionDots = () => {
-    const baseDot = `radial-gradient(circle at 20px 20px, rgba(0,0,0,0.05) 2px, transparent 0)`;
-    
-    if (mousePosition.x > 0 && mousePosition.y > 0) {
-      const reactiveDots = [
-        `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255,0,0,0.6) 8px, transparent 0)`,
-        `radial-gradient(circle at ${mousePosition.x - 15}px ${mousePosition.y}px, rgba(0,255,0,0.4) 6px, transparent 0)`
-      ];
-      return `${baseDot}, ${reactiveDots.join(', ')}`;
-    }
-    
-    return baseDot;
+    setIsSubmitted(true);
+    setIsLoading(false);
   };
 
   return (
-    <div className="relative">
-      {/* Auth Error Banner */}
-      {authError && (
-        <div className="fixed top-0 left-0 right-0 z-[99999] bg-red-500 text-white p-3 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <span>⚠️ {authError}</span>
-            <button 
-              onClick={() => setAuthError(null)}
-              className="ml-2 text-white hover:text-gray-200"
-            >
-              ✕
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">Briefly</span>
           </div>
+          <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
+            Coming Soon
+          </Badge>
         </div>
-      )}
-      
+      </header>
+
       {/* Hero Section */}
-      <div 
-        className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden pb-16"
-        style={{
-          backgroundImage: heroDots,
-          transform: `translate3d(0, ${scrollY * 0.3}px, 0)`,
-          opacity: Math.max(0, 1 - scrollY / 500),
-          willChange: 'transform, opacity',
-          transition: 'background-image 0.2s ease-out'
-        }}
-      >
-        {/* Scroll Indicator */}
-        <div 
-          className="absolute bottom-24 sm:bottom-12 left-1/2 transform -translate-x-1/2 text-center z-50 transition-all duration-500"
-          style={{
-            opacity: scrollY < 200 ? 1 : 0
-          }}
-        >
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-xs sm:text-sm text-gray-600 font-medium">Scroll to generate sample</span>
-            <div className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce">
-              <svg 
-                className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M19 14l-7 7m0 0l-7-7m7 7V3" 
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-        
-        {/* Desktop Layout - Unchanged */}
-        <div className="hidden lg:flex flex-row items-center justify-between w-full px-16 xl:px-24 gap-0">
-          {/* Left side content */}
-          <div className="relative z-10 text-left">
-            <CursorWander intensity={0.05} speed={0.3}>
-              <div 
-                className={`text-6xl xl:text-8xl font-bold text-black mb-4 transition-all duration-1000 ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
-                }`}
-                style={{
-                  transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                Briefly
-              </div>
-            </CursorWander>
-            <div className="text-2xl xl:text-4xl font-light text-gray-600">
-              {text}
-              <span 
-                className="inline-block w-0.5 text-2xl xl:text-4xl font-light ml-1"
-                style={{
-                  animation: 'blink 1s infinite'
-                }}
-              >
-                |
-              </span>
-            </div>
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-8">
+            <Badge variant="outline" className="mb-4 bg-green-50 text-green-700 border-green-200">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              AI-Powered Newsletter Creation
+            </Badge>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              Transform Your
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Social Media</span>
+              <br />
+              Into Engaging Newsletters
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Automatically create beautiful, personalized newsletters from your social media content. 
+              Powered by AI to save you hours every week.
+            </p>
           </div>
 
-          {/* Right side bento grid */}
-          <div className="relative z-10">
-            <div className="grid grid-cols-2 gap-4 w-80 h-80 p-4">
-              {/* Top row */}
-              {isAuthenticated ? (
-                <div
-                  className={`flex items-center justify-center profile-menu relative ${
-                    showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                  }`}
-                  style={{
-                    animationDelay: '100ms',
-                    transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                    willChange: 'transform'
-                  }}
-                >
-                  <button
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="w-[130px] h-[130px] ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200 bg-white rounded-full flex items-center justify-center overflow-hidden cursor-pointer"
-                  >
-                    {user?.picture ? (
-                      <img 
-                        src={user.picture} 
-                        alt={user.name || 'User'} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : null}
-                    <div className={`w-full h-full bg-gray-100 flex items-center justify-center text-gray-500 text-lg font-medium ${user?.picture ? 'hidden' : ''}`}>
-                      {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : '👤'}
-                    </div>
-                  </button>
-                  
-                  {/* Profile Dropdown Menu */}
-                  {isProfileMenuOpen && (
-                    <div className="absolute right-full mr-2 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <div className="text-sm font-medium text-gray-900">{user?.name || 'User'}</div>
-                        <div className="text-xs text-gray-500">{user?.email}</div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          logout({ logoutParams: { returnTo: window.location.origin } });
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={() => navigate('/signin')}
-                  className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
-                    showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                  }`}
-                  style={{
-                    animationDelay: '100ms',
-                    transform: `translate3d(0, ${scrollY * 0.1}px, 0) translateY(36px)`,
-                    willChange: 'transform',
-                    height: '112px'
-                  }}
-                >
-                  <LogIn className="w-6 h-6 group-hover:translate-x-0.5 transition-transform duration-200" />
-                </button>
-              )}
-              
-              <div
-                className={`flex items-center justify-center ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                }`}
-                style={{
-                  animationDelay: '150ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0) translateY(8px)`,
-                  willChange: 'transform'
-                }}
-              >
-                <StyledButton />
-              </div>
-
-              {/* Bottom row */}
-              <button
-                onClick={() => navigate('/pricing')}
-                className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                }`}
-                style={{
-                  animationDelay: '200ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                <DollarSign className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
-              </button>
-              
-              <button
-                onClick={() => navigate('/support')}
-                className={`group flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                }`}
-                style={{
-                  animationDelay: '250ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                <HelpCircle className="w-6 h-6 group-hover:rotate-6 transition-transform duration-200" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Layout - New Design */}
-        <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen">
-          {/* Center content with fade-in animation - moved up by 16px total */}
-          <div className="flex flex-col items-center justify-center flex-1" style={{ marginTop: '-16px' }}>
-            <CursorWander intensity={0.03} speed={0.2}>
-              <div 
-                className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-black mb-4 transition-all duration-1000 ${
-                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-                }`}
-                style={{
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                Briefly
-              </div>
-            </CursorWander>
-            <div 
-              className={`text-lg sm:text-xl font-light text-gray-600 transition-all duration-1000 ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                animationDelay: '300ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              {text}
-              <span 
-                className="inline-block w-0.5 text-lg sm:text-xl font-light ml-1"
-                style={{
-                  animation: 'blink 1s infinite'
-                }}
-              >
-                |
-              </span>
-            </div>
-          </div>
-
-          {/* Bottom circular buttons - moved up even higher to avoid iOS search bar */}
-          <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
-            {isAuthenticated ? (
-              <div
-                className={`flex items-center justify-center profile-menu relative ${
-                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-                }`}
-                style={{
-                  animationDelay: '400ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                <button
-                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 flex items-center justify-center overflow-hidden cursor-pointer"
-                >
-                  {user?.picture ? (
-                    <img 
-                      src={user.picture} 
-                      alt={user.name || 'User'} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
+          {/* Waitlist Form */}
+          <Card className="max-w-md mx-auto bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-2xl font-bold text-gray-900">Join the Waitlist</CardTitle>
+              <CardDescription className="text-gray-600">
+                Be among the first to experience AI-powered newsletter creation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!isSubmitted ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 h-12 text-base"
+                      required
                     />
-                  ) : null}
-                  <div className={`w-full h-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm font-medium ${user?.picture ? 'hidden' : ''}`}>
-                    {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : '👤'}
                   </div>
-                </button>
-                
-                {/* Profile Dropdown Menu */}
-                {isProfileMenuOpen && (
-                  <div className="absolute right-full mr-2 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <div className="text-sm font-medium text-gray-900">{user?.name || 'User'}</div>
-                      <div className="text-xs text-gray-500">{user?.email}</div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        logout({ logoutParams: { returnTo: window.location.origin } });
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={() => navigate('/signin')}
-                className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
-                  showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-                }`}
-                style={{
-                  animationDelay: '400ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                <LogIn className="w-6 h-6 text-gray-800 group-hover:translate-x-0.5 transition-transform duration-200" />
-              </button>
-            )}
-            
-            <button
-              onClick={() => navigate('/newsletter-builder')}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                animationDelay: '450ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              <Wand2 className="w-6 h-6 text-gray-800 group-hover:scale-110 transition-transform duration-200" />
-            </button>
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Joining...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <span>Join Waitlist</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    )}
+                  </Button>
+                </form>
+              ) : (
+                <div className="text-center py-6">
+                  <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">You're on the list!</h3>
+                  <p className="text-gray-600">
+                    We'll notify you when Briefly is ready. Thanks for your interest!
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
-            <button
-              onClick={() => navigate('/pricing')}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                animationDelay: '500ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              <DollarSign className="w-6 h-6 text-gray-800 group-hover:scale-110 transition-transform duration-200" />
-            </button>
-            
-            <button
-              onClick={() => navigate('/support')}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                animationDelay: '550ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              <HelpCircle className="w-6 h-6 text-gray-800 group-hover:rotate-6 transition-transform duration-200" />
-            </button>
+      {/* Features Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Why Choose Briefly?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              The future of newsletter creation is here. Save time, engage your audience, and grow your brand.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">AI-Powered Content</CardTitle>
+                <CardDescription>
+                  Our AI analyzes your social media posts and automatically creates engaging newsletter content in your voice.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Save Hours Weekly</CardTitle>
+                <CardDescription>
+                  What used to take hours now takes minutes. Focus on what matters while we handle the content creation.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Engage Your Audience</CardTitle>
+                <CardDescription>
+                  Create newsletters that resonate with your audience and drive meaningful engagement and growth.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Newsletter Generation Section */}
-      <div 
-        id="how-it-works"
-        className="min-h-screen flex flex-col items-center justify-center relative newsletter-section pb-16 transition-all duration-500"
-        style={{
-          backgroundColor: scrollY > 400 ? '#000000' : 'transparent',
-          backgroundImage: scrollY > 400 ? 'none' : newsletterDots,
-          opacity: Math.max(0, (scrollY - 400) / 400),
-          transform: `translate3d(0, ${Math.max(0, scrollY - 400) * 0.2}px, 0)`,
-          willChange: 'transform, opacity, background-color',
-          transition: 'background-image 0.2s ease-out, background-color 0.5s ease-out'
-        }}
-      >
-        <div className="text-center mb-32 sm:mb-64 px-4">
-          <h2 
-            className={`text-3xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-8 transition-colors duration-500 ${
-              scrollY > 400 ? 'text-white' : 'text-gray-800'
-            }`}
-            style={{
-              transform: `translate3d(0, ${Math.max(0, scrollY - 500) * 0.3}px, 0)`,
-              marginTop: '-50px sm:-100px',
-              willChange: 'transform'
-            }}
-          >
-            Generate Sample
-          </h2>
+      {/* Stats Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">500+</div>
+              <div className="text-gray-600">Waitlist Members</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">95%</div>
+              <div className="text-gray-600">Time Saved</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">24/7</div>
+              <div className="text-gray-600">AI Processing</div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <InteractiveNewsletterDemo scrollY={scrollY} />
-      </div>
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-          }
-        `
-      }} />
+      {/* Footer */}
+      <footer className="border-t bg-white/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-lg font-semibold text-gray-900">Briefly</span>
+            </div>
+            <p className="text-gray-600 mb-4">
+              The future of newsletter creation is coming soon.
+            </p>
+            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+              <span>© 2024 Briefly. All rights reserved.</span>
+              <span>•</span>
+              <span>Privacy Policy</span>
+              <span>•</span>
+              <span>Terms of Service</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
-};
-
-export default IndexNew; 
+} 

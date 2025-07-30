@@ -1,61 +1,59 @@
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
 interface LogEntry {
-  level: LogLevel;
+  timestamp: Date;
+  level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
-  timestamp: string;
-  context?: Record<string, any>;
+  context?: any;
 }
 
 class Logger {
-  private isDevelopment = import.meta.env.DEV;
+  private logs: LogEntry[] = [];
+  private maxLogs = 1000;
 
-  private formatMessage(level: LogLevel, message: string, context?: Record<string, any>): LogEntry {
-    return {
+  private addLog(level: LogEntry['level'], message: string, context?: any) {
+    const entry: LogEntry = {
+      timestamp: new Date(),
       level,
       message,
-      timestamp: new Date().toISOString(),
       context
     };
-  }
 
-  private shouldLog(level: LogLevel): boolean {
-    if (this.isDevelopment) return true;
-    
-    // In production, only log warnings and errors
-    return level === 'warn' || level === 'error';
-  }
+    this.logs.push(entry);
 
-  debug(message: string, context?: Record<string, any>) {
-    if (this.shouldLog('debug')) {
-      const entry = this.formatMessage('debug', message, context);
-      console.debug(`[DEBUG] ${entry.message}`, entry.context || '');
+    // Keep only the last maxLogs entries
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(-this.maxLogs);
     }
   }
 
-  info(message: string, context?: Record<string, any>) {
-    if (this.shouldLog('info')) {
-      const entry = this.formatMessage('info', message, context);
-      console.info(`[INFO] ${entry.message}`, entry.context || '');
-    }
+  debug(message: string, context?: any) {
+    this.addLog('debug', message, context);
   }
 
-  warn(message: string, context?: Record<string, any>) {
-    if (this.shouldLog('warn')) {
-      const entry = this.formatMessage('warn', message, context);
-      console.warn(`[WARN] ${entry.message}`, entry.context || '');
-    }
+  info(message: string, context?: any) {
+    this.addLog('info', message, context);
   }
 
-  error(message: string, error?: Error, context?: Record<string, any>) {
-    if (this.shouldLog('error')) {
-      const entry = this.formatMessage('error', message, {
-        ...context,
-        error: error?.message,
-        stack: error?.stack
-      });
-      console.error(`[ERROR] ${entry.message}`, entry.context || '');
+  warn(message: string, context?: any) {
+    this.addLog('warn', message, context);
+  }
+
+  error(message: string, context?: any) {
+    this.addLog('error', message, context);
+  }
+
+  getLogs(level?: LogEntry['level']): LogEntry[] {
+    if (level) {
+      return this.logs.filter(log => log.level === level);
     }
+    return [...this.logs];
+  }
+
+  clear() {
+    this.logs = [];
+  }
+
+  export(): string {
+    return JSON.stringify(this.logs, null, 2);
   }
 }
 
