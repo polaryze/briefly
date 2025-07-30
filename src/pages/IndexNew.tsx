@@ -2,12 +2,31 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+// Email validation regex
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// Input sanitization function
+const sanitizeInput = (input: string): string => {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[<>]/g, '') // Remove potential HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/vbscript:/gi, ''); // Remove vbscript: protocol
+};
+
+// Rate limiting for form submission
+const SUBMISSION_COOLDOWN = 5000; // 5 seconds
+
 export default function IndexNew() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [emailError, setEmailError] = useState("");
+  const [lastSubmissionTime, setLastSubmissionTime] = useState(0);
   
   const fullText = "Newsletters reimagined";
 
@@ -22,15 +41,90 @@ export default function IndexNew() {
     }
   }, [currentIndex, fullText]);
 
+  // Email validation
+  const validateEmail = (email: string): boolean => {
+    if (!email) {
+      setEmailError("Email is required");
+      return false;
+    }
+    
+    if (email.length > 254) { // RFC 5321 limit
+      setEmailError("Email is too long");
+      return false;
+    }
+    
+    if (!EMAIL_REGEX.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return false;
+    }
+    
+    // Check for common disposable email domains
+    const disposableDomains = [
+      'tempmail.org', '10minutemail.com', 'guerrillamail.com',
+      'mailinator.com', 'yopmail.com', 'throwaway.email'
+    ];
+    
+    const domain = email.split('@')[1];
+    if (disposableDomains.includes(domain)) {
+      setEmailError("Please use a valid email address");
+      return false;
+    }
+    
+    setEmailError("");
+    return true;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    setEmail(sanitizedValue);
+    
+    // Clear error when user starts typing
+    if (emailError) {
+      setEmailError("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting
+    const now = Date.now();
+    if (now - lastSubmissionTime < SUBMISSION_COOLDOWN) {
+      setEmailError("Please wait a moment before trying again");
+      return;
+    }
+    
+    // Validate email
+    if (!validateEmail(email)) {
+      return;
+    }
+    
     setIsLoading(true);
+    setLastSubmissionTime(now);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setIsSubmitted(true);
-    setIsLoading(false);
+    try {
+      // Simulate API call with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          clearTimeout(timeoutId);
+          resolve(true);
+        }, 1000);
+        
+        // Handle abort
+        controller.signal.addEventListener('abort', () => {
+          reject(new Error('Request timeout'));
+        });
+      });
+      
+      setIsSubmitted(true);
+    } catch (error) {
+      setEmailError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -50,18 +144,34 @@ export default function IndexNew() {
         {/* Email Form */}
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-12 text-base rounded-full border-2 border-gray-300 focus:border-black focus:ring-0 bg-white text-black placeholder-gray-500"
-              required
-            />
+            <div>
+              <Input
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={handleEmailChange}
+                className={`h-12 text-base rounded-full border-2 focus:ring-0 bg-white text-black placeholder-gray-500 ${
+                  emailError 
+                    ? 'border-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:border-black'
+                }`}
+                required
+                maxLength={254}
+                autoComplete="email"
+                spellCheck="false"
+                autoCapitalize="none"
+                autoCorrect="off"
+              />
+              {emailError && (
+                <p className="text-red-500 text-sm mt-1 text-center">
+                  {emailError}
+                </p>
+              )}
+            </div>
             <Button
               type="submit"
-              className="w-full h-12 bg-black hover:bg-gray-800 text-white font-semibold rounded-full"
-              disabled={isLoading}
+              className="w-full h-12 bg-black hover:bg-gray-800 text-white font-semibold rounded-full disabled:opacity-50"
+              disabled={isLoading || !email.trim()}
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
