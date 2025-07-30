@@ -41,6 +41,18 @@ export default function IndexNew() {
     }
   }, [currentIndex, fullText]);
 
+  // Prevent zoom on input focus (iOS)
+  useEffect(() => {
+    const preventZoom = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('touchstart', preventZoom, { passive: false });
+    return () => document.removeEventListener('touchstart', preventZoom);
+  }, []);
+
   // Email validation
   const validateEmail = (email: string): boolean => {
     if (!email) {
@@ -128,14 +140,14 @@ export default function IndexNew() {
   };
   
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="max-w-md w-full px-6">
+    <div className="h-screen bg-white flex items-center justify-center overflow-hidden">
+      <div className="w-full max-w-md px-6 py-4">
         {/* Animated Text */}
-        <div className="text-center mb-12">
-          <h1 className="text-6xl md:text-7xl font-bold text-black mb-4">
+        <div className="text-center mb-8">
+          <h1 className="text-5xl md:text-6xl font-bold text-black mb-3 leading-tight">
             Briefly
           </h1>
-          <p className="text-lg text-gray-600 h-6">
+          <p className="text-base md:text-lg text-gray-600 h-5">
             {displayText}
             <span className="animate-pulse">|</span>
           </p>
@@ -143,14 +155,14 @@ export default function IndexNew() {
 
         {/* Email Form */}
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <Input
                 type="email"
                 placeholder="Enter your email address"
                 value={email}
                 onChange={handleEmailChange}
-                className={`h-12 text-base rounded-full border-2 focus:ring-0 bg-white text-black placeholder-gray-500 ${
+                className={`h-11 text-base rounded-full border-2 focus:ring-0 bg-white text-black placeholder-gray-500 ${
                   emailError 
                     ? 'border-red-500 focus:border-red-500' 
                     : 'border-gray-300 focus:border-black'
@@ -161,16 +173,17 @@ export default function IndexNew() {
                 spellCheck="false"
                 autoCapitalize="none"
                 autoCorrect="off"
+                inputMode="email"
               />
               {emailError && (
-                <p className="text-red-500 text-sm mt-1 text-center">
+                <p className="text-red-500 text-xs mt-1 text-center">
                   {emailError}
                 </p>
               )}
             </div>
             <Button
               type="submit"
-              className="w-full h-12 bg-black hover:bg-gray-800 text-white font-semibold rounded-full disabled:opacity-50"
+              className="w-full h-11 bg-black hover:bg-gray-800 text-white font-semibold rounded-full disabled:opacity-50"
               disabled={isLoading || !email.trim()}
             >
               {isLoading ? (
@@ -184,14 +197,14 @@ export default function IndexNew() {
             </Button>
           </form>
         ) : (
-          <div className="text-center py-6">
-            <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-4">
+            <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-black mb-2">You're on the list!</h3>
-            <p className="text-gray-600">
+            <h3 className="text-base font-semibold text-black mb-2">You're on the list!</h3>
+            <p className="text-sm text-gray-600">
               We'll notify you when Briefly is ready.
             </p>
           </div>
