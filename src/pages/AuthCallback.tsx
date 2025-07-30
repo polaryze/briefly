@@ -8,39 +8,21 @@ export default function AuthCallback() {
   const [hasRedirected, setHasRedirected] = useState(false)
 
   useEffect(() => {
-    console.log('AuthCallback - Auth0 State:', { 
-      isAuthenticated, 
-      isLoading, 
-      error: error?.message,
-      user: user?.email,
-      hasRedirected 
-    });
-    
     if (!isLoading && !hasRedirected) {
       if (isAuthenticated && user) {
-        console.log('User is authenticated, redirecting to homepage...');
         setHasRedirected(true);
         navigate('/')
       } else if (error) {
-        console.log('Authentication error, redirecting to homepage with error...');
         setHasRedirected(true);
         // Instead of redirecting to signin, go to homepage and show error
         navigate('/?auth_error=true')
       } else if (!isAuthenticated) {
-        console.log('User is not authenticated, redirecting to homepage...');
         setHasRedirected(true);
         // Instead of redirecting to signin, go to homepage
         navigate('/')
       }
     }
   }, [isAuthenticated, isLoading, navigate, error, user, hasRedirected])
-
-  // Add more detailed logging
-  useEffect(() => {
-    console.log('AuthCallback - URL:', window.location.href);
-    console.log('AuthCallback - Pathname:', window.location.pathname);
-    console.log('AuthCallback - Search:', window.location.search);
-  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">

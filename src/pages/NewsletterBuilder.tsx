@@ -141,7 +141,7 @@ async function fetchYouTubeData(url: string) {
 
 async function summarizeText(text: string): Promise<string> {
   try {
-    const prompt = `Transform this social media post into a bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided:\n\n${text}`;
+  const prompt = `Transform this social media post into a bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided:\n\n${text}`;
     
     const response = await fetch('/api/openai/summarize', {
       method: 'POST',
@@ -169,7 +169,7 @@ async function summarizeText(text: string): Promise<string> {
 // Batch summarization for better performance
 async function summarizeTextBatch(allTexts: string, postCount: number): Promise<string> {
   try {
-    const prompt = `Transform these ${postCount} social media posts into bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided. Separate each post summary with "---" on its own line:\n\n${allTexts}`;
+  const prompt = `Transform these ${postCount} social media posts into bullet point format written in first person. Write as if the original poster is describing their content for a newsletter. Use bullet points (•) and keep each point concise and engaging. Highlight the main value or insights provided. Separate each post summary with "---" on its own line:\n\n${allTexts}`;
     
     const response = await fetch('/api/openai/summarize', {
       method: 'POST',
@@ -196,7 +196,7 @@ async function summarizeTextBatch(allTexts: string, postCount: number): Promise<
 
 async function summarizeYouTubeContent(text: string): Promise<string> {
   try {
-    const prompt = `Transform this YouTube video content into bullet points written in first person. Write as if the YouTuber is describing what they created and shared for a newsletter. Use bullet points (•) and highlight the key insights, value, or main topics covered. Keep each point concise and engaging:\n\n${text}`;
+  const prompt = `Transform this YouTube video content into bullet points written in first person. Write as if the YouTuber is describing what they created and shared for a newsletter. Use bullet points (•) and highlight the key insights, value, or main topics covered. Keep each point concise and engaging:\n\n${text}`;
     
     const response = await fetch('/api/openai/summarize', {
       method: 'POST',
@@ -222,7 +222,7 @@ async function summarizeYouTubeContent(text: string): Promise<string> {
 }
 
 async function summarizeSocialMediaPosts(posts: any[], platform: string): Promise<any[]> {
-  console.log(`🤖 Starting AI summarization for ${platform} posts...`);
+
   
   // Skip AI summarization for very short content to improve performance
   const totalPosts = posts.length;
@@ -337,12 +337,12 @@ const validateXInput = (input: string): boolean => {
 
 async function summarizePostsWithHeadings(posts: any[]): Promise<string> {
   try {
-    const allText = posts.map((p) => p.text).join('\n');
-    const prompt = `just reply with what is asked, nothing else. use all the text to make a newsletter about the updates, post, etc. that are present about the person. write in a first person perspective. write very short paragraphs for quick updates and keep things clean. use headings to divide everything in neat areas and return everything in html code as it needs to be embedded in mails later on. make sure the response is in plain text but html code. make dark themed with #101118 as the background color. use an appropriate color palette. add emojis to make it a lot more engaging. shorten the length of all paragraphs.\n\n${allText}`;
+  const allText = posts.map((p) => p.text).join('\n');
+  const prompt = `just reply with what is asked, nothing else. use all the text to make a newsletter about the updates, post, etc. that are present about the person. write in a first person perspective. write very short paragraphs for quick updates and keep things clean. use headings to divide everything in neat areas and return everything in html code as it needs to be embedded in mails later on. make sure the response is in plain text but html code. make dark themed with #101118 as the background color. use an appropriate color palette. add emojis to make it a lot more engaging. shorten the length of all paragraphs.\n\n${allText}`;
     
     const response = await fetch('/api/openai/summarize', {
       method: 'POST',
-      headers: {
+    headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

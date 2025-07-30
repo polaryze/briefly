@@ -92,7 +92,7 @@ export async function loadTemplateHTML(template: any): Promise<string> {
     throw new Error('Invalid template or missing HTML path');
   }
 
-  const fullUrl = `${window.location.origin}${template.htmlPath}`;
+    const fullUrl = `${window.location.origin}${template.htmlPath}`;
   
   try {
     const response = await fetch(fullUrl);

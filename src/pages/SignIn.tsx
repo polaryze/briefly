@@ -9,28 +9,28 @@ export default function SignInPage() {
 
   useEffect(() => {
     // Debug logging
-    console.log('SignIn Page - Auth0 State:', { isAuthenticated, isLoading, error, user: user?.email });
+  
     
     // If already authenticated, redirect to homepage
     if (isAuthenticated && user) {
-      console.log('User is already authenticated, redirecting to homepage...');
+
       navigate('/');
       return;
     }
     
     // Only auto-trigger login if we're not in a callback state
     if (!isAuthenticated && !isLoading && !window.location.pathname.includes('/auth/callback')) {
-      console.log('Auto-triggering Auth0 login...');
+      
       loginWithRedirect();
     }
   }, [isAuthenticated, isLoading, error, loginWithRedirect, user, navigate]);
 
   const handleLogin = async () => {
     try {
-      console.log('Attempting to login with Auth0...');
+
       await loginWithRedirect();
     } catch (err) {
-      console.error('Login error:', err);
+      
     }
   };
 

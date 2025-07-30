@@ -25,6 +25,31 @@ interface AINewsletterRendererProps {
   onBackToBuilder?: () => void;
 }
 
+// Safe HTML sanitization function
+const sanitizeHTML = (html: string): string => {
+  // Remove all script tags and event handlers
+  const cleanHTML = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/data:/gi, '')
+    .replace(/vbscript:/gi, '');
+  
+  return cleanHTML;
+};
+
+// Safe component to render sanitized HTML
+const SafeHTMLRenderer: React.FC<{ html: string }> = ({ html }) => {
+  const sanitizedHTML = sanitizeHTML(html);
+  
+  return (
+    <div 
+      className="newsletter-content"
+      dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
+    />
+  );
+};
+
 const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterData, posts, onBackToBuilder }) => {
   const navigate = useNavigate();
   
@@ -628,10 +653,9 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
                     <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center gap-2">
                       <span>{section.icon}</span> {section.title}
                     </h3>
-                    <div 
-                      className="text-foreground prose prose-neutral max-w-none text-sm sm:text-base"
-                      dangerouslySetInnerHTML={{ __html: section.content }}
-                    />
+                    {section.content && (
+                      <SafeHTMLRenderer html={section.content} />
+                    )}
                   </div>
                 ))}
               </Section>

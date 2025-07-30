@@ -20,9 +20,14 @@ import Loader from "./components/Loader";
 
 const queryClient = new QueryClient();
 
-// Waitlist redirect component
+// Waitlist redirect component - redirects all non-authenticated users to home
 const WaitlistRedirect = () => {
   return <Navigate to="/" replace />;
+};
+
+// Secure redirect component - only allows authenticated users
+const SecureRedirect = () => {
+  return <Navigate to="/signin" replace />;
 };
 
 const App = () => (
@@ -43,20 +48,47 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Main waitlist page */}
+              {/* Public routes - accessible to everyone */}
               <Route path="/" element={<PageTransition><IndexNew /></PageTransition>} />
+              <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
+              <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
+              <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+              <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
               
-              {/* Redirect all other routes to waitlist */}
-              <Route path="/signin" element={<WaitlistRedirect />} />
-              <Route path="/auth/callback" element={<WaitlistRedirect />} />
-              <Route path="/pricing" element={<WaitlistRedirect />} />
-              <Route path="/support" element={<WaitlistRedirect />} />
-              <Route path="/newsletter-builder" element={<WaitlistRedirect />} />
-              <Route path="/debug-social-apis" element={<WaitlistRedirect />} />
-              <Route path="/newsletter-editor" element={<WaitlistRedirect />} />
+              {/* Protected routes - require authentication */}
+              <Route 
+                path="/newsletter-builder" 
+                element={
+                  <ProtectedRoute>
+                    <PageTransition>
+                      <NewsletterBuilder />
+                    </PageTransition>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/newsletter-editor" 
+                element={
+                  <ProtectedRoute>
+                    <PageTransition>
+                      <NewsletterEditor />
+                    </PageTransition>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/debug-social-apis" 
+                element={
+                  <ProtectedRoute>
+                    <PageTransition>
+                      <DebugSocialAPIs />
+                    </PageTransition>
+                  </ProtectedRoute>
+                } 
+              />
               
-              {/* Catch all other routes */}
-              <Route path="*" element={<WaitlistRedirect />} />
+              {/* Catch all other routes - redirect to home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

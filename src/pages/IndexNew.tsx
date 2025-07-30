@@ -20,7 +20,7 @@ export default function IndexNew() {
     setIsSubmitted(true);
     setIsLoading(false);
   };
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
@@ -35,7 +35,7 @@ export default function IndexNew() {
           <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
             Coming Soon
           </Badge>
-        </div>
+                </div>
       </header>
 
       {/* Hero Section */}
@@ -79,25 +79,25 @@ export default function IndexNew() {
                       className="pl-10 h-12 text-base"
                       required
                     />
-                  </div>
-                  <Button 
-                    type="submit" 
+          </div>
+          <Button
+            type="submit"
                     className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
                     disabled={isLoading}
-                  >
+          >
                     {isLoading ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>Joining...</span>
-                      </div>
-                    ) : (
+              </div>
+            ) : (
                       <div className="flex items-center space-x-2">
                         <span>Join Waitlist</span>
                         <ArrowRight className="w-4 h-4" />
                       </div>
-                    )}
-                  </Button>
-                </form>
+            )}
+          </Button>
+        </form>
               ) : (
                 <div className="text-center py-6">
                   <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
@@ -105,10 +105,10 @@ export default function IndexNew() {
                   <p className="text-gray-600">
                     We'll notify you when Briefly is ready. Thanks for your interest!
                   </p>
-                </div>
-              )}
+          </div>
+        )}
             </CardContent>
-          </Card>
+      </Card>
         </div>
       </section>
 
@@ -141,7 +141,7 @@ export default function IndexNew() {
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
                   <Clock className="w-6 h-6 text-white" />
-                </div>
+        </div>
                 <CardTitle className="text-xl">Save Hours Weekly</CardTitle>
                 <CardDescription>
                   What used to take hours now takes minutes. Focus on what matters while we handle the content creation.
@@ -153,7 +153,7 @@ export default function IndexNew() {
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mb-4">
                   <Users className="w-6 h-6 text-white" />
-                </div>
+            </div>
                 <CardTitle className="text-xl">Engage Your Audience</CardTitle>
                 <CardDescription>
                   Create newsletters that resonate with your audience and drive meaningful engagement and growth.
@@ -163,7 +163,7 @@ export default function IndexNew() {
           </div>
         </div>
       </section>
-
+        
       {/* Stats Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto">
@@ -171,7 +171,7 @@ export default function IndexNew() {
             <div>
               <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">500+</div>
               <div className="text-gray-600">Waitlist Members</div>
-            </div>
+              </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">95%</div>
               <div className="text-gray-600">Time Saved</div>
