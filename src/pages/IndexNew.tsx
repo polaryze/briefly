@@ -30,7 +30,7 @@ export default function IndexNew() {
   
   const fullText = "Newsletters reimagined";
 
-  // Typing animation effect
+  // Typing animation effect with loop
   useEffect(() => {
     if (currentIndex < fullText.length) {
       const timeout = setTimeout(() => {
@@ -38,6 +38,13 @@ export default function IndexNew() {
         setCurrentIndex(currentIndex + 1);
       }, 100);
       return () => clearTimeout(timeout);
+    } else {
+      // When animation completes, wait 2 seconds then restart
+      const restartTimeout = setTimeout(() => {
+        setDisplayText("");
+        setCurrentIndex(0);
+      }, 2000);
+      return () => clearTimeout(restartTimeout);
     }
   }, [currentIndex, fullText]);
 
