@@ -111,6 +111,12 @@ export default function IndexNew() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // If admin bypass is active, redirect to newsletter builder instead
+    if (adminBypass === 'bypass') {
+      window.location.href = '/newsletter-builder?admin=bypass';
+      return;
+    }
+    
     // Rate limiting
     const now = Date.now();
     if (now - lastSubmissionTime < SUBMISSION_COOLDOWN) {
@@ -152,66 +158,7 @@ export default function IndexNew() {
     }
   };
   
-  // Admin bypass content
-  if (adminBypass === 'bypass') {
-    return (
-      <div className="h-screen bg-white flex items-center justify-center overflow-hidden">
-        <div className="w-full max-w-2xl px-6 py-4">
-          {/* Admin Bypass Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Shield className="w-6 h-6 text-blue-600" />
-              <span className="text-sm font-medium text-blue-600">Admin Access Active</span>
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-black mb-3 leading-tight">
-              Briefly
-            </h1>
-            <p className="text-xl text-gray-600 mb-6">
-              Newsletter Builder Platform
-            </p>
-            <p className="text-sm text-gray-500 max-w-md mx-auto">
-              You have full access to all features. Use the links below to navigate the platform.
-            </p>
-          </div>
-
-          {/* Admin Navigation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <Button 
-              onClick={() => window.open('/newsletter-builder?admin=bypass', '_blank')}
-              className="h-16 bg-black hover:bg-gray-800 text-white font-semibold rounded-lg flex items-center justify-center gap-3"
-            >
-              <ExternalLink className="w-5 h-5" />
-              <span>Newsletter Builder</span>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-            
-            <Button 
-              onClick={() => window.open('/newsletter-editor?admin=bypass', '_blank')}
-              className="h-16 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg flex items-center justify-center gap-3"
-            >
-              <ExternalLink className="w-5 h-5" />
-              <span>Newsletter Editor</span>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Admin Dashboard Link */}
-          <div className="text-center">
-            <Button 
-              variant="outline"
-              onClick={() => window.open('/admin', '_blank')}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Admin Dashboard
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Regular waitlist content
+  // Regular waitlist content (same for both normal and bypass users)
   return (
     <div className="h-screen bg-white flex items-center justify-center overflow-hidden">
       <div className="w-full max-w-md px-6 py-4">
@@ -262,10 +209,10 @@ export default function IndexNew() {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Joining...</span>
+                  <span>{adminBypass === 'bypass' ? 'Accessing...' : 'Joining...'}</span>
                 </div>
               ) : (
-                <span>Join Waitlist</span>
+                <span>{adminBypass === 'bypass' ? 'Access Platform' : 'Join Waitlist'}</span>
               )}
             </Button>
           </form>
