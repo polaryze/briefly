@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   const { password } = req.body;
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'skibidiballs';
 
   if (!password || password !== adminPassword) {
     return res.status(401).json({ error: 'Invalid credentials' });
