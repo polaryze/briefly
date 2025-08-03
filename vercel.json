@@ -1,6 +1,12 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
   "functions": {
     "api/waitlist/join.ts": {
+      "maxDuration": 10
+    },
+    "api/admin/login.ts": {
       "maxDuration": 10
     }
   },
@@ -8,6 +14,14 @@
     {
       "source": "/api/waitlist/join",
       "destination": "/api/waitlist/join"
+    },
+    {
+      "source": "/api/admin/login",
+      "destination": "/api/admin/login"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 } 
