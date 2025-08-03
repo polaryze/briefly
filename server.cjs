@@ -3,14 +3,19 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Server-side API keys (secure)
+// Server-side API keys and secrets
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'; // Change this!
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-32-character-encryption-key-here';
 
 // Waitlist storage file
 const WAITLIST_FILE = path.join(__dirname, 'waitlist.json');
@@ -21,7 +26,10 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 // Rate limiting for waitlist submissions
 const submissionAttempts = new Map();
 
-// Validate API keys
+// Admin session management
+const adminSessions = new Map();
+
+// Validate required environment variables
 if (!OPENAI_API_KEY) {
   console.error('❌ OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
 }
@@ -30,11 +38,87 @@ if (!RAPIDAPI_KEY) {
   console.error('❌ RapidAPI key not configured. Please set RAPIDAPI_KEY environment variable.');
 }
 
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 32) {
+  console.error('❌ ENCRYPTION_KEY must be exactly 32 characters long!');
+}
+
+// Encryption functions
+function encryptEmail(email) {
+  try {
+    const algorithm = 'aes-256-cbc';
+    const key = Buffer.from(ENCRYPTION_KEY, 'utf8');
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipher(algorithm, key);
+    let encrypted = cipher.update(email, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return { encrypted, iv: iv.toString('hex') };
+  } catch (error) {
+    console.error('Encryption error:', error);
+    return null;
+  }
+}
+
+function decryptEmail(encryptedData) {
+  try {
+    const algorithm = 'aes-256-cbc';
+    const key = Buffer.from(ENCRYPTION_KEY, 'utf8');
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const decipher = crypto.createDecipher(algorithm, key);
+    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (error) {
+    console.error('Decryption error:', error);
+    return null;
+  }
+}
+
+// JWT Authentication middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
+}
+
+// Admin authentication middleware
+function authenticateAdmin(req, res, next) {
+  authenticateToken(req, res, () => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    next();
+  });
+}
+
 // Helper function to load waitlist data
 async function loadWaitlist() {
   try {
     const data = await fs.readFile(WAITLIST_FILE, 'utf8');
-    return JSON.parse(data);
+    const waitlist = JSON.parse(data);
+    
+    // Decrypt emails if they're encrypted
+    return waitlist.map(entry => {
+      if (entry.encryptedEmail) {
+        const decryptedEmail = decryptEmail(entry.encryptedEmail);
+        return {
+          ...entry,
+          email: decryptedEmail || 'DECRYPTION_ERROR',
+          encryptedEmail: undefined // Don't send encrypted data to frontend
+        };
+      }
+      return entry;
+    });
   } catch (error) {
     // File doesn't exist or is invalid, return empty array
     return [];
@@ -44,13 +128,126 @@ async function loadWaitlist() {
 // Helper function to save waitlist data
 async function saveWaitlist(waitlist) {
   try {
-    await fs.writeFile(WAITLIST_FILE, JSON.stringify(waitlist, null, 2));
+    // Encrypt emails before saving
+    const encryptedWaitlist = waitlist.map(entry => {
+      const encryptedEmail = encryptEmail(entry.email);
+      return {
+        ...entry,
+        email: undefined, // Remove plain text email
+        encryptedEmail: encryptedEmail
+      };
+    });
+    
+    await fs.writeFile(WAITLIST_FILE, JSON.stringify(encryptedWaitlist, null, 2));
     return true;
   } catch (error) {
     console.error('Error saving waitlist:', error);
     return false;
   }
 }
+
+// Admin login endpoint
+app.post('/api/admin/login', async (req, res) => {
+  const { password } = req.body;
+  
+  if (!password || password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  const token = jwt.sign(
+    { role: 'admin', timestamp: Date.now() },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  res.json({ 
+    token,
+    message: 'Admin login successful'
+  });
+});
+
+// Admin dashboard data
+app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
+  try {
+    const waitlist = await loadWaitlist();
+    
+    // Calculate statistics
+    const totalSubscribers = waitlist.length;
+    const today = new Date().toISOString().split('T')[0];
+    const todaySubscribers = waitlist.filter(entry => 
+      entry.subscribedAt.startsWith(today)
+    ).length;
+    
+    const thisWeek = new Date();
+    thisWeek.setDate(thisWeek.getDate() - 7);
+    const weekSubscribers = waitlist.filter(entry => 
+      new Date(entry.subscribedAt) > thisWeek
+    ).length;
+
+    // Get recent subscribers (last 20)
+    const recentSubscribers = waitlist
+      .sort((a, b) => new Date(b.subscribedAt) - new Date(a.subscribedAt))
+      .slice(0, 20);
+
+    res.json({
+      stats: {
+        total: totalSubscribers,
+        today: todaySubscribers,
+        thisWeek: weekSubscribers
+      },
+      recentSubscribers: recentSubscribers.map(entry => ({
+        email: entry.email,
+        subscribedAt: entry.subscribedAt,
+        ip: entry.ip
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load dashboard data' });
+  }
+});
+
+// Export waitlist as CSV
+app.get('/api/admin/export', authenticateAdmin, async (req, res) => {
+  try {
+    const waitlist = await loadWaitlist();
+    
+    const csvHeader = 'Email,Subscribed At,IP Address,User Agent\n';
+    const csvData = waitlist.map(entry => 
+      `"${entry.email}","${entry.subscribedAt}","${entry.ip || ''}","${entry.userAgent || ''}"`
+    ).join('\n');
+    
+    const csv = csvHeader + csvData;
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=waitlist-${new Date().toISOString().split('T')[0]}.csv`);
+    res.send(csv);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to export data' });
+  }
+});
+
+// Delete subscriber (GDPR compliance)
+app.delete('/api/admin/subscriber/:email', authenticateAdmin, async (req, res) => {
+  try {
+    const { email } = req.params;
+    const waitlist = await loadWaitlist();
+    
+    const filteredWaitlist = waitlist.filter(entry => entry.email !== email);
+    
+    if (filteredWaitlist.length === waitlist.length) {
+      return res.status(404).json({ error: 'Subscriber not found' });
+    }
+    
+    const saved = await saveWaitlist(filteredWaitlist);
+    if (!saved) {
+      return res.status(500).json({ error: 'Failed to delete subscriber' });
+    }
+    
+    res.json({ message: 'Subscriber deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete subscriber' });
+  }
+});
 
 // Waitlist endpoint
 app.post('/api/waitlist/join', async (req, res) => {
@@ -138,7 +335,7 @@ app.post('/api/waitlist/join', async (req, res) => {
 
     waitlist.push(newEntry);
 
-    // Save to file
+    // Save to file (will be encrypted)
     const saved = await saveWaitlist(waitlist);
     if (!saved) {
       return res.status(500).json({ 

@@ -16,6 +16,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import PageTransition from "./components/PageTransition";
 import DebugSocialAPIs from './pages/DebugSocialAPIs';
 import NewsletterEditor from './pages/NewsletterEditor';
+import AdminDashboard from './pages/AdminDashboard';
 import Loader from "./components/Loader";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,9 @@ const App = () => (
               <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
               <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
               <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+              
+              {/* Admin route - no Auth0 protection, uses custom admin auth */}
+              <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
               
               {/* Protected routes - require authentication */}
               <Route 
