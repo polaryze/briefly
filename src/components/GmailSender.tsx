@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useGmail, GmailMessage } from '../lib/gmail';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 import { Loader2, Mail, CheckCircle, XCircle } from 'lucide-react';
@@ -94,7 +93,7 @@ export function GmailSender({ newsletterHtml, onSendComplete }: GmailSenderProps
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="recipient-email">Recipient Email</Label>
+          <label htmlFor="recipient-email" className="text-sm font-medium text-gray-700">Recipient Email</label>
           <Input
             id="recipient-email"
             type="email"
@@ -106,7 +105,7 @@ export function GmailSender({ newsletterHtml, onSendComplete }: GmailSenderProps
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="subject">Subject Line</Label>
+          <label htmlFor="subject" className="text-sm font-medium text-gray-700">Subject Line</label>
           <Input
             id="subject"
             type="text"
