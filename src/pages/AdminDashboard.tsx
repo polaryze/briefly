@@ -326,7 +326,37 @@ export default function AdminDashboard() {
             className="flex items-center space-x-2"
           >
             <ExternalLink className="w-4 h-4" />
-            <span>Generate Bypass Link</span>
+            <span>Generate Homepage Bypass</span>
+          </Button>
+          
+          <Button 
+            onClick={() => {
+              const baseUrl = window.location.origin;
+              const builderBypass = `${baseUrl}/newsletter-builder?admin=bypass`;
+              navigator.clipboard.writeText(builderBypass);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            variant="outline" 
+            className="flex items-center space-x-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Copy Builder Bypass</span>
+          </Button>
+          
+          <Button 
+            onClick={() => {
+              const baseUrl = window.location.origin;
+              const editorBypass = `${baseUrl}/newsletter-editor?admin=bypass`;
+              navigator.clipboard.writeText(editorBypass);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            variant="outline" 
+            className="flex items-center space-x-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Copy Editor Bypass</span>
           </Button>
         </div>
 
@@ -381,7 +411,15 @@ export default function AdminDashboard() {
                 {/* Quick Access Links */}
                 <div className="border-t pt-4">
                   <p className="text-sm font-medium text-gray-700 mb-3">Quick Access Links:</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`${window.location.origin}/?admin=bypass`, '_blank')}
+                      className="text-xs"
+                    >
+                      Homepage
+                    </Button>
                     <Button 
                       variant="outline" 
                       size="sm"
