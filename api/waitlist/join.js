@@ -1,16 +1,22 @@
+import { createClient } from '@supabase/supabase-js';
+
 // Email validation regex
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// Simple storage that persists across function calls
-// In production, use a proper database
-let waitlistEmails = [
-  // Add some test data so we can see it working
-  {
-    email: 'test@example.com',
-    subscribedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.2'
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Supabase environment variables not configured');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
   }
-];
+});
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -31,6 +37,7 @@ export default async function handler(req, res) {
 
   const { email } = req.body;
   const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const userAgent = req.headers['user-agent'] || 'Unknown';
   
   // Validate email
   if (!email || typeof email !== 'string') {
@@ -69,7 +76,19 @@ export default async function handler(req, res) {
 
   try {
     // Check if email already exists
-    const existingEmail = waitlistEmails.find(entry => entry.email === sanitizedEmail);
+    const { data: existingEmail, error: checkError } = await supabase
+      .from('waitlist')
+      .select('email')
+      .eq('email', sanitizedEmail)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing email:', checkError);
+      return res.status(500).json({ 
+        error: 'Something went wrong. Please try again.' 
+      });
+    }
+
     if (existingEmail) {
       return res.status(200).json({ 
         message: 'You are already on the waitlist!',
@@ -77,16 +96,26 @@ export default async function handler(req, res) {
       });
     }
 
-    // Add to waitlist with timestamp and IP
-    const subscriberData = {
-      email: sanitizedEmail,
-      subscribedAt: new Date().toISOString(),
-      ip: clientIP
-    };
-    
-    waitlistEmails.push(subscriberData);
+    // Insert new subscriber
+    const { data: newSubscriber, error: insertError } = await supabase
+      .from('waitlist')
+      .insert([
+        {
+          email: sanitizedEmail,
+          ip_address: clientIP,
+          user_agent: userAgent
+        }
+      ])
+      .select()
+      .single();
 
-    // Log for debugging (remove in production)
+    if (insertError) {
+      console.error('Error inserting subscriber:', insertError);
+      return res.status(500).json({ 
+        error: 'Failed to save email. Please try again.' 
+      });
+    }
+
     console.log(`New waitlist signup: ${sanitizedEmail} from ${clientIP}`);
 
     res.status(200).json({ 

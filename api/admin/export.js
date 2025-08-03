@@ -1,6 +1,19 @@
-// Simple storage that persists across function calls
-// In production, use a proper database
-let waitlistEmails = [];
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Supabase environment variables not configured');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+});
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -26,10 +39,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Create CSV content from real data
+    // Get all subscribers
+    const { data: subscribers, error } = await supabase
+      .from('waitlist')
+      .select('email, subscribed_at, ip_address')
+      .order('subscribed_at', { ascending: false });
+
+    if (error) {
+      console.error('Error getting subscribers:', error);
+      return res.status(500).json({ error: 'Failed to export data' });
+    }
+
+    // Create CSV content
     const csvHeader = 'Email,Subscribed At,IP Address\n';
-    const csvRows = waitlistEmails.map(sub => 
-      `${sub.email},${sub.subscribedAt},${sub.ip}`
+    const csvRows = (subscribers || []).map(sub => 
+      `${sub.email},${sub.subscribed_at},${sub.ip_address}`
     ).join('\n');
     const csvContent = csvHeader + csvRows;
 
