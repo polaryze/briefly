@@ -232,7 +232,7 @@ const IndexNew = () => {
             
             <button
               onClick={buttons[1].onClick}
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+              className={`px-4 py-3 text-sm font-medium bg-gradient-to-r from-black to-gray-800 text-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg hover:border-gray-300 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
                 showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
               }`}
               style={{
@@ -339,7 +339,7 @@ const IndexNew = () => {
 
             <button 
               onClick={handleGenerateNewsletter}
-              className="w-full bg-black text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+              className="w-full bg-gradient-to-r from-black to-gray-800 text-white font-semibold py-3 px-6 rounded-xl hover:from-gray-800 hover:to-black transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg"
             >
               Generate Newsletter
             </button>
