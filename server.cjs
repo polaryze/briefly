@@ -1,6 +1,8 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
+const fs = require('fs').promises;
+const path = require('path');
 
 const app = express();
 app.use(express.json());
@@ -10,6 +12,15 @@ app.use(cors());
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 
+// Waitlist storage file
+const WAITLIST_FILE = path.join(__dirname, 'waitlist.json');
+
+// Email validation regex
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// Rate limiting for waitlist submissions
+const submissionAttempts = new Map();
+
 // Validate API keys
 if (!OPENAI_API_KEY) {
   console.error('❌ OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
@@ -18,6 +29,148 @@ if (!OPENAI_API_KEY) {
 if (!RAPIDAPI_KEY) {
   console.error('❌ RapidAPI key not configured. Please set RAPIDAPI_KEY environment variable.');
 }
+
+// Helper function to load waitlist data
+async function loadWaitlist() {
+  try {
+    const data = await fs.readFile(WAITLIST_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    // File doesn't exist or is invalid, return empty array
+    return [];
+  }
+}
+
+// Helper function to save waitlist data
+async function saveWaitlist(waitlist) {
+  try {
+    await fs.writeFile(WAITLIST_FILE, JSON.stringify(waitlist, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error saving waitlist:', error);
+    return false;
+  }
+}
+
+// Waitlist endpoint
+app.post('/api/waitlist/join', async (req, res) => {
+  const { email } = req.body;
+  const clientIP = req.ip || req.connection.remoteAddress;
+  
+  // Rate limiting: max 5 attempts per IP per hour
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+  
+  if (!submissionAttempts.has(clientIP)) {
+    submissionAttempts.set(clientIP, { count: 0, firstAttempt: now });
+  }
+  
+  const attempts = submissionAttempts.get(clientIP);
+  if (now - attempts.firstAttempt > oneHour) {
+    // Reset after an hour
+    attempts.count = 0;
+    attempts.firstAttempt = now;
+  }
+  
+  if (attempts.count >= 5) {
+    return res.status(429).json({ 
+      error: 'Too many attempts. Please try again later.' 
+    });
+  }
+  
+  attempts.count++;
+
+  // Validate email
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ 
+      error: 'Email is required' 
+    });
+  }
+
+  const sanitizedEmail = email.trim().toLowerCase();
+  
+  if (sanitizedEmail.length > 254) {
+    return res.status(400).json({ 
+      error: 'Email is too long' 
+    });
+  }
+
+  if (!EMAIL_REGEX.test(sanitizedEmail)) {
+    return res.status(400).json({ 
+      error: 'Please enter a valid email address' 
+    });
+  }
+
+  // Check for disposable email domains
+  const disposableDomains = [
+    'tempmail.org', '10minutemail.com', 'guerrillamail.com',
+    'mailinator.com', 'yopmail.com', 'throwaway.email',
+    'temp-mail.org', 'sharklasers.com', 'guerrillamailblock.com'
+  ];
+  
+  const domain = sanitizedEmail.split('@')[1];
+  if (disposableDomains.includes(domain)) {
+    return res.status(400).json({ 
+      error: 'Please use a valid email address' 
+    });
+  }
+
+  try {
+    // Load existing waitlist
+    const waitlist = await loadWaitlist();
+    
+    // Check if email already exists
+    const existingEntry = waitlist.find(entry => entry.email === sanitizedEmail);
+    if (existingEntry) {
+      return res.status(200).json({ 
+        message: 'You are already on the waitlist!',
+        alreadySubscribed: true
+      });
+    }
+
+    // Add new entry
+    const newEntry = {
+      email: sanitizedEmail,
+      subscribedAt: new Date().toISOString(),
+      ip: clientIP,
+      userAgent: req.get('User-Agent') || 'Unknown'
+    };
+
+    waitlist.push(newEntry);
+
+    // Save to file
+    const saved = await saveWaitlist(waitlist);
+    if (!saved) {
+      return res.status(500).json({ 
+        error: 'Failed to save email. Please try again.' 
+      });
+    }
+
+    res.status(200).json({ 
+      message: 'Successfully joined the waitlist!',
+      alreadySubscribed: false
+    });
+
+  } catch (error) {
+    console.error('Waitlist error:', error);
+    res.status(500).json({ 
+      error: 'Something went wrong. Please try again.' 
+    });
+  }
+});
+
+// Get waitlist stats (admin only - you can add authentication later)
+app.get('/api/waitlist/stats', async (req, res) => {
+  try {
+    const waitlist = await loadWaitlist();
+    res.json({
+      totalSubscribers: waitlist.length,
+      recentSubscribers: waitlist.slice(-10) // Last 10 subscribers
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load stats' });
+  }
+});
 
 // OpenAI API endpoint
 app.post('/api/openai/summarize', async (req, res) => {

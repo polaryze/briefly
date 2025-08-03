@@ -122,25 +122,33 @@ export default function IndexNew() {
     setLastSubmissionTime(now);
     
     try {
-      // Simulate API call with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          clearTimeout(timeoutId);
-          resolve(true);
-        }, 1000);
-        
-        // Handle abort
-        controller.signal.addEventListener('abort', () => {
-          reject(new Error('Request timeout'));
-        });
+      // Call the secure waitlist endpoint
+      const response = await fetch('/api/waitlist/join', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
-      
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to join waitlist');
+      }
+
+      // Success
       setIsSubmitted(true);
+      
+      // Log success (optional - for analytics)
+      if (data.alreadySubscribed) {
+        console.log('User already subscribed to waitlist');
+      } else {
+        console.log('New user subscribed to waitlist');
+      }
+
     } catch (error) {
-      setEmailError("Something went wrong. Please try again.");
+      setEmailError(error.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
