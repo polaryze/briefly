@@ -23,9 +23,12 @@ interface DashboardStats {
 }
 
 interface Subscriber {
+  id: number;
   email: string;
-  subscribedAt: string;
-  ip: string;
+  subscribed_at: string;
+  ip_address: string;
+  user_agent?: string;
+  created_at: string;
 }
 
 interface DashboardData {
@@ -310,10 +313,10 @@ export default function AdminDashboard() {
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{subscriber.email}</p>
                     <p className="text-sm text-gray-500">
-                      {new Date(subscriber.subscribedAt).toLocaleString()}
+                      {new Date(subscriber.subscribed_at).toLocaleString()}
                     </p>
-                    {subscriber.ip && (
-                      <p className="text-xs text-gray-400">IP: {subscriber.ip}</p>
+                    {subscriber.ip_address && (
+                      <p className="text-xs text-gray-400">IP: {subscriber.ip_address}</p>
                     )}
                   </div>
                   <Button

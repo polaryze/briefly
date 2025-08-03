@@ -15,6 +15,9 @@
     "api/admin/export.js": {
       "maxDuration": 10
     },
+    "api/admin/delete-subscriber.js": {
+      "maxDuration": 10
+    },
     "api/test-supabase.js": {
       "maxDuration": 10
     }
@@ -35,6 +38,10 @@
     {
       "source": "/api/admin/export",
       "destination": "/api/admin/export.js"
+    },
+    {
+      "source": "/api/admin/delete-subscriber",
+      "destination": "/api/admin/delete-subscriber.js"
     },
     {
       "source": "/api/test-supabase",
