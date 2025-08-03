@@ -30,6 +30,13 @@ const submissionAttempts = new Map();
 const adminSessions = new Map();
 
 // Validate required environment variables
+console.log('🔧 Environment Variables Check:');
+console.log(`   OpenAI API Key: ${OPENAI_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+console.log(`   RapidAPI Key: ${RAPIDAPI_KEY ? '✅ Configured' : '❌ Missing'}`);
+console.log(`   JWT Secret: ${JWT_SECRET !== 'your-super-secret-jwt-key-change-this' ? '✅ Configured' : '⚠️  Using default'}`);
+console.log(`   Admin Password: ${ADMIN_PASSWORD !== 'admin123' ? '✅ Configured' : '⚠️  Using default (admin123)'}`);
+console.log(`   Encryption Key: ${ENCRYPTION_KEY.length === 32 ? '✅ Valid length' : '❌ Must be exactly 32 characters'}`);
+
 if (!OPENAI_API_KEY) {
   console.error('❌ OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
 }
@@ -38,8 +45,10 @@ if (!RAPIDAPI_KEY) {
   console.error('❌ RapidAPI key not configured. Please set RAPIDAPI_KEY environment variable.');
 }
 
-if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 32) {
+if (ENCRYPTION_KEY.length !== 32) {
   console.error('❌ ENCRYPTION_KEY must be exactly 32 characters long!');
+  console.error('   Current length:', ENCRYPTION_KEY.length);
+  console.error('   Please update your .env file with a 32-character encryption key.');
 }
 
 // Encryption functions
