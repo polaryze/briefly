@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import jwt from 'jsonwebtoken';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
@@ -20,19 +19,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { password } = req.body;
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  const jwtSecret = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this';
-  
+
   if (!password || password !== adminPassword) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  const token = jwt.sign(
-    { role: 'admin', timestamp: Date.now() },
-    jwtSecret,
-    { expiresIn: '24h' }
-  );
+  // Simple token generation (in production, use proper JWT)
+  const token = Buffer.from(`admin-${Date.now()}`).toString('base64');
 
-  res.json({ 
+  res.json({
     token,
     message: 'Admin login successful'
   });
