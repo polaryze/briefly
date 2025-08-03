@@ -176,7 +176,7 @@ export default function AdminDashboard() {
 
   const generateBypassLink = () => {
     const baseUrl = window.location.origin;
-    const bypassUrl = `${baseUrl}/newsletter-builder?admin=bypass`;
+    const bypassUrl = `${baseUrl}/?admin=bypass`;
     setBypassLink(bypassUrl);
   };
 
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
                 <span>Admin Bypass Access</span>
               </CardTitle>
               <CardDescription>
-                Direct access link to bypass the waitlist and access the newsletter builder
+                Direct access link to bypass the waitlist and access the entire platform
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -377,9 +377,41 @@ export default function AdminDashboard() {
                     <span>Open</span>
                   </Button>
                 </div>
+                
+                {/* Quick Access Links */}
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-3">Quick Access Links:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`${window.location.origin}/newsletter-builder?admin=bypass`, '_blank')}
+                      className="text-xs"
+                    >
+                      Newsletter Builder
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`${window.location.origin}/newsletter-editor?admin=bypass`, '_blank')}
+                      className="text-xs"
+                    >
+                      Newsletter Editor
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`${window.location.origin}/admin`, '_blank')}
+                      className="text-xs"
+                    >
+                      Admin Dashboard
+                    </Button>
+                  </div>
+                </div>
+                
                 <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
                   <p className="font-medium mb-1">⚠️ Security Note:</p>
-                  <p>This bypass link provides direct access to the newsletter builder. Keep this link secure and only share with authorized personnel.</p>
+                  <p>This bypass link provides direct access to the entire platform including newsletter builder, editor, and all features. Keep this link secure and only share with authorized personnel.</p>
                 </div>
               </div>
             </CardContent>

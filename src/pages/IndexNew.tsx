@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSearchParams } from "react-router-dom";
+import { Shield, ExternalLink, ArrowRight } from "lucide-react";
 
 // Email validation regex
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -20,6 +22,9 @@ const sanitizeInput = (input: string): string => {
 const SUBMISSION_COOLDOWN = 5000; // 5 seconds
 
 export default function IndexNew() {
+  const [searchParams] = useSearchParams();
+  const adminBypass = searchParams.get('admin');
+  
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -147,6 +152,66 @@ export default function IndexNew() {
     }
   };
   
+  // Admin bypass content
+  if (adminBypass === 'bypass') {
+    return (
+      <div className="h-screen bg-white flex items-center justify-center overflow-hidden">
+        <div className="w-full max-w-2xl px-6 py-4">
+          {/* Admin Bypass Header */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Shield className="w-6 h-6 text-blue-600" />
+              <span className="text-sm font-medium text-blue-600">Admin Access Active</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-black mb-3 leading-tight">
+              Briefly
+            </h1>
+            <p className="text-xl text-gray-600 mb-6">
+              Newsletter Builder Platform
+            </p>
+            <p className="text-sm text-gray-500 max-w-md mx-auto">
+              You have full access to all features. Use the links below to navigate the platform.
+            </p>
+          </div>
+
+          {/* Admin Navigation */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <Button 
+              onClick={() => window.open('/newsletter-builder?admin=bypass', '_blank')}
+              className="h-16 bg-black hover:bg-gray-800 text-white font-semibold rounded-lg flex items-center justify-center gap-3"
+            >
+              <ExternalLink className="w-5 h-5" />
+              <span>Newsletter Builder</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            
+            <Button 
+              onClick={() => window.open('/newsletter-editor?admin=bypass', '_blank')}
+              className="h-16 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg flex items-center justify-center gap-3"
+            >
+              <ExternalLink className="w-5 h-5" />
+              <span>Newsletter Editor</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Admin Dashboard Link */}
+          <div className="text-center">
+            <Button 
+              variant="outline"
+              onClick={() => window.open('/admin', '_blank')}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Admin Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular waitlist content
   return (
     <div className="h-screen bg-white flex items-center justify-center overflow-hidden">
       <div className="w-full max-w-md px-6 py-4">

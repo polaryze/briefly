@@ -51,7 +51,6 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               {/* Public routes - accessible to everyone */}
-              <Route path="/" element={<PageTransition><IndexNew /></PageTransition>} />
               <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
               <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
               <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
@@ -59,6 +58,18 @@ const App = () => (
               
               {/* Admin route - no Auth0 protection, uses custom admin auth */}
               <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
+              
+              {/* Home page with bypass - shows waitlist or full access */}
+              <Route 
+                path="/" 
+                element={
+                  <BypassRoute fallbackPath="/" requireAuth={false}>
+                    <PageTransition>
+                      <IndexNew />
+                    </PageTransition>
+                  </BypassRoute>
+                } 
+              />
               
               {/* Protected routes - require authentication or admin bypass */}
               <Route 
@@ -76,11 +87,13 @@ const App = () => (
               <Route 
                 path="/newsletter-editor" 
                 element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <NewsletterEditor />
-                    </PageTransition>
-                  </ProtectedRoute>
+                  <BypassRoute fallbackPath="/signin">
+                    <ProtectedRoute>
+                      <PageTransition>
+                        <NewsletterEditor />
+                      </PageTransition>
+                    </ProtectedRoute>
+                  </BypassRoute>
                 } 
               />
 
