@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Shield } from 'lucide-react';
 
 const IndexNew = () => {
+  const [searchParams] = useSearchParams();
+  const adminBypass = searchParams.get('admin');
+  
   const [text, setText] = useState('');
   const fullText = 'Newsletters reimagined';
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,6 +43,14 @@ const IndexNew = () => {
 
   // Update reactive dots when mouse position changes - optimized version
   useEffect(() => {
+    // Disable dot effects on mobile devices for better performance
+    const isMobile = window.innerWidth < 1024; // lg breakpoint
+    if (isMobile) {
+      setHeroDots('');
+      setNewsletterDots('');
+      return;
+    }
+
     const updateHeroDots = () => {
       const baseDot = `radial-gradient(circle at 15px 15px, rgba(0,0,0,0.08) 2px, transparent 0)`;
       const reactiveDots = [];
@@ -135,48 +148,41 @@ const IndexNew = () => {
     }
   }, [currentIndex, fullText, isTyping]);
 
-  const buttons = [
-    { id: 'auth', label: isLoggedIn ? 'Sign Out' : 'Sign In', delay: 100, size: 'small' },
-    { id: 'generate', label: 'Generate Newsletter', delay: 150, size: 'large' },
-    { id: 'pricing', label: 'Pricing', delay: 200, size: 'small' },
-    { id: 'support', label: 'Support', delay: 250, size: 'small' }
-  ];
-
-  // Calculate dot size and opacity based on mouse distance
-  const getDotStyle = (baseSize: number, baseOpacity: number) => {
-    const maxDistance = 150; // Distance in pixels where effect starts
-    const distance = Math.sqrt(
-      Math.pow(mousePosition.x - window.innerWidth / 2, 2) + 
-      Math.pow(mousePosition.y - window.innerHeight / 2, 2)
-    );
-    
-    const effect = Math.max(0, 1 - distance / maxDistance);
-    const sizeMultiplier = 1 + effect * 1.5; // Dots can get up to 2.5x bigger
-    const opacityMultiplier = 1 + effect * 2; // Opacity can get up to 3x darker
-    
-    return {
-      size: baseSize * sizeMultiplier,
-      opacity: baseOpacity * opacityMultiplier
-    };
-  };
-
-  // Simple reactive dot effect for second section
-  const getSecondSectionDots = () => {
-    const baseDot = `radial-gradient(circle at 20px 20px, rgba(0,0,0,0.05) 2px, transparent 0)`;
-    
-    if (mousePosition.x > 0 && mousePosition.y > 0) {
-      const reactiveDots = [
-        `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255,0,0,0.6) 8px, transparent 0)`,
-        `radial-gradient(circle at ${mousePosition.x - 15}px ${mousePosition.y}px, rgba(0,255,0,0.4) 6px, transparent 0)`
-      ];
-      return `${baseDot}, ${reactiveDots.join(', ')}`;
+  const handleGenerateNewsletter = () => {
+    if (adminBypass === 'bypass') {
+      window.location.href = '/newsletter-builder?admin=bypass';
+    } else {
+      window.location.href = '/newsletter-builder';
     }
-    
-    return baseDot;
   };
+
+  const handleSignIn = () => {
+    if (adminBypass === 'bypass') {
+      window.location.href = '/newsletter-builder?admin=bypass';
+    } else {
+      window.location.href = '/signin';
+    }
+  };
+
+  const buttons = [
+    { id: 'auth', label: isLoggedIn ? 'Sign Out' : 'Sign In', delay: 100, size: 'small', onClick: handleSignIn },
+    { id: 'generate', label: 'Generate Newsletter', delay: 150, size: 'large', onClick: handleGenerateNewsletter },
+    { id: 'pricing', label: 'Pricing', delay: 200, size: 'small', onClick: () => window.location.href = '/pricing' },
+    { id: 'support', label: 'Support', delay: 250, size: 'small', onClick: () => window.location.href = '/support' }
+  ];
 
   return (
     <div className="relative">
+      {/* Admin bypass indicator */}
+      {adminBypass === 'bypass' && (
+        <div className="fixed top-4 left-4 z-50 p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl shadow-lg">
+          <div className="flex items-center gap-2 text-blue-700">
+            <Shield className="w-4 h-4" />
+            <span className="text-sm font-medium">Admin Access Active</span>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <div 
         className="min-h-screen bg-white flex items-center justify-between relative hero-section"
@@ -188,87 +194,191 @@ const IndexNew = () => {
           transition: 'background-image 0.2s ease-out'
         }}
       >
-        {/* Left side content */}
-        <div className="ml-16 md:ml-24 relative z-10">
-          <div 
-            className={`text-6xl md:text-8xl font-bold text-black mb-4 transition-all duration-1000 ${
-              showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
-            }`}
-            style={{
-              transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
-              willChange: 'transform'
-            }}
-          >
-            Briefly
-          </div>
-          <div className="text-2xl md:text-4xl font-light text-gray-600">
-            {text}
-            <span 
-              className="inline-block w-0.5 text-2xl md:text-4xl font-light ml-1"
+        {/* Desktop Layout */}
+        <div className="hidden lg:flex flex-row items-center justify-between w-full px-16 xl:px-24 gap-0">
+          {/* Left side content */}
+          <div className="relative z-10 text-left">
+            <div 
+              className={`text-6xl xl:text-8xl font-bold text-black mb-4 transition-all duration-1000 ${
+                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
+              }`}
               style={{
-                animation: 'blink 1s infinite'
+                transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
+                willChange: 'transform'
               }}
             >
-              |
-            </span>
+              Briefly
+            </div>
+            <div className="text-2xl xl:text-4xl font-light text-gray-600">
+              {text}
+              <span 
+                className="inline-block w-0.5 text-2xl xl:text-4xl font-light ml-1"
+                style={{
+                  animation: 'blink 1s infinite'
+                }}
+              >
+                |
+              </span>
+            </div>
+          </div>
+
+          {/* Right side bento grid */}
+          <div className="relative z-10">
+            <div className="grid grid-cols-2 gap-4 w-80 h-80">
+              {/* Top row */}
+              <button
+                onClick={buttons[0].onClick}
+                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '100ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                {buttons[0].label}
+              </button>
+              
+              <button
+                onClick={buttons[1].onClick}
+                className={`px-4 py-3 text-sm font-medium bg-gradient-to-r from-black to-gray-800 text-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg hover:border-gray-300 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '150ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                {buttons[1].label}
+              </button>
+
+              {/* Bottom row */}
+              <button
+                onClick={buttons[2].onClick}
+                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '200ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                {buttons[2].label}
+              </button>
+              
+              <button
+                onClick={buttons[3].onClick}
+                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+                }`}
+                style={{
+                  animationDelay: '250ms',
+                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                  willChange: 'transform'
+                }}
+              >
+                {buttons[3].label}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Right side bento grid */}
-        <div className="mr-16 md:mr-24 relative z-10">
-          <div className="grid grid-cols-2 gap-4 w-80 h-80">
-            {/* Top row */}
-            <button
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+        {/* Mobile Layout - Optimized for iOS */}
+        <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen">
+          {/* Center content with fade-in animation - moved up by 16px total */}
+          <div className="flex flex-col items-center justify-center flex-1" style={{ marginTop: '-16px' }}>
+            <div 
+              className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-black mb-4 transition-all duration-1000 cursor-pointer briefly-hover ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                animationDelay: '100ms',
                 transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
-              {isLoggedIn ? 'Sign Out' : 'Sign In'}
+              Briefly
+            </div>
+            <div 
+              className={`text-lg sm:text-xl font-light text-gray-600 transition-all duration-1000 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+              }`}
+              style={{
+                animationDelay: '300ms',
+                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                willChange: 'transform'
+              }}
+            >
+              {text}
+              <span 
+                className="inline-block w-0.5 text-lg sm:text-xl font-light ml-1"
+                style={{
+                  animation: 'blink 1s infinite'
+                }}
+              >
+                |
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom circular buttons - moved up to avoid iOS search bar */}
+          <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
+            <button
+              onClick={buttons[0].onClick}
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+              }`}
+              style={{
+                animationDelay: '400ms',
+                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                willChange: 'transform'
+              }}
+            >
+              <span className="text-sm font-medium text-gray-800">Sign In</span>
             </button>
             
             <button
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+              onClick={buttons[1].onClick}
+              className={`group flex items-center justify-center w-16 h-16 bg-gradient-to-r from-black to-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                animationDelay: '150ms',
+                animationDelay: '450ms',
                 transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
-              Generate Newsletter
+              <span className="text-sm font-medium">Generate</span>
             </button>
 
-            {/* Bottom row */}
             <button
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+              onClick={buttons[2].onClick}
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                animationDelay: '200ms',
+                animationDelay: '500ms',
                 transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
-              Pricing
+              <span className="text-sm font-medium text-gray-800">Pricing</span>
             </button>
             
             <button
-              className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
+              onClick={buttons[3].onClick}
+              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                animationDelay: '250ms',
+                animationDelay: '550ms',
                 transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
-              Support
+              <span className="text-sm font-medium text-gray-800">Support</span>
             </button>
           </div>
         </div>
@@ -285,12 +395,12 @@ const IndexNew = () => {
           transition: 'background-image 0.2s ease-out'
         }}
       >
-        <div className="text-center mb-64">
+        <div className="text-center mb-32 sm:mb-64 px-4">
           <h2 
-            className="text-5xl md:text-7xl font-bold text-gray-800 mb-8"
+            className="text-3xl sm:text-5xl lg:text-7xl font-bold text-gray-800 mb-4 sm:mb-8"
             style={{
               transform: `translate3d(0, ${Math.max(0, scrollY - 500) * 0.3}px, 0)`,
-              marginTop: '-100px',
+              marginTop: '-50px sm:-100px',
               willChange: 'transform'
             }}
           >
@@ -335,7 +445,10 @@ const IndexNew = () => {
               />
             </div>
 
-            <button className="w-full bg-black text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+            <button 
+              onClick={handleGenerateNewsletter}
+              className="w-full bg-gradient-to-r from-black to-gray-800 text-white font-semibold py-3 px-6 rounded-xl hover:from-gray-800 hover:to-black transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg"
+            >
               Generate Newsletter
             </button>
           </div>
