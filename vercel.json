@@ -3,21 +3,21 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "functions": {
-    "api/waitlist/join.ts": {
+    "api/waitlist/join.js": {
       "maxDuration": 10
     },
-    "api/admin/login.ts": {
+    "api/admin/login.js": {
       "maxDuration": 10
     }
   },
   "rewrites": [
     {
       "source": "/api/waitlist/join",
-      "destination": "/api/waitlist/join"
+      "destination": "/api/waitlist/join.js"
     },
     {
       "source": "/api/admin/login",
-      "destination": "/api/admin/login"
+      "destination": "/api/admin/login.js"
     },
     {
       "source": "/(.*)",
