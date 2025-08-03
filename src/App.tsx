@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Auth0Provider } from '@auth0/auth0-react';
 import IndexNew from "./pages/IndexNew";
+import Waitlist from "./pages/Waitlist";
 import NotFound from "./pages/NotFound";
 import NewsletterBuilder from "./pages/NewsletterBuilder";
 import AuthCallback from "./pages/AuthCallback";
@@ -22,7 +23,7 @@ import Loader from "./components/Loader";
 
 const queryClient = new QueryClient();
 
-// Waitlist redirect component - redirects all non-authenticated users to home
+// Waitlist redirect component - redirects all non-authenticated users to waitlist
 const WaitlistRedirect = () => {
   return <Navigate to="/" replace />;
 };
@@ -50,18 +51,15 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Public routes - accessible to everyone */}
-              <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
-              <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
-              <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
-              <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+              {/* Default route - shows waitlist to everyone */}
+              <Route path="/" element={<PageTransition><Waitlist /></PageTransition>} />
               
               {/* Admin route - no Auth0 protection, uses custom admin auth */}
               <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
               
-              {/* Home page with bypass - shows waitlist or full access */}
+              {/* Locked routes - only accessible via admin bypass */}
               <Route 
-                path="/" 
+                path="/home" 
                 element={
                   <BypassRoute fallbackPath="/" requireAuth={false}>
                     <PageTransition>
@@ -75,7 +73,7 @@ const App = () => (
               <Route 
                 path="/newsletter-builder" 
                 element={
-                  <BypassRoute fallbackPath="/signin">
+                  <BypassRoute fallbackPath="/">
                     <ProtectedRoute>
                       <PageTransition>
                         <NewsletterBuilder />
@@ -87,7 +85,7 @@ const App = () => (
               <Route 
                 path="/newsletter-editor" 
                 element={
-                  <BypassRoute fallbackPath="/signin">
+                  <BypassRoute fallbackPath="/">
                     <ProtectedRoute>
                       <PageTransition>
                         <NewsletterEditor />
@@ -97,8 +95,13 @@ const App = () => (
                 } 
               />
 
+              {/* Public routes - accessible to everyone */}
+              <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
+              <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
+              <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+              <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
               
-              {/* Catch all other routes - redirect to home */}
+              {/* Catch all other routes - redirect to waitlist */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

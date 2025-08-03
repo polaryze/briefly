@@ -176,7 +176,7 @@ export default function AdminDashboard() {
 
   const generateBypassLink = () => {
     const baseUrl = window.location.origin;
-    const bypassUrl = `${baseUrl}/?admin=bypass`;
+    const bypassUrl = `${baseUrl}/home?admin=bypass`;
     setBypassLink(bypassUrl);
   };
 
@@ -327,6 +327,21 @@ export default function AdminDashboard() {
           >
             <ExternalLink className="w-4 h-4" />
             <span>Generate Homepage Bypass</span>
+          </Button>
+          
+          <Button 
+            onClick={() => {
+              const baseUrl = window.location.origin;
+              const homepageBypass = `${baseUrl}/home?admin=bypass`;
+              navigator.clipboard.writeText(homepageBypass);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            variant="outline" 
+            className="flex items-center space-x-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Copy Homepage Bypass</span>
           </Button>
           
           <Button 
