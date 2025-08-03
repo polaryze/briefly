@@ -143,7 +143,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const response = await fetch(`/api/admin/subscriber/${encodeURIComponent(email)}`, {
+      const response = await fetch(`/api/admin/delete-subscriber?email=${encodeURIComponent(email)}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -151,7 +151,8 @@ export default function AdminDashboard() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete subscriber');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete subscriber');
       }
 
       // Refresh dashboard data
