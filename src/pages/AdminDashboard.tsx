@@ -70,17 +70,20 @@ export default function AdminDashboard() {
       });
 
       const data = await response.json();
+      console.log('Login response:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
       }
 
+      console.log('Setting token:', data.token);
       setToken(data.token);
       setIsLoggedIn(true);
       localStorage.setItem('adminToken', data.token);
       fetchDashboardData(data.token);
 
     } catch (error) {
+      console.error('Login error:', error);
       setError(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
@@ -143,6 +146,9 @@ export default function AdminDashboard() {
     }
 
     try {
+      console.log('Attempting to delete:', email);
+      console.log('Using token:', token);
+      
       const response = await fetch(`/api/admin/delete-subscriber?email=${encodeURIComponent(email)}`, {
         method: 'DELETE',
         headers: {
@@ -150,15 +156,22 @@ export default function AdminDashboard() {
         },
       });
 
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete subscriber');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Delete error:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to delete subscriber`);
       }
+
+      const result = await response.json();
+      console.log('Delete success:', result);
 
       // Refresh dashboard data
       fetchDashboardData(token);
     } catch (error) {
-      setError('Failed to delete subscriber');
+      console.error('Delete failed:', error);
+      setError(`Failed to delete subscriber: ${error.message}`);
     }
   };
 
