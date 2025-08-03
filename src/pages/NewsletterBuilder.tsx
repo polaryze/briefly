@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight, Shield } from "lucide-react";
 import AINewsletterRenderer from "@/components/AINewsletterRenderer";
 import { GmailSender } from "@/components/GmailSender";
 import Loader from "@/components/Loader";
@@ -1310,6 +1310,8 @@ export default function NewsletterBuilder() {
   const navigate = useNavigate();
   const smoothNavigate = useSmoothNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const adminBypass = searchParams.get('admin');
   
   // Simple cache to avoid re-processing
   const [dataCache, setDataCache] = useState<{[key: string]: any}>({});
@@ -2711,6 +2713,19 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
           </div>
           
           <Card className="max-w-2xl w-full p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-xl transition-all duration-500 ease-in-out transform animate-in fade-in slide-in-from-bottom-4 hover:shadow-2xl">
+            {/* Admin Bypass Indicator */}
+            {adminBypass === 'bypass' && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-center gap-2 text-blue-800">
+                  <Shield className="w-4 h-4" />
+                  <span className="text-sm font-medium">Admin Bypass Active</span>
+                </div>
+                <p className="text-xs text-blue-600 text-center mt-1">
+                  Direct access granted via admin dashboard
+                </p>
+              </div>
+            )}
+            
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900 text-center">Build Your Weekly Newsletter</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
               <div>

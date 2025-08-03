@@ -12,6 +12,7 @@ import SignIn from "./pages/SignIn";
 import Pricing from "./pages/Pricing";
 import Support from "./pages/Support";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BypassRoute from "./components/BypassRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PageTransition from "./components/PageTransition";
 
@@ -59,15 +60,17 @@ const App = () => (
               {/* Admin route - no Auth0 protection, uses custom admin auth */}
               <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
               
-              {/* Protected routes - require authentication */}
+              {/* Protected routes - require authentication or admin bypass */}
               <Route 
                 path="/newsletter-builder" 
                 element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <NewsletterBuilder />
-                    </PageTransition>
-                  </ProtectedRoute>
+                  <BypassRoute fallbackPath="/signin">
+                    <ProtectedRoute>
+                      <PageTransition>
+                        <NewsletterBuilder />
+                      </PageTransition>
+                    </ProtectedRoute>
+                  </BypassRoute>
                 } 
               />
               <Route 

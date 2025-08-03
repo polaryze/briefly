@@ -13,7 +13,10 @@ import {
   EyeOff,
   LogOut,
   Shield,
-  Mail
+  Mail,
+  ExternalLink,
+  Copy,
+  Check
 } from "lucide-react";
 
 interface DashboardStats {
@@ -44,6 +47,8 @@ export default function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
   const [showPasswords, setShowPasswords] = useState(false);
+  const [bypassLink, setBypassLink] = useState("");
+  const [copied, setCopied] = useState(false);
 
   // Check if already logged in
   useEffect(() => {
@@ -169,6 +174,26 @@ export default function AdminDashboard() {
     localStorage.removeItem('adminToken');
   };
 
+  const generateBypassLink = () => {
+    const baseUrl = window.location.origin;
+    const bypassUrl = `${baseUrl}/newsletter-builder?admin=bypass`;
+    setBypassLink(bypassUrl);
+  };
+
+  const copyBypassLink = async () => {
+    try {
+      await navigator.clipboard.writeText(bypassLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+    }
+  };
+
+  const openBypassLink = () => {
+    window.open(bypassLink, '_blank');
+  };
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -289,12 +314,77 @@ export default function AdminDashboard() {
         </div>
 
         {/* Actions */}
-        <div className="mb-8">
+        <div className="mb-8 flex flex-wrap gap-4">
           <Button onClick={handleExport} className="flex items-center space-x-2">
             <Download className="w-4 h-4" />
             <span>Export CSV</span>
           </Button>
+          
+          <Button 
+            onClick={generateBypassLink} 
+            variant="outline" 
+            className="flex items-center space-x-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Generate Bypass Link</span>
+          </Button>
         </div>
+
+        {/* Bypass Link Section */}
+        {bypassLink && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="w-5 h-5" />
+                <span>Admin Bypass Access</span>
+              </CardTitle>
+              <CardDescription>
+                Direct access link to bypass the waitlist and access the newsletter builder
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Input 
+                    value={bypassLink} 
+                    readOnly 
+                    className="flex-1"
+                    placeholder="Bypass link will appear here..."
+                  />
+                  <Button 
+                    onClick={copyBypassLink} 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center space-x-2"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={openBypassLink} 
+                    className="flex items-center space-x-2"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>Open</span>
+                  </Button>
+                </div>
+                <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                  <p className="font-medium mb-1">⚠️ Security Note:</p>
+                  <p>This bypass link provides direct access to the newsletter builder. Keep this link secure and only share with authorized personnel.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recent Subscribers */}
         <Card>
