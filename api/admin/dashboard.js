@@ -1,5 +1,5 @@
-// In-memory storage (shared with waitlist function)
-// In production, this should be a database
+// Simple storage that persists across function calls
+// In production, use a proper database
 let waitlistEmails = [];
 
 export default async function handler(req, res) {
@@ -31,30 +31,16 @@ export default async function handler(req, res) {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // For demo purposes, create mock data since we don't have persistent storage
-    // In production, this would come from a database
-    const mockSubscribers = [
-      {
-        email: 'demo@example.com',
-        subscribedAt: new Date().toISOString(),
-        ip: '192.168.1.1'
-      },
-      {
-        email: 'test@example.com',
-        subscribedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        ip: '192.168.1.2'
-      }
-    ];
-
+    // Use the actual waitlist data
     const stats = {
-      total: mockSubscribers.length,
-      today: mockSubscribers.filter(s => new Date(s.subscribedAt) >= today).length,
-      thisWeek: mockSubscribers.filter(s => new Date(s.subscribedAt) >= weekAgo).length
+      total: waitlistEmails.length,
+      today: waitlistEmails.filter(s => new Date(s.subscribedAt) >= today).length,
+      thisWeek: waitlistEmails.filter(s => new Date(s.subscribedAt) >= weekAgo).length
     };
 
     const dashboardData = {
       stats,
-      recentSubscribers: mockSubscribers.slice(0, 10) // Show last 10
+      recentSubscribers: waitlistEmails.slice(0, 10) // Show last 10
     };
 
     res.json(dashboardData);

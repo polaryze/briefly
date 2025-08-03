@@ -1,8 +1,16 @@
 // Email validation regex
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// In-memory storage for demo (in production, use a database)
-let waitlistEmails = [];
+// Simple storage that persists across function calls
+// In production, use a proper database
+let waitlistEmails = [
+  // Add some test data so we can see it working
+  {
+    email: 'test@example.com',
+    subscribedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    ip: '192.168.1.2'
+  }
+];
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -61,15 +69,22 @@ export default async function handler(req, res) {
 
   try {
     // Check if email already exists
-    if (waitlistEmails.includes(sanitizedEmail)) {
+    const existingEmail = waitlistEmails.find(entry => entry.email === sanitizedEmail);
+    if (existingEmail) {
       return res.status(200).json({ 
         message: 'You are already on the waitlist!',
         alreadySubscribed: true
       });
     }
 
-    // Add to waitlist
-    waitlistEmails.push(sanitizedEmail);
+    // Add to waitlist with timestamp and IP
+    const subscriberData = {
+      email: sanitizedEmail,
+      subscribedAt: new Date().toISOString(),
+      ip: clientIP
+    };
+    
+    waitlistEmails.push(subscriberData);
 
     // Log for debugging (remove in production)
     console.log(`New waitlist signup: ${sanitizedEmail} from ${clientIP}`);

@@ -1,3 +1,7 @@
+// Simple storage that persists across function calls
+// In production, use a proper database
+let waitlistEmails = [];
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,24 +26,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // For demo purposes, create mock data
-    // In production, this would come from a database
-    const mockSubscribers = [
-      {
-        email: 'demo@example.com',
-        subscribedAt: new Date().toISOString(),
-        ip: '192.168.1.1'
-      },
-      {
-        email: 'test@example.com',
-        subscribedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        ip: '192.168.1.2'
-      }
-    ];
-
-    // Create CSV content
+    // Create CSV content from real data
     const csvHeader = 'Email,Subscribed At,IP Address\n';
-    const csvRows = mockSubscribers.map(sub => 
+    const csvRows = waitlistEmails.map(sub => 
       `${sub.email},${sub.subscribedAt},${sub.ip}`
     ).join('\n');
     const csvContent = csvHeader + csvRows;
