@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Play, ExternalLink, Edit } from 'lucide-react';
 import { logger } from '@/lib/logger';
@@ -52,6 +52,7 @@ const SafeHTMLRenderer: React.FC<{ html: string }> = ({ html }) => {
 
 const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterData, posts, onBackToBuilder }) => {
   const navigate = useNavigate();
+  const [sanitizedHTML, setSanitizedHTML] = useState<string | null>(null);
   
   const handleBackToGenerator = () => {
     logger.info('User clicked back to generator');
@@ -90,11 +91,31 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
       hasCss: !!cssToApply
     });
     
-    // Debug logging
-    console.log('AINewsletterRenderer received content:', contentToRender);
-    console.log('AINewsletterRenderer received CSS:', cssToApply);
-    console.log('Content length:', contentToRender.length);
-    console.log('Content type:', typeof contentToRender);
+    useEffect(() => {
+      if (contentToRender && cssToApply) {
+        let processedContent = contentToRender;
+        
+        // Check if the content contains complete HTML structure
+        if (processedContent.includes('<!DOCTYPE html>') || processedContent.includes('<html')) {
+          // Extract body content from complete HTML
+          const bodyMatch = processedContent.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+          if (bodyMatch) {
+            processedContent = bodyMatch[1];
+          }
+        }
+
+        // Apply CSS to the content
+        const finalHtmlContent = `
+          <style>
+            ${cssToApply}
+          </style>
+          ${processedContent}
+        `;
+
+        const cleanHtmlContent = sanitizeHTML(finalHtmlContent);
+        setSanitizedHTML(cleanHtmlContent);
+      }
+    }, [contentToRender, cssToApply]);
     
     // Check if the content contains complete HTML structure
     const hasCompleteHtml = contentToRender.includes('<html') && contentToRender.includes('</html>');

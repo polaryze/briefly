@@ -139,13 +139,6 @@ export default function IndexNew() {
 
       // Success
       setIsSubmitted(true);
-      
-      // Log success (optional - for analytics)
-      if (data.alreadySubscribed) {
-        console.log('User already subscribed to waitlist');
-      } else {
-        console.log('New user subscribed to waitlist');
-      }
 
     } catch (error) {
       setEmailError(error.message || "Something went wrong. Please try again.");

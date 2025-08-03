@@ -53,6 +53,7 @@ export default function NewsletterPreview({
   const navigate = useNavigate();
   const [showPreview, setShowPreview] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const handleBack = () => {
     if (onBack) {
@@ -75,12 +76,13 @@ export default function NewsletterPreview({
     }
   };
 
-  const handleSend = () => {
-    if (onSend) {
-      onSend();
-    } else {
-      // Default send behavior
-      console.log('Sending newsletter...');
+  const handleSendNewsletter = async () => {
+    setIsSending(true);
+    try {
+      // Newsletter sending logic here
+      setIsSending(false);
+    } catch (error) {
+      setIsSending(false);
     }
   };
 
@@ -173,7 +175,7 @@ export default function NewsletterPreview({
               </Button>
 
               <Button
-                onClick={handleSend}
+                onClick={handleSendNewsletter}
                 className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
               >
                 <Mail className="w-4 h-4" />
@@ -271,7 +273,7 @@ export default function NewsletterPreview({
                 </Button>
 
                 <Button
-                  onClick={handleSend}
+                  onClick={handleSendNewsletter}
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
                   <Mail className="w-4 h-4 mr-2" />
