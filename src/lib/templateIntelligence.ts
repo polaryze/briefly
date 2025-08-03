@@ -292,8 +292,7 @@ Object.keys(TEMPLATE_PROFILES).forEach(templateId => {
   profile.editableElements = profile.sections.flatMap(section => section.elements);
 });
 
-// Debug: Log available template profiles
-console.log('🎨 Template Intelligence loaded profiles:', Object.keys(TEMPLATE_PROFILES));
+// Template profiles loaded
 
 // Smart prompt generation based on template context
 export function generateTemplatePrompt(
@@ -457,14 +456,11 @@ export function analyzeEditIntent(userRequest: string, templateId: string): {
   confidence: number;
   editType: string;
 } {
-  console.log('🔍 Analyzing edit intent for templateId:', templateId);
-  console.log('🔍 Available template profiles:', Object.keys(TEMPLATE_PROFILES));
+
   
   const profile = TEMPLATE_PROFILES[templateId];
   
-  if (!profile) {
-    console.error('❌ Template profile not found for ID:', templateId);
-    console.log('Available profiles:', Object.keys(TEMPLATE_PROFILES));
+      if (!profile) {
     
     // Return a fallback response
     return {
@@ -474,7 +470,7 @@ export function analyzeEditIntent(userRequest: string, templateId: string): {
     };
   }
   
-  console.log('✅ Found template profile:', profile.name);
+  
   const request = userRequest.toLowerCase();
   
   // Check for common edit patterns
@@ -488,7 +484,7 @@ export function analyzeEditIntent(userRequest: string, templateId: string): {
         )
       );
       
-      console.log('🎯 Matched edit pattern:', pattern);
+      
       return {
         suggestedElements,
         confidence: 0.9,
@@ -504,7 +500,7 @@ export function analyzeEditIntent(userRequest: string, templateId: string): {
     request.includes(el.type)
   );
   
-  console.log('📝 Using semantic matching, found elements:', suggestedElements.length);
+  
   return {
     suggestedElements,
     confidence: suggestedElements.length > 0 ? 0.6 : 0.3,

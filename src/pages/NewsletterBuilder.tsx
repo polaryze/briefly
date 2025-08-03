@@ -397,13 +397,7 @@ function filterPostsByTimeline(posts: any[], platform: string, timelineOptions?:
     filteredPosts = filteredPosts.slice(0, options.postLimit);
   }
 
-  console.log(`📊 Timeline filtering for ${platform}:`, {
-    originalCount: posts.length,
-    filteredCount: filteredPosts.length,
-    timeRange: options.timeRange,
-    postLimit: options.postLimit,
-    enabled: options.enabled
-  });
+
 
   return filteredPosts;
 }
@@ -413,7 +407,6 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
   // Simple cache to avoid re-processing the same data
   const cacheKey = JSON.stringify({ selected, inputs, timelineOptions });
   if ((processAllPlatforms as any).cache && (processAllPlatforms as any).cache[cacheKey]) {
-    console.log('🚀 Using cached data for platforms');
     return (processAllPlatforms as any).cache[cacheKey];
   }
   
@@ -427,20 +420,18 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
     (processAllPlatforms as any).cache = {};
   }
   
-  const platformProcessors = {
-    twitter: async (input: string) => {
-      try {
-        console.log('Processing X input:', input);
-        const raw = await fetchXData(input);
-        
-        if (raw && Array.isArray(raw)) {
-          // Filter posts more carefully - check for non-empty text and valid dates
-          const posts = raw.filter(post => {
-            const hasText = post.text && post.text.trim().length > 0;
-            const hasDate = post.created_at && post.created_at !== 'Invalid Date';
-            return hasText && hasDate;
-          });
-          console.log('X filtered posts:', posts.length);
+        const platformProcessors = {
+        twitter: async (input: string) => {
+          try {
+            const raw = await fetchXData(input);
+            
+            if (raw && Array.isArray(raw)) {
+              // Filter posts more carefully - check for non-empty text and valid dates
+              const posts = raw.filter(post => {
+                const hasText = post.text && post.text.trim().length > 0;
+                const hasDate = post.created_at && post.created_at !== 'Invalid Date';
+                return hasText && hasDate;
+              });
           
           const sortedPosts = posts.sort((a, b) => new Date(b.posted).getTime() - new Date(a.posted).getTime());
           
@@ -451,7 +442,6 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.twitter?.postLimit || 3);
           
           // AI Summarization for Twitter posts (optimized)
-          console.log('🤖 Starting Twitter AI summarization...');
           const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'Twitter');
           tempData.twitter = summarizedPosts;
           
@@ -2462,6 +2452,54 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
       console.log(`📋 Template ${index + 1}:`, template.id, template.name, template.htmlPath);
     });
   }, []);
+
+  // AI summarization logic
+  const processAISummarization = async (platform: string, posts: any[]) => {
+    if (!posts || posts.length === 0) return posts;
+
+    const totalPosts = posts.length;
+    const totalLength = posts.reduce((sum, post) => sum + (post.text?.length || 0), 0);
+    const averagePostLength = totalLength / totalPosts;
+
+    // Skip AI summarization if content is too short or too long
+    if (totalPosts > 10) {
+      return posts.slice(0, 10);
+    }
+
+    if (averagePostLength < 50) {
+      return posts;
+    }
+
+    if (posts.length === 0) {
+      return posts;
+    }
+
+    try {
+      const response = await fetch('/api/openai/summarize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platform,
+          posts: posts.slice(0, 5), // Limit to 5 posts for summarization
+          maxSummaries: 3
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to summarize ${platform} posts`);
+      }
+
+      const data = await response.json();
+      const finalPosts = data.summaries || posts;
+
+      return finalPosts;
+    } catch (error) {
+      console.error(`Error summarizing ${platform} posts:`, error);
+      return posts;
+    }
+  };
 
   return (
     <div className="h-screen sm:min-h-screen bg-white relative page-transition overflow-hidden">

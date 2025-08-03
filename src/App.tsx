@@ -14,7 +14,7 @@ import Support from "./pages/Support";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PageTransition from "./components/PageTransition";
-import DebugSocialAPIs from './pages/DebugSocialAPIs';
+
 import NewsletterEditor from './pages/NewsletterEditor';
 import AdminDashboard from './pages/AdminDashboard';
 import Loader from "./components/Loader";
@@ -80,16 +80,7 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
-              <Route 
-                path="/debug-social-apis" 
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <DebugSocialAPIs />
-                    </PageTransition>
-                  </ProtectedRoute>
-                } 
-              />
+
               
               {/* Catch all other routes - redirect to home */}
               <Route path="*" element={<Navigate to="/" replace />} />
