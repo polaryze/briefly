@@ -54,8 +54,17 @@ const App = () => (
               {/* Default route - shows waitlist to everyone */}
               <Route path="/" element={<PageTransition><Waitlist /></PageTransition>} />
               
-              {/* Admin route - no Auth0 protection, uses custom admin auth */}
-              <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
+              {/* Admin route - temporarily locked behind admin bypass */}
+              <Route 
+                path="/admin" 
+                element={
+                  <BypassRoute fallbackPath="/">
+                    <PageTransition>
+                      <AdminDashboard />
+                    </PageTransition>
+                  </BypassRoute>
+                } 
+              />
               
               {/* Locked routes - only accessible via admin bypass */}
               <Route 
@@ -98,8 +107,26 @@ const App = () => (
               {/* Public routes - accessible to everyone */}
               <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
               <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
-              <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
-              <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+              <Route 
+                path="/pricing" 
+                element={
+                  <BypassRoute fallbackPath="/">
+                    <PageTransition>
+                      <Pricing />
+                    </PageTransition>
+                  </BypassRoute>
+                } 
+              />
+              <Route 
+                path="/support" 
+                element={
+                  <BypassRoute fallbackPath="/">
+                    <PageTransition>
+                      <Support />
+                    </PageTransition>
+                  </BypassRoute>
+                } 
+              />
               
               {/* Catch all other routes - redirect to waitlist */}
               <Route path="*" element={<Navigate to="/" replace />} />
