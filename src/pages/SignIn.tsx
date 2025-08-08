@@ -12,6 +12,14 @@ export default function SignInPage() {
   const auth0Domain = import.meta.env.VITE_AUTH0_DOMAIN;
   const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
   const isAuth0Configured = auth0Domain && auth0ClientId;
+  
+  // Debug logging for production
+  console.log('🔐 Auth0 Debug Info:', {
+    domain: auth0Domain ? '✅ Set' : '❌ Missing',
+    clientId: auth0ClientId ? '✅ Set' : '❌ Missing',
+    fullDomain: auth0Domain,
+    fullClientId: auth0ClientId?.substring(0, 10) + '...' // Show first 10 chars only
+  });
 
   useEffect(() => {
     // If already authenticated, redirect to homepage
