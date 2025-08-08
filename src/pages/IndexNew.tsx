@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Shield, LogIn, Wand2, DollarSign, HelpCircle } from 'lucide-react';
+import { Shield, LogIn, Wand2, DollarSign, HelpCircle, User } from 'lucide-react';
+import { useAuth0 } from '@auth0/auth0-react';
 import StyledButton from '../components/StyledButton';
 
 const IndexNew = () => {
   const [searchParams] = useSearchParams();
   const adminBypass = searchParams.get('admin');
+  const { isAuthenticated, user, logout } = useAuth0();
   
   const [text, setText] = useState('');
   const fullText = 'Newsletters reimagined';
@@ -157,8 +159,33 @@ const IndexNew = () => {
     window.location.href = '/signin';
   };
 
+  const handleSignOut = () => {
+    logout({ 
+      logoutParams: { 
+        returnTo: window.location.origin 
+      }
+    });
+  };
+
   const buttons = [
-    { id: 'auth', icon: <LogIn className="w-5 h-5" />, delay: 100, size: 'small', onClick: handleSignIn },
+    { 
+      id: 'auth', 
+      icon: isAuthenticated && user?.picture ? (
+        <img 
+          src={user.picture} 
+          alt={user.name || user.email || 'User'}
+          className="w-5 h-5 rounded-full object-cover"
+        />
+      ) : isAuthenticated ? (
+        <User className="w-5 h-5" />
+      ) : (
+        <LogIn className="w-5 h-5" />
+      ), 
+      delay: 100, 
+      size: 'small', 
+      onClick: isAuthenticated ? handleSignOut : handleSignIn,
+      title: isAuthenticated ? `Signed in as ${user?.name || user?.email || 'User'} - Click to sign out` : 'Sign In'
+    },
     { id: 'generate', icon: <Wand2 className="w-6 h-6" />, delay: 150, size: 'large', onClick: handleGenerateNewsletter },
     { id: 'pricing', icon: <DollarSign className="w-5 h-5" />, delay: 200, size: 'small', onClick: () => window.location.href = '/pricing' },
     { id: 'support', icon: <HelpCircle className="w-5 h-5" />, delay: 250, size: 'small', onClick: () => window.location.href = '/support' }
@@ -221,6 +248,7 @@ const IndexNew = () => {
               {/* Top row */}
               <button
                 onClick={buttons[0].onClick}
+                title={buttons[0].title}
                 className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
@@ -319,6 +347,7 @@ const IndexNew = () => {
           <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
             <button
               onClick={buttons[0].onClick}
+              title={buttons[0].title}
               className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
@@ -328,7 +357,15 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              {buttons[0].icon}
+              {isAuthenticated && user?.picture ? (
+                <img 
+                  src={user.picture} 
+                  alt={user.name || user.email || 'User'}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                buttons[0].icon
+              )}
             </button>
             
             <button
