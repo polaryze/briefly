@@ -1,10 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
 
-export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://usebriefly.io',
+  'https://www.usebriefly.io',
+];
+
+function setCors(req, res) {
+  const origin = req.headers.origin;
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[3];
+  res.setHeader('Access-Control-Allow-Origin', allowed);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+export default async function handler(req, res) {
+  setCors(req, res);
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
@@ -17,10 +31,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Simple auth check (in production, use proper JWT validation)
+  // JWT validation
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
+  }
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) return res.status(500).json({ error: 'Server not configured securely' });
+    jwt.verify(authHeader.substring(7), jwtSecret);
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 
   const { email } = req.query;
