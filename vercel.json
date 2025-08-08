@@ -2,44 +2,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "functions": {
-    "api/waitlist/join.js": {
-      "maxDuration": 10
-    },
-    "api/admin/login.js": {
-      "maxDuration": 10
-    },
-    "api/admin/dashboard.js": {
-      "maxDuration": 10
-    },
-    "api/admin/export.js": {
-      "maxDuration": 10
-    },
-    "api/admin/delete-subscriber.js": {
-      "maxDuration": 10
-    }
-  },
   "rewrites": [
-    {
-      "source": "/api/waitlist/join",
-      "destination": "/api/waitlist/join.js"
-    },
-    {
-      "source": "/api/admin/login",
-      "destination": "/api/admin/login.js"
-    },
-    {
-      "source": "/api/admin/dashboard",
-      "destination": "/api/admin/dashboard.js"
-    },
-    {
-      "source": "/api/admin/export",
-      "destination": "/api/admin/export.js"
-    },
-    {
-      "source": "/api/admin/delete-subscriber",
-      "destination": "/api/admin/delete-subscriber.js"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
