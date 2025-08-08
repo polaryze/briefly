@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Briefly Logo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        .logo-container {
+            text-align: center;
+            max-width: 90vw;
+        }
+        
+        .logo-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px auto;
+        }
+        
+        .logo-info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        
+        .download-link:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/img/blogokasd.ico" alt="Briefly Logo" class="logo-image">
+        
+        <div class="logo-info">
+            <h2>Briefly Logo</h2>
+            <p>File: <code>img/blogokasd.ico</code></p>
+            <a href="/img/blogokasd.ico" download="briefly-logo.ico" class="download-link">
+                Download Logo
+            </a>
+        </div>
+    </div>
+</body>
+</html>
