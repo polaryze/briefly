@@ -61,7 +61,7 @@ const App = () => (
               <Route 
                 path="/home" 
                 element={
-                  <BypassRoute fallbackPath="/" requireAuth={false}>
+                  <BypassRoute fallbackPath="/">
                     <PageTransition>
                       <IndexNew />
                     </PageTransition>
