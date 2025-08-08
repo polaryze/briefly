@@ -22,6 +22,17 @@ import Loader from "./components/Loader";
 
 const queryClient = new QueryClient();
 
+// Check Auth0 environment variables
+const auth0Domain = import.meta.env.VITE_AUTH0_DOMAIN;
+const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+
+if (!auth0Domain || !auth0ClientId) {
+  console.error('🔐 Auth0 Configuration Missing:');
+  console.error(`   VITE_AUTH0_DOMAIN: ${auth0Domain ? '✅ Set' : '❌ Missing'}`);
+  console.error(`   VITE_AUTH0_CLIENT_ID: ${auth0ClientId ? '✅ Set' : '❌ Missing'}`);
+  console.error('   📖 See AUTH0_SETUP_GUIDE.md for setup instructions');
+}
+
 // Secure redirect component - only allows authenticated users
 const SecureRedirect = () => {
   return <Navigate to="/signin" replace />;
@@ -30,8 +41,8 @@ const SecureRedirect = () => {
 const App = () => (
   <ErrorBoundary>
     <Auth0Provider
-      domain={import.meta.env.VITE_AUTH0_DOMAIN || ''}
-      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID || ''}
+      domain={auth0Domain || ''}
+      clientId={auth0ClientId || ''}
       authorizationParams={{
         redirect_uri: `${window.location.origin}/auth/callback`,
         scope: 'openid profile email',

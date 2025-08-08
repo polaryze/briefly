@@ -7,6 +7,11 @@ import { Sparkles, Shield, ArrowRight } from 'lucide-react';
 export default function SignInPage() {
   const { loginWithRedirect, isAuthenticated, isLoading, error, user } = useAuth0();
   const navigate = useNavigate();
+  
+  // Check if Auth0 is properly configured
+  const auth0Domain = import.meta.env.VITE_AUTH0_DOMAIN;
+  const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+  const isAuth0Configured = auth0Domain && auth0ClientId;
 
   useEffect(() => {
     // If already authenticated, redirect to homepage
@@ -29,6 +34,52 @@ export default function SignInPage() {
     }
   };
 
+  // Show configuration error if Auth0 is not set up
+  if (!isAuth0Configured) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-gray-50 to-gray-100">
+        <div className="max-w-md w-full mx-4">
+          <div className="bg-white/80 backdrop-blur-sm border border-red-200 rounded-2xl p-8 shadow-xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Auth0 Setup Required</h1>
+              <p className="text-gray-600">Authentication is not configured yet.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h3 className="font-semibold text-red-800 mb-2">Missing Configuration:</h3>
+                <ul className="text-sm text-red-700 space-y-1">
+                  <li>• {auth0Domain ? '✅' : '❌'} VITE_AUTH0_DOMAIN</li>
+                  <li>• {auth0ClientId ? '✅' : '❌'} VITE_AUTH0_CLIENT_ID</li>
+                </ul>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-800 mb-2">Setup Instructions:</h3>
+                <ol className="text-sm text-blue-700 space-y-1">
+                  <li>1. Create an Auth0 account at auth0.com</li>
+                  <li>2. Create a Single Page Application</li>
+                  <li>3. Add environment variables to .env</li>
+                  <li>4. See AUTH0_SETUP_GUIDE.md for details</li>
+                </ol>
+              </div>
+              
+              <Button 
+                onClick={() => window.open('https://auth0.com/signup', '_blank')}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                Create Auth0 Account
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   // If already authenticated, show loading
   if (isAuthenticated && user) {
     return (
