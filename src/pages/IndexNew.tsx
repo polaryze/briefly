@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, LogIn, Wand2, DollarSign, HelpCircle } from 'lucide-react';
+import StyledButton from '../components/StyledButton';
 
 const IndexNew = () => {
   const [searchParams] = useSearchParams();
@@ -165,10 +166,10 @@ const IndexNew = () => {
   };
 
   const buttons = [
-    { id: 'auth', label: isLoggedIn ? 'Sign Out' : 'Sign In', delay: 100, size: 'small', onClick: handleSignIn },
-    { id: 'generate', label: 'Generate Newsletter', delay: 150, size: 'large', onClick: handleGenerateNewsletter },
-    { id: 'pricing', label: 'Pricing', delay: 200, size: 'small', onClick: () => window.location.href = '/pricing' },
-    { id: 'support', label: 'Support', delay: 250, size: 'small', onClick: () => window.location.href = '/support' }
+    { id: 'auth', icon: <LogIn className="w-4 h-4" />, delay: 100, size: 'small', onClick: handleSignIn },
+    { id: 'generate', icon: <Wand2 className="w-5 h-5" />, delay: 150, size: 'large', onClick: handleGenerateNewsletter },
+    { id: 'pricing', icon: <DollarSign className="w-4 h-4" />, delay: 200, size: 'small', onClick: () => window.location.href = '/pricing' },
+    { id: 'support', icon: <HelpCircle className="w-4 h-4" />, delay: 250, size: 'small', onClick: () => window.location.href = '/support' }
   ];
 
   return (
@@ -237,12 +238,11 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                {buttons[0].label}
+                {buttons[0].icon}
               </button>
               
-              <button
-                onClick={buttons[1].onClick}
-                className={`px-4 py-3 text-sm font-medium bg-gradient-to-r from-black to-gray-800 text-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg hover:border-gray-300 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+              <div
+                className={`flex items-center justify-center ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
@@ -251,8 +251,8 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                {buttons[1].label}
-              </button>
+                <StyledButton />
+              </div>
 
               {/* Bottom row */}
               <button
@@ -266,7 +266,7 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                {buttons[2].label}
+                {buttons[2].icon}
               </button>
               
               <button
@@ -280,7 +280,7 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                {buttons[3].label}
+                {buttons[3].icon}
               </button>
             </div>
           </div>
@@ -336,7 +336,7 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <span className="text-sm font-medium text-gray-800">Sign In</span>
+              {buttons[0].icon}
             </button>
             
             <button
@@ -350,7 +350,7 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <span className="text-sm font-medium">Generate</span>
+              {buttons[1].icon}
             </button>
 
             <button
@@ -364,7 +364,7 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <span className="text-sm font-medium text-gray-800">Pricing</span>
+              {buttons[2].icon}
             </button>
             
             <button
@@ -378,7 +378,7 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <span className="text-sm font-medium text-gray-800">Support</span>
+              {buttons[3].icon}
             </button>
           </div>
         </div>
