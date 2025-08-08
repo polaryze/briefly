@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Auth0Provider } from '@auth0/auth0-react';
 import IndexNew from "./pages/IndexNew";
-import Waitlist from "./pages/Waitlist";
 import NotFound from "./pages/NotFound";
 import NewsletterBuilder from "./pages/NewsletterBuilder";
 import AuthCallback from "./pages/AuthCallback";
@@ -22,11 +21,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import Loader from "./components/Loader";
 
 const queryClient = new QueryClient();
-
-// Waitlist redirect component - redirects all non-authenticated users to waitlist
-const WaitlistRedirect = () => {
-  return <Navigate to="/" replace />;
-};
 
 // Secure redirect component - only allows authenticated users
 const SecureRedirect = () => {
@@ -51,23 +45,14 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Default route - shows waitlist to everyone */}
-              <Route path="/" element={<PageTransition><Waitlist /></PageTransition>} />
+              {/* Default route - homepage */}
+              <Route path="/" element={<PageTransition><IndexNew /></PageTransition>} />
               
               {/* Admin route - accessible without bypass */}
               <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
               
-              {/* Locked routes - only accessible via admin bypass */}
-              <Route 
-                path="/home" 
-                element={
-                  <BypassRoute fallbackPath="/">
-                    <PageTransition>
-                      <IndexNew />
-                    </PageTransition>
-                  </BypassRoute>
-                } 
-              />
+              {/* Home route */}
+              <Route path="/home" element={<PageTransition><IndexNew /></PageTransition>} />
               
               {/* Protected routes - require authentication or admin bypass */}
               <Route 
@@ -98,26 +83,8 @@ const App = () => (
               {/* Public routes - accessible to everyone */}
               <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
               <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
-              <Route 
-                path="/pricing" 
-                element={
-                  <BypassRoute fallbackPath="/">
-                    <PageTransition>
-                      <Pricing />
-                    </PageTransition>
-                  </BypassRoute>
-                } 
-              />
-              <Route 
-                path="/support" 
-                element={
-                  <BypassRoute fallbackPath="/">
-                    <PageTransition>
-                      <Support />
-                    </PageTransition>
-                  </BypassRoute>
-                } 
-              />
+              <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+              <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
               
               {/* Catch all other routes - redirect to waitlist */}
               <Route path="*" element={<Navigate to="/" replace />} />

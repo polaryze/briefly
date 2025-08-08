@@ -50,15 +50,12 @@ export default function AdminDashboard() {
   const [bypassLink, setBypassLink] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Check if already logged in
-  useEffect(() => {
-    const savedToken = localStorage.getItem('adminToken');
-    if (savedToken) {
-      setToken(savedToken);
-      setIsLoggedIn(true);
-      fetchDashboardData(savedToken);
-    }
-  }, []);
+  // Admin removed — render not found
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-gray-600">Admin dashboard has been removed for launch.</p>
+    </div>
+  );
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -518,4 +515,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-} 
+}

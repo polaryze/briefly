@@ -150,19 +150,11 @@ const IndexNew = () => {
   }, [currentIndex, fullText, isTyping]);
 
   const handleGenerateNewsletter = () => {
-    if (adminBypass === 'bypass') {
-      window.location.href = '/newsletter-builder?admin=bypass';
-    } else {
-      window.location.href = '/newsletter-builder';
-    }
+    window.location.href = '/newsletter-builder';
   };
 
   const handleSignIn = () => {
-    if (adminBypass === 'bypass') {
-      window.location.href = '/newsletter-builder?admin=bypass';
-    } else {
-      window.location.href = '/signin';
-    }
+    window.location.href = '/signin';
   };
 
   const buttons = [
