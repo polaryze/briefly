@@ -7,7 +7,7 @@ import StyledButton from '../components/StyledButton';
 const IndexNew = () => {
   const [searchParams] = useSearchParams();
   const adminBypass = searchParams.get('admin');
-  const { isAuthenticated, user, logout } = useAuth0();
+  const { isAuthenticated, user, logout, loginWithRedirect } = useAuth0();
   
   const [text, setText] = useState('');
   const fullText = 'Newsletters reimagined';
@@ -155,8 +155,12 @@ const IndexNew = () => {
     window.location.href = '/newsletter-builder';
   };
 
-  const handleSignIn = () => {
-    window.location.href = '/signin';
+  const handleSignIn = async () => {
+    try {
+      await loginWithRedirect();
+    } catch (error) {
+      console.error('Sign-in error:', error);
+    }
   };
 
   const handleSignOut = () => {
