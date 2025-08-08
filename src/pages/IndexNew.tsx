@@ -166,10 +166,10 @@ const IndexNew = () => {
   };
 
   const buttons = [
-    { id: 'auth', icon: <LogIn className="w-4 h-4" />, delay: 100, size: 'small', onClick: handleSignIn },
-    { id: 'generate', icon: <Wand2 className="w-5 h-5" />, delay: 150, size: 'large', onClick: handleGenerateNewsletter },
-    { id: 'pricing', icon: <DollarSign className="w-4 h-4" />, delay: 200, size: 'small', onClick: () => window.location.href = '/pricing' },
-    { id: 'support', icon: <HelpCircle className="w-4 h-4" />, delay: 250, size: 'small', onClick: () => window.location.href = '/support' }
+    { id: 'auth', icon: <LogIn className="w-5 h-5" />, delay: 100, size: 'small', onClick: handleSignIn },
+    { id: 'generate', icon: <Wand2 className="w-6 h-6" />, delay: 150, size: 'large', onClick: handleGenerateNewsletter },
+    { id: 'pricing', icon: <DollarSign className="w-5 h-5" />, delay: 200, size: 'small', onClick: () => window.location.href = '/pricing' },
+    { id: 'support', icon: <HelpCircle className="w-5 h-5" />, delay: 250, size: 'small', onClick: () => window.location.href = '/support' }
   ];
 
   return (
@@ -229,7 +229,7 @@ const IndexNew = () => {
               {/* Top row */}
               <button
                 onClick={buttons[0].onClick}
-                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
@@ -257,7 +257,7 @@ const IndexNew = () => {
               {/* Bottom row */}
               <button
                 onClick={buttons[2].onClick}
-                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
@@ -271,7 +271,7 @@ const IndexNew = () => {
               
               <button
                 onClick={buttons[3].onClick}
-                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 ${
+                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
