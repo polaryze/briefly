@@ -54,17 +54,8 @@ const App = () => (
               {/* Default route - shows waitlist to everyone */}
               <Route path="/" element={<PageTransition><Waitlist /></PageTransition>} />
               
-              {/* Admin route - temporarily locked behind admin bypass */}
-              <Route 
-                path="/admin" 
-                element={
-                  <BypassRoute fallbackPath="/">
-                    <PageTransition>
-                      <AdminDashboard />
-                    </PageTransition>
-                  </BypassRoute>
-                } 
-              />
+              {/* Admin route - accessible without bypass */}
+              <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
               
               {/* Locked routes - only accessible via admin bypass */}
               <Route 
