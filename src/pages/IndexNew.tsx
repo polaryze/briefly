@@ -173,7 +173,7 @@ const IndexNew = () => {
               Briefly
             </div>
             <div 
-              className={`text-2xl xl:text-4xl font-light text-gray-600 mb-8 transition-all duration-1000 ${
+              className={`text-lg xl:text-2xl font-light text-gray-600 mb-8 transition-all duration-1000 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -184,7 +184,7 @@ const IndexNew = () => {
             >
               {text}
               <span 
-                className="inline-block w-0.5 text-2xl xl:text-4xl font-light ml-1"
+                className="inline-block w-0.5 text-lg xl:text-2xl font-light ml-1"
                 style={{
                   animation: 'blink 1s infinite'
                 }}
@@ -225,7 +225,7 @@ const IndexNew = () => {
               Briefly
             </div>
             <div 
-              className={`text-lg sm:text-xl font-light text-gray-600 transition-all duration-1000 ${
+              className={`text-base sm:text-lg font-light text-gray-600 transition-all duration-1000 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -236,7 +236,7 @@ const IndexNew = () => {
             >
               {text}
               <span 
-                className="inline-block w-0.5 text-lg sm:text-xl font-light ml-1"
+                className="inline-block w-0.5 text-base sm:text-lg font-light ml-1"
                 style={{
                   animation: 'blink 1s infinite'
                 }}
