@@ -217,13 +217,11 @@ const IndexNew = () => {
             </div>
           </div>
 
-          {/* Right side - single button */}
+          {/* Right side - StyledButton */}
           <div className="relative z-10">
             <div className="flex items-center justify-center">
-              <button
-                onClick={buttons[0].onClick}
-                title={buttons[0].title}
-                className={`px-8 py-4 text-lg font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center gap-3 ${
+              <div
+                className={`${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
@@ -232,9 +230,8 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                {buttons[0].icon}
-                {buttons[0].title}
-              </button>
+                <StyledButton />
+              </div>
             </div>
           </div>
         </div>
@@ -278,10 +275,8 @@ const IndexNew = () => {
 
           {/* Bottom circular buttons - moved up to avoid iOS search bar */}
           <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center justify-center z-10">
-            <button
-              onClick={buttons[0].onClick}
-              title={buttons[0].title}
-              className={`group flex items-center justify-center px-6 py-3 bg-gradient-to-r from-black to-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 ${
+            <div
+              className={`${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -290,11 +285,8 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              <span className="flex items-center gap-2">
-                {buttons[0].icon}
-                <span className="text-sm font-medium">{buttons[0].title}</span>
-              </span>
-            </button>
+              <StyledButton />
+            </div>
           </div>
         </div>
       </div>
