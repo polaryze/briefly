@@ -8,6 +8,10 @@ declare global {
   interface Window {
     DeviceOrientationEvent: typeof DeviceOrientationEvent;
   }
+  
+  interface DeviceOrientationEvent {
+    requestPermission?: () => Promise<'granted' | 'denied'>;
+  }
 }
 
 const IndexNew = () => {
@@ -46,17 +50,35 @@ const IndexNew = () => {
       const y = event.gamma ? Math.max(-1, Math.min(1, event.gamma / 90)) : 0;
       const z = event.alpha ? Math.max(-1, Math.min(1, (event.alpha - 180) / 180)) : 0;
       
+      // Debug log to see if values are changing
+      console.log('Device orientation:', { x, y, z, raw: { beta: event.beta, gamma: event.gamma, alpha: event.alpha } });
+      
       setDeviceOrientation({ x, y, z });
+    };
+
+    // Request permission for device orientation (required on iOS)
+    const requestOrientationPermission = async () => {
+      if (typeof DeviceOrientationEvent !== 'undefined' && (DeviceOrientationEvent as any).requestPermission) {
+        try {
+          const permission = await (DeviceOrientationEvent as any).requestPermission();
+          if (permission === 'granted') {
+            window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+          }
+        } catch (error) {
+          console.log('Device orientation permission denied');
+        }
+      } else if (window.DeviceOrientationEvent) {
+        // For devices that don't require permission
+        window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+      }
     };
 
     // Add event listeners to document instead of window
     document.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('mousemove', handleMouseMove, { passive: true });
     
-    // Add device orientation listener (mobile only)
-    if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-    }
+    // Request orientation permission and add listener
+    requestOrientationPermission();
     
     return () => {
       document.removeEventListener('scroll', handleScroll);
@@ -238,85 +260,49 @@ const IndexNew = () => {
         <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen overflow-hidden">
           {/* Background Animation - Mobile Only */}
           <div className="absolute inset-0 pointer-events-none">
-            {/* Floating particles - reactive to device orientation */}
-            <div 
-              className="absolute w-2 h-2 bg-gray-800 rounded-full opacity-60"
-              style={{
-                top: `calc(25% + ${deviceOrientation.x * 20}px)`,
-                left: `calc(25% + ${deviceOrientation.y * 15}px)`,
-                transform: `translate3d(${deviceOrientation.x * 10}px, ${deviceOrientation.y * 8}px, ${deviceOrientation.z * 5}px)`
-              }}
-            ></div>
-            <div 
-              className="absolute w-1.5 h-1.5 bg-black rounded-full opacity-70"
-              style={{
-                top: `calc(33.33% + ${deviceOrientation.x * -15}px)`,
-                left: `calc(75% + ${deviceOrientation.y * -20}px)`,
-                transform: `translate3d(${deviceOrientation.x * -8}px, ${deviceOrientation.y * -12}px, ${deviceOrientation.z * 3}px)`
-              }}
-            ></div>
-            <div 
-              className="absolute w-1 h-1 bg-gray-600 rounded-full opacity-65"
-              style={{
-                top: `calc(66.67% + ${deviceOrientation.x * 25}px)`,
-                left: `calc(33.33% + ${deviceOrientation.y * 18}px)`,
-                transform: `translate3d(${deviceOrientation.x * 15}px, ${deviceOrientation.y * 10}px, ${deviceOrientation.z * 4}px)`
-              }}
-            ></div>
-            <div 
-              className="absolute w-2.5 h-2.5 bg-gray-900 rounded-full opacity-75"
-              style={{
-                top: `calc(75% + ${deviceOrientation.x * -18}px)`,
-                left: `calc(66.67% + ${deviceOrientation.y * -25}px)`,
-                transform: `translate3d(${deviceOrientation.x * -12}px, ${deviceOrientation.y * -15}px, ${deviceOrientation.z * 6}px)`
-              }}
-            ></div>
-            <div 
-              className="absolute w-1.5 h-1.5 bg-black rounded-full opacity-60"
-              style={{
-                top: `calc(50% + ${deviceOrientation.x * 22}px)`,
-                left: `calc(16.67% + ${deviceOrientation.y * 12}px)`,
-                transform: `translate3d(${deviceOrientation.x * 18}px, ${deviceOrientation.y * 6}px, ${deviceOrientation.z * 2}px)`
-              }}
-            ></div>
-            <div 
-              className="absolute w-1 h-1 bg-gray-700 rounded-full opacity-70"
-              style={{
-                top: `calc(66.67% + ${deviceOrientation.x * -20}px)`,
-                left: `calc(83.33% + ${deviceOrientation.y * -22}px)`,
-                transform: `translate3d(${deviceOrientation.x * -16}px, ${deviceOrientation.y * -18}px, ${deviceOrientation.z * 5}px)`
-              }}
-            ></div>
-            
-            {/* Subtle gradient orbs - also reactive */}
-            <div 
-              className="absolute w-32 h-32 bg-gradient-to-br from-gray-100 to-transparent rounded-full opacity-40"
-              style={{
-                top: `${deviceOrientation.x * 10}px`,
-                left: `${deviceOrientation.y * 8}px`,
-                transform: `scale(${1 + Math.abs(deviceOrientation.x) * 0.1})`
-              }}
-            ></div>
-            <div 
-              className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-gray-200 to-transparent rounded-full opacity-35"
-              style={{
-                transform: `scale(${1 + Math.abs(deviceOrientation.y) * 0.15}) translate(${deviceOrientation.x * 5}px, ${deviceOrientation.y * 3}px)`
-              }}
-            ></div>
-            
-            {/* Gentle wave lines - subtle orientation effect */}
-            <div 
-              className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50"
-              style={{
-                transform: `translateY(${deviceOrientation.x * 3}px) skewX(${deviceOrientation.y * 2}deg)`
-              }}
-            ></div>
-            <div 
-              className="absolute bottom-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent opacity-45"
-              style={{
-                transform: `translateY(${deviceOrientation.x * -2}px) skewX(${deviceOrientation.y * -1.5}deg)`
-              }}
-            ></div>
+            {/* Efficient particle system - 26 particles total */}
+            {(() => {
+              const particles = [];
+              const colors = ['bg-gray-800', 'bg-black', 'bg-gray-600', 'bg-gray-900', 'bg-gray-700'];
+              const sizes = ['w-1 h-1', 'w-1.5 h-1.5', 'w-2 h-2', 'w-2.5 h-2.5'];
+              const opacities = ['opacity-60', 'opacity-65', 'opacity-70', 'opacity-75'];
+              
+                            // Generate 26 particles with scattered positioning
+              for (let i = 0; i < 26; i++) {
+                // Use different prime numbers to create scattered distribution
+                const baseTop = (i * 7.3 + i * 13.7) % 100; // Scatter across screen height
+                const baseLeft = (i * 11.9 + i * 19.3) % 100; // Scatter across screen width
+                const color = colors[i % colors.length];
+                const size = sizes[i % sizes.length];
+                const opacity = opacities[i % opacities.length];
+                
+                // Create unique movement patterns for each particle
+                const moveX = (i % 2 === 0 ? 1 : -1) * (30 + (i % 3) * 10);
+                const moveY = (i % 3 === 0 ? 1 : -1) * (25 + (i % 4) * 8);
+                const transformX = (i % 2 === 0 ? 1 : -1) * (20 + (i % 5) * 5);
+                const transformY = (i % 3 === 0 ? 1 : -1) * (15 + (i % 3) * 5);
+                const transformZ = (i % 4 === 0 ? 1 : -1) * (10 + (i % 3) * 3);
+                
+                // Add floating animation with different delays and durations - slower and smoother
+                const animationDelay = (i * 0.5) % 4; // 0-4 seconds delay
+                const animationDuration = 8 + (i % 4) * 3; // 8-20 seconds duration
+                
+                particles.push(
+                  <div 
+                    key={i}
+                    className={`absolute ${size} ${color} rounded-full ${opacity} animate-float-dust`}
+                    style={{
+                      top: `calc(${baseTop}% + ${deviceOrientation.x * moveX}px)`,
+                      left: `calc(${baseLeft}% + ${deviceOrientation.y * moveY}px)`,
+                      transform: `translate3d(${deviceOrientation.x * transformX}px, ${deviceOrientation.y * transformY}px, ${deviceOrientation.z * transformZ}px)`,
+                      animationDelay: `${animationDelay}s`,
+                      animationDuration: `${animationDuration}s`
+                    }}
+                  ></div>
+                );
+              }
+              return particles;
+            })()}
           </div>
           
           {/* Center content with fade-in animation - moved up by 16px total */}
@@ -447,6 +433,31 @@ const IndexNew = () => {
           .animate-pulse-slower { animation: pulse-slower 8s ease-in-out infinite; }
           .animate-wave-1 { animation: wave-1 20s linear infinite; }
           .animate-wave-2 { animation: wave-2 25s linear infinite; }
+          
+          /* Floating dust animation - slower and smoother */
+          @keyframes float-dust {
+            0%, 100% { 
+              transform: translate(0, 0) scale(1);
+              opacity: 0.6;
+            }
+            25% { 
+              transform: translate(6px, -8px) scale(1.05);
+              opacity: 0.7;
+            }
+            50% { 
+              transform: translate(-4px, -12px) scale(0.95);
+              opacity: 0.65;
+            }
+            75% { 
+              transform: translate(8px, -6px) scale(1.02);
+              opacity: 0.7;
+            }
+          }
+          
+          .animate-float-dust { 
+            animation: float-dust 8s ease-in-out infinite;
+            will-change: transform, opacity;
+          }
         `
       }} />
     </div>
