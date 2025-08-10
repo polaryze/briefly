@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight, Shield } from "lucide-react";
 import AINewsletterRenderer from "@/components/AINewsletterRenderer";
-import { GmailSender } from "@/components/GmailSender";
 import Loader from "@/components/Loader";
 import { logger } from "@/lib/logger";
 import { validateSocialMediaUrl, validateRequired } from "@/lib/validation";
@@ -2675,19 +2674,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                     }}
                   />
                   
-                  {/* Gmail Sender Component */}
-                  <div className="p-4 border-t border-gray-200 bg-gray-50">
-                    <GmailSender 
-                      newsletterHtml={newsletter?.rawContent || ''}
-                      onSendComplete={(success) => {
-                        if (success) {
-                          console.log('✅ Newsletter sent successfully via Gmail');
-                        } else {
-                          console.log('❌ Failed to send newsletter via Gmail');
-                        }
-                      }}
-                    />
-                  </div>
+
                 </div>
               </div>
               

@@ -39,8 +39,5 @@ export const configManager = {
 
 // Environment variables for frontend (non-sensitive)
 export const frontendConfig = {
-  customDomain: import.meta.env.VITE_CUSTOM_DOMAIN || '',
-  auth0Domain: import.meta.env.VITE_AUTH0_DOMAIN || '',
-  auth0ClientId: import.meta.env.VITE_AUTH0_CLIENT_ID || '',
-  auth0Scope: import.meta.env.VITE_AUTH0_SCOPE || 'openid profile email'
+  customDomain: import.meta.env.VITE_CUSTOM_DOMAIN || ''
 }; 
