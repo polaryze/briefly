@@ -47,7 +47,7 @@ const StyledWrapper = styled.div`
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden;
+    /* Remove overflow: hidden to prevent cut-off */
   }
 
   /* ========== BUTTON ========== */
@@ -76,6 +76,7 @@ const StyledWrapper = styled.div`
     -ms-filter: blur(clamp(2px, 0.125em, 12px));
     overflow: visible;
     pointer-events: none;
+    z-index: 1;
   }
 
   /* Shadow */
@@ -183,7 +184,7 @@ const StyledWrapper = styled.div`
     left: calc(0% + var(--border-width) / 2);
     box-sizing: border-box;
     border-radius: 999px;
-    overflow: clip;
+    overflow: visible;
     background: linear-gradient(
       var(--angle-2),
       rgba(255, 255, 255, 0) 0%,
@@ -243,6 +244,7 @@ const StyledWrapper = styled.div`
       all var(--anim--hover-time) var(--anim--hover-ease),
       --angle-1 500ms ease;
     box-shadow: inset 0 0 0 calc(var(--border-width) / 2) rgba(255, 255, 255, 0.5);
+    overflow: visible;
   }
 
   .button:hover::after {

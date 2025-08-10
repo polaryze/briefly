@@ -58,18 +58,33 @@ const IndexNew = () => {
 
     // Request permission for device orientation (required on iOS)
     const requestOrientationPermission = async () => {
-      if (typeof DeviceOrientationEvent !== 'undefined' && (DeviceOrientationEvent as any).requestPermission) {
-        try {
+      try {
+        // Check if we're on iOS and need permission
+        if (typeof DeviceOrientationEvent !== 'undefined' && (DeviceOrientationEvent as any).requestPermission) {
+          console.log('Requesting device orientation permission...');
           const permission = await (DeviceOrientationEvent as any).requestPermission();
+          console.log('Permission result:', permission);
+          
           if (permission === 'granted') {
+            console.log('Permission granted, adding event listener');
             window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+          } else {
+            console.log('Permission denied');
           }
-        } catch (error) {
-          console.log('Device orientation permission denied');
+        } else {
+          // For devices that don't require permission
+          console.log('No permission required, adding event listener directly');
+          window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
         }
-      } else if (window.DeviceOrientationEvent) {
-        // For devices that don't require permission
-        window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+      } catch (error) {
+        console.error('Error requesting orientation permission:', error);
+        // Fallback: try to add listener anyway
+        try {
+          window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+          console.log('Added event listener as fallback');
+        } catch (fallbackError) {
+          console.error('Failed to add event listener:', fallbackError);
+        }
       }
     };
 
@@ -83,9 +98,8 @@ const IndexNew = () => {
     return () => {
       document.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousemove', handleMouseMove);
-      if (window.DeviceOrientationEvent) {
-        window.removeEventListener('deviceorientation', handleDeviceOrientation);
-      }
+      // Clean up device orientation listener
+      window.removeEventListener('deviceorientation', handleDeviceOrientation);
     };
   }, []);
 
@@ -277,11 +291,11 @@ const IndexNew = () => {
                 const opacity = opacities[i % opacities.length];
                 
                 // Create unique movement patterns for each particle
-                const moveX = (i % 2 === 0 ? 1 : -1) * (30 + (i % 3) * 10);
-                const moveY = (i % 3 === 0 ? 1 : -1) * (25 + (i % 4) * 8);
-                const transformX = (i % 2 === 0 ? 1 : -1) * (20 + (i % 5) * 5);
-                const transformY = (i % 3 === 0 ? 1 : -1) * (15 + (i % 3) * 5);
-                const transformZ = (i % 4 === 0 ? 1 : -1) * (10 + (i % 3) * 3);
+                const moveX = (i % 2 === 0 ? 1 : -1) * (60 + (i % 3) * 20);
+                const moveY = (i % 3 === 0 ? 1 : -1) * (50 + (i % 4) * 15);
+                const transformX = (i % 2 === 0 ? 1 : -1) * (40 + (i % 5) * 10);
+                const transformY = (i % 3 === 0 ? 1 : -1) * (30 + (i % 3) * 10);
+                const transformZ = (i % 4 === 0 ? 1 : -1) * (20 + (i % 3) * 6);
                 
                 // Add floating animation with different delays and durations - slower and smoother
                 const animationDelay = (i * 0.5) % 4; // 0-4 seconds delay
@@ -354,6 +368,20 @@ const IndexNew = () => {
             >
               <StyledButton />
             </div>
+          </div>
+
+          {/* Debug info for device orientation */}
+          <div className="absolute top-4 left-4 text-xs text-gray-500 z-20">
+            <div>Orientation: X: {deviceOrientation.x.toFixed(2)}, Y: {deviceOrientation.y.toFixed(2)}, Z: {deviceOrientation.z.toFixed(2)}</div>
+            <button 
+              onClick={() => {
+                console.log('Manual orientation test');
+                console.log('Current deviceOrientation state:', deviceOrientation);
+              }}
+              className="mt-1 px-2 py-1 bg-gray-200 rounded text-xs"
+            >
+              Test Orientation
+            </button>
           </div>
         </div>
       </div>
