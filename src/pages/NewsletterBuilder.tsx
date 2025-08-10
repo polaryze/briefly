@@ -1356,7 +1356,7 @@ export default function NewsletterBuilder() {
   
   // Newsletter generation state
   const [collectedData, setCollectedData] = useState<TempData>({});
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('newslettersample1');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('cleaned_newsletter');
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState('');
   const [showLoadingPage, setShowLoadingPage] = useState(false);
