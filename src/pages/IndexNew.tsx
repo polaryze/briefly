@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Shield, LogIn, Wand2, DollarSign, HelpCircle } from 'lucide-react';
+import { Shield, Wand2 } from 'lucide-react';
 import StyledButton from '../components/StyledButton';
 
 const IndexNew = () => {
@@ -157,36 +157,12 @@ const IndexNew = () => {
 
   const buttons = [
     {
-      id: 'auth',
-      icon: <LogIn className="w-5 h-5" />,
-      delay: 100,
-      size: 'small',
-      onClick: () => window.location.href = '/newsletter-builder',
-      title: 'Start Creating Newsletter'
-    },
-    {
       id: 'generate',
       icon: <Wand2 className="w-6 h-6" />,
       delay: 150,
       size: 'large',
       onClick: handleGenerateNewsletter,
       title: 'Generate Newsletter'
-    },
-    {
-      id: 'pricing',
-      icon: <DollarSign className="w-5 h-5" />,
-      delay: 200,
-      size: 'small',
-      onClick: () => window.location.href = '/pricing',
-      title: 'Pricing'
-    },
-    {
-      id: 'support',
-      icon: <HelpCircle className="w-5 h-5" />,
-      delay: 250,
-      size: 'small',
-      onClick: () => window.location.href = '/support',
-      title: 'Support'
     }
   ];
 
@@ -241,27 +217,13 @@ const IndexNew = () => {
             </div>
           </div>
 
-          {/* Right side bento grid */}
+          {/* Right side - single button */}
           <div className="relative z-10">
-            <div className="grid grid-cols-2 gap-4 w-80 h-80">
-              {/* Top row */}
+            <div className="flex items-center justify-center">
               <button
                 onClick={buttons[0].onClick}
                 title={buttons[0].title}
-                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                }`}
-                style={{
-                  animationDelay: '100ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                {buttons[0].icon}
-              </button>
-              
-              <div
-                className={`flex items-center justify-center ${
+                className={`px-8 py-4 text-lg font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center gap-3 ${
                   showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
                 }`}
                 style={{
@@ -270,36 +232,8 @@ const IndexNew = () => {
                   willChange: 'transform'
                 }}
               >
-                <StyledButton />
-              </div>
-
-              {/* Bottom row */}
-              <button
-                onClick={buttons[2].onClick}
-                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                }`}
-                style={{
-                  animationDelay: '200ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                {buttons[2].icon}
-              </button>
-              
-              <button
-                onClick={buttons[3].onClick}
-                className={`px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center ${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                }`}
-                style={{
-                  animationDelay: '250ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                {buttons[3].icon}
+                {buttons[0].icon}
+                {buttons[0].title}
               </button>
             </div>
           </div>
@@ -343,11 +277,11 @@ const IndexNew = () => {
           </div>
 
           {/* Bottom circular buttons - moved up to avoid iOS search bar */}
-          <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
+          <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 flex items-center justify-center z-10">
             <button
               onClick={buttons[0].onClick}
               title={buttons[0].title}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
+              className={`group flex items-center justify-center px-6 py-3 bg-gradient-to-r from-black to-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 ${
                 showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
@@ -356,49 +290,10 @@ const IndexNew = () => {
                 willChange: 'transform'
               }}
             >
-              {buttons[0].icon}
-            </button>
-            
-            <button
-              onClick={buttons[1].onClick}
-              className={`group flex items-center justify-center w-16 h-16 bg-gradient-to-r from-black to-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                animationDelay: '450ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              {buttons[1].icon}
-            </button>
-
-            <button
-              onClick={buttons[2].onClick}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                animationDelay: '500ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              {buttons[2].icon}
-            </button>
-            
-            <button
-              onClick={buttons[3].onClick}
-              className={`group flex items-center justify-center w-14 h-14 bg-white border border-gray-300 rounded-full shadow-md hover:shadow-lg hover:border-gray-400 transition-all duration-300 transform hover:scale-105 ${
-                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}
-              style={{
-                animationDelay: '550ms',
-                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                willChange: 'transform'
-              }}
-            >
-              {buttons[3].icon}
+              <span className="flex items-center gap-2">
+                {buttons[0].icon}
+                <span className="text-sm font-medium">{buttons[0].title}</span>
+              </span>
             </button>
           </div>
         </div>
