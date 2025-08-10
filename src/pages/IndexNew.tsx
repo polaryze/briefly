@@ -158,21 +158,30 @@ const IndexNew = () => {
         }}
       >
         {/* Desktop Layout */}
-        <div className="hidden lg:flex flex-row items-center justify-between w-full px-16 xl:px-24 gap-0">
-          {/* Left side content */}
-          <div className="relative z-10 text-left">
+        <div className="hidden lg:flex flex-col items-center justify-center w-full px-16 xl:px-24 gap-0">
+          {/* Centered content */}
+          <div className="relative z-10 text-center">
             <div 
               className={`text-6xl xl:text-8xl font-bold text-black mb-4 transition-all duration-1000 ${
-                showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform -translate-x-8'
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}
               style={{
-                transform: `translate3d(${scrollY * 0.2}px, 0, 0)`,
+                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
                 willChange: 'transform'
               }}
             >
               Briefly
             </div>
-            <div className="text-2xl xl:text-4xl font-light text-gray-600">
+            <div 
+              className={`text-2xl xl:text-4xl font-light text-gray-600 mb-8 transition-all duration-1000 ${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+              }`}
+              style={{
+                animationDelay: '300ms',
+                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                willChange: 'transform'
+              }}
+            >
               {text}
               <span 
                 className="inline-block w-0.5 text-2xl xl:text-4xl font-light ml-1"
@@ -183,23 +192,19 @@ const IndexNew = () => {
                 |
               </span>
             </div>
-          </div>
-
-          {/* Right side - StyledButton */}
-          <div className="relative z-10">
-            <div className="flex items-center justify-center">
-              <div
-                className={`${
-                  showBriefly ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'
-                }`}
-                style={{
-                  animationDelay: '150ms',
-                  transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
-                  willChange: 'transform'
-                }}
-              >
-                <StyledButton />
-              </div>
+            
+            {/* StyledButton below tagline */}
+            <div
+              className={`${
+                showBriefly ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
+              }`}
+              style={{
+                animationDelay: '450ms',
+                transform: `translate3d(0, ${scrollY * 0.1}px, 0)`,
+                willChange: 'transform'
+              }}
+            >
+              <StyledButton />
             </div>
           </div>
         </div>
