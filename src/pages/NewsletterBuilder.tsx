@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight, Shield } from "lucide-react";
+import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight, Shield, Wand2 } from "lucide-react";
 import AINewsletterRenderer from "@/components/AINewsletterRenderer";
 import Loader from "@/components/Loader";
 import { logger } from "@/lib/logger";
@@ -17,13 +17,15 @@ import { getFallbackTemplate } from '../lib/placeholderNewsletter';
 import { identifyTemplate } from '../lib/templateIntelligence';
 import { CardCarousel } from '@/components/ui/card-carousel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import SectionEditor from "@/components/SectionEditor";
 
 const SOCIALS = [
   {
     key: "twitter",
     label: "X",
     placeholder: "username",
-    disabled: false,
+    disabled: true,
     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'/%3E%3C/svg%3E",
     color: "#000000"
   },
@@ -1352,14 +1354,25 @@ export default function NewsletterBuilder() {
   const [openAIDebug, setOpenAIDebug] = useState<any>(null);
   const [tempData, setTempData] = useState<TempData>({});
   
-  // Template selection state
-  const [showTemplateSelection, setShowTemplateSelection] = useState(false);
+  // Newsletter generation state
   const [collectedData, setCollectedData] = useState<TempData>({});
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [isTemplateSelectionPhase, setIsTemplateSelectionPhase] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('newslettersample1');
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState('');
   const [showLoadingPage, setShowLoadingPage] = useState(false);
+
+  // Section-based newsletter state
+  const [sectionBasedNewsletter, setSectionBasedNewsletter] = useState<{
+    id: string;
+    title: string;
+    sections: Array<{
+      id: string;
+      title: string;
+      html: string;
+    }>;
+    css?: string;
+  } | null>(null);
+  const [showSectionEditor, setShowSectionEditor] = useState(false);
 
   // Handle edited newsletter content from editor
   useEffect(() => {
@@ -1380,13 +1393,7 @@ export default function NewsletterBuilder() {
     }
   }, []);
 
-  // Reset loading state when template selection is shown
-  useEffect(() => {
-    if (showTemplateSelection && loading && !selectedTemplate) {
-      console.log('🔄 Force resetting loading state when template selection is shown');
-      setLoading(false);
-    }
-  }, [showTemplateSelection, loading, selectedTemplate]);
+
   
   // Debug loading state changes
   useEffect(() => {
@@ -1411,19 +1418,16 @@ export default function NewsletterBuilder() {
     console.log('🔄 Render state:');
     console.log('  - showLoadingPage:', showLoadingPage);
     console.log('  - newsletter:', newsletter ? 'has newsletter' : 'no newsletter');
-    console.log('  - showTemplateSelection:', showTemplateSelection);
     console.log('  - loading:', loading);
     
     if (showLoadingPage && !newsletter) {
       console.log('🔄 Should render: LOADING PAGE');
-    } else if (showTemplateSelection) {
-      console.log('🔄 Should render: TEMPLATE SELECTION');
     } else if (newsletter) {
       console.log('🔄 Should render: NEWSLETTER');
     } else {
       console.log('🔄 Should render: FORM');
     }
-  }, [showLoadingPage, newsletter, showTemplateSelection, loading]);
+  }, [showLoadingPage, newsletter, loading]);
   
   // Debug modal state
   const [showDebugModal, setShowDebugModal] = useState(false);
@@ -1579,9 +1583,7 @@ export default function NewsletterBuilder() {
           console.log('🎭 Hidden feature activated: "skibidi" detected!');
           setTypedKeys(''); // Reset for next use
           
-          // Bypass social media input and go directly to template selection
-          setShowTemplateSelection(true);
-          setIsTemplateSelectionPhase(true);
+          // Bypass social media input and go directly to newsletter generation
           setCollectedData({}); // Empty data since we're bypassing
         }
         
@@ -1742,88 +1744,58 @@ export default function NewsletterBuilder() {
     // API calls are now handled server-side, no need to validate keys on frontend
     console.log('✅ API calls handled server-side');
 
-    // If no template is selected, show template selection
-    if (!selectedTemplate) {
-      console.log('📋 No template selected, showing template selection...');
+    if (!validateInputs()) {
+      console.log('❌ Validation failed');
+      return;
+    }
+
+    console.log('✅ Validation passed, starting newsletter generation...');
+    setLoading(true);
+    setNewsletter(null);
+    setError(null);
+    setValidationErrors({});
+    setTempData({}); // Clear previous temp data
+
+    try {
+      // Use new step-by-step processing
+      console.log('🚀 Starting step-by-step processing...');
+      setGenerationProgress(10);
+      setGenerationStep('Initializing data collection...');
       
-      if (!validateInputs()) {
-        console.log('❌ Validation failed');
-        return;
-      }
-
-      console.log('✅ Validation passed, starting data collection...');
-      setLoading(true);
-      setIsTemplateSelectionPhase(true);
-      setNewsletter(null);
-      setError(null);
-      setValidationErrors({});
-      setTempData({}); // Clear previous temp data
-
-      try {
-        // Use new step-by-step processing
-        console.log('🚀 Starting step-by-step processing...');
-        setGenerationProgress(10);
-        setGenerationStep('Initializing data collection...');
-        
-        const { summaries, images, processingTime } = await processSocialMediaStepByStep(selected, inputs, timelineOptions);
-        
-        console.log('✅ Step-by-step processing completed:', {
-          platforms: Object.keys(summaries).filter(p => summaries[p].length > 0),
-          totalSummaries: Object.values(summaries).flat().length,
-          totalImages: images.length,
-          processingTime: `${processingTime}ms`
-        });
-        
-        // Create temp data structure for compatibility
-        const tempData: TempData = {
-          allImages: images,
-          allText: Object.values(summaries).flat().join('\n\n'),
-          twitter: (summaries.twitter || []).map(text => ({ text })),
-          instagram: (summaries.instagram || []).map(text => ({ text })),
-          youtube: (summaries.youtube || []).map(text => ({ text }))
-        };
-        
-        setTempData(tempData);
-        setCollectedData(tempData);
-        setShowTemplateSelection(true);
-        setLoading(false);
-        setIsTemplateSelectionPhase(false);
-        
-        console.log('🎯 Template selection ready!');
-        console.log('showTemplateSelection:', true);
-        console.log('collectedData keys:', Object.keys(tempData));
-
-      } catch (error: any) {
-        console.error('Newsletter generation error:', error);
-        const errorMessage = error.message || "Unknown error";
-        setError(errorMessage);
-        setTempData({});
-        setLoading(false);
-        setIsTemplateSelectionPhase(false);
-      }
-    } else {
-      // Template is selected, generate newsletter
-      console.log('🎯 Template selected, generating newsletter...');
-      console.log('selectedTemplate:', selectedTemplate);
-      console.log('collectedData:', collectedData);
-      console.log('collectedData keys:', Object.keys(collectedData));
-      console.log('loading state:', loading);
-      console.log('button disabled:', !selectedTemplate || loading);
+      const { summaries, images, processingTime } = await processSocialMediaStepByStep(selected, inputs, timelineOptions);
       
-      if (selectedTemplate) {
-        console.log('✅ Calling generateNewsletterWithTemplate with:', selectedTemplate, collectedData);
-        console.log('🔄 Setting loading state to true...');
-        setLoading(true); // Set loading to true when starting generation
-        setIsTemplateSelectionPhase(false); // Ensure we're not in template selection phase
-        setGenerationProgress(0);
-        setGenerationStep('Initializing...');
-        setShowLoadingPage(true); // Show the dedicated loading page
-        console.log('🔄 showLoadingPage set to true');
-        console.log('🔄 Loading state set, calling generateNewsletterWithTemplate...');
-        generateNewsletterWithTemplate(selectedTemplate, collectedData);
-      } else {
-        console.log('❌ No template selected');
-      }
+      console.log('✅ Step-by-step processing completed:', {
+        platforms: Object.keys(summaries).filter(p => summaries[p].length > 0),
+        totalSummaries: Object.values(summaries).flat().length,
+        totalImages: images.length,
+        processingTime: `${processingTime}ms`
+      });
+      
+      // Create temp data structure for compatibility
+      const tempData: TempData = {
+        allImages: images,
+        allText: Object.values(summaries).flat().join('\n\n'),
+        twitter: (summaries.twitter || []).map(text => ({ text })),
+        instagram: (summaries.instagram || []).map(text => ({ text })),
+        youtube: (summaries.youtube || []).map(text => ({ text }))
+      };
+      
+      setTempData(tempData);
+      setCollectedData(tempData);
+      
+      // Generate newsletter directly with selected template
+      console.log('🎯 Generating newsletter with template:', selectedTemplate);
+      setGenerationProgress(0);
+      setGenerationStep('Initializing...');
+      setShowLoadingPage(true);
+      generateNewsletterWithTemplate(selectedTemplate, tempData);
+
+    } catch (error: any) {
+      console.error('Newsletter generation error:', error);
+      const errorMessage = error.message || "Unknown error";
+      setError(errorMessage);
+      setTempData({});
+      setLoading(false);
     }
   };
 
@@ -1872,7 +1844,7 @@ export default function NewsletterBuilder() {
      });
   };
 
-  // Function to generate newsletter with OpenAI after template selection
+  // Function to generate newsletter with OpenAI
   // TEMPORARY DEVELOPMENT FUNCTION: Uses templates directly without OpenAI
   // This bypasses OpenAI API calls and loads template HTML exactly as-is
   const generateNewsletterWithTemplate = async (templateId: string, data: TempData) => {
@@ -1923,9 +1895,14 @@ export default function NewsletterBuilder() {
       
       // Use new section replacement logic for cleaned newsletter
       let newsletterContent;
+      let summaries: { [platform: string]: string[] } = {
+        twitter: [],
+        instagram: [],
+        youtube: []
+      };
       if (templateId === 'cleaned_newsletter') {
         // Convert data to summaries format - extract text from objects
-        const summaries = {
+        summaries = {
           twitter: (processedData.twitter || []).map(post => post.text || '').filter(text => text.length > 0),
           instagram: (processedData.instagram || []).map(post => post.text || '').filter(text => text.length > 0),
           youtube: (processedData.youtube || []).map(post => post.text || '').filter(text => text.length > 0)
@@ -1947,7 +1924,71 @@ export default function NewsletterBuilder() {
       setGenerationProgress(75);
       setGenerationStep('Applying styling and formatting...');
       
-      // Create enhanced newsletter data structure
+      // Create section-based newsletter structure
+      const sectionBasedNewsletterData = {
+        id: `newsletter-${Date.now()}`,
+        title: `${template.name} Newsletter`,
+        sections: [
+          {
+            id: 'intro',
+            title: 'Introduction',
+            html: `<div class="newsletter-intro">
+              <h2>Welcome to Your Weekly Update</h2>
+              <p>Here's what's been happening across your social media platforms this week.</p>
+            </div>`
+          },
+          {
+            id: 'twitter',
+            title: 'Twitter Updates',
+            html: summaries.twitter && summaries.twitter.length > 0 
+              ? `<div class="newsletter-section">
+                  <h3>🐦 Twitter Highlights</h3>
+                  ${summaries.twitter.map(tweet => `<p>• ${tweet}</p>`).join('')}
+                </div>`
+              : `<div class="newsletter-section">
+                  <h3>🐦 Twitter Updates</h3>
+                  <p>No Twitter content available for this period.</p>
+                </div>`
+          },
+          {
+            id: 'instagram',
+            title: 'Instagram Updates',
+            html: summaries.instagram && summaries.instagram.length > 0
+              ? `<div class="newsletter-section">
+                  <h3>📸 Instagram Highlights</h3>
+                  ${summaries.instagram.map(post => `<p>• ${post}</p>`).join('')}
+                </div>`
+              : `<div class="newsletter-section">
+                  <h3>📸 Instagram Updates</h3>
+                  <p>No Instagram content available for this period.</p>
+                </div>`
+          },
+          {
+            id: 'youtube',
+            title: 'YouTube Updates',
+            html: summaries.youtube && summaries.youtube.length > 0
+              ? `<div class="newsletter-section">
+                  <h3>🎥 YouTube Highlights</h3>
+                  ${summaries.youtube.map(video => `<p>• ${video}</p>`).join('')}
+                </div>`
+              : `<div class="newsletter-section">
+                  <h3>🎥 YouTube Updates</h3>
+                  <p>No YouTube content available for this period.</p>
+                </div>`
+          },
+          {
+            id: 'closing',
+            title: 'Closing Thoughts',
+            html: `<div class="newsletter-closing">
+              <h3>That's a Wrap!</h3>
+              <p>Thanks for staying updated with your social media highlights. See you next week!</p>
+            </div>`
+          }
+        ],
+        css: extractCSSFromTemplate(templateHtml)
+      };
+
+      // Create enhanced newsletter data structure (for backward compatibility)
       const newsletterData = {
         sections: [
           {
@@ -1981,10 +2022,13 @@ export default function NewsletterBuilder() {
       
       console.log('✅ Newsletter generated successfully');
       console.log('📊 Metadata:', newsletterData.metadata);
+      console.log('📊 Section-based newsletter created with', sectionBasedNewsletterData.sections.length, 'sections');
       
-      // Set the newsletter data
+      // Set both newsletter formats
       setNewsletter(newsletterData);
       setNewsletterData(processedData);
+      setSectionBasedNewsletter(sectionBasedNewsletterData);
+      
       logger.info('Newsletter generated successfully', {
         platformsUsed: Object.keys(selected).filter(key => selected[key]),
         totalPosts: Object.values(processedData).filter(Array.isArray).flat().length
@@ -1996,7 +2040,6 @@ export default function NewsletterBuilder() {
       // Update loading states to show the newsletter
       setLoading(false);
       setShowLoadingPage(false);
-      setShowTemplateSelection(false);
       setGenerationProgress(0);
       setGenerationStep('');
       
@@ -2169,13 +2212,11 @@ export default function NewsletterBuilder() {
       // Newsletter is ready
       console.log('📝 Newsletter ready');
       
-      setShowTemplateSelection(false);
       setShowLoadingPage(false); // Hide the loading page
       
     } catch (error) {
       console.error('Newsletter generation error:', error);
       setError(error.message || "Failed to generate newsletter");
-      setShowTemplateSelection(false); // Hide template selection on error
       setShowLoadingPage(false); // Hide the loading page on error
     } finally {
       setLoading(false);
@@ -2502,120 +2543,50 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
     }
   };
 
+  // Function to handle section updates
+  const handleSectionUpdate = (sectionId: string, updatedHtml: string) => {
+    if (sectionBasedNewsletter) {
+      setSectionBasedNewsletter(prev => {
+        if (!prev) return prev;
+        
+        const updatedSections = prev.sections.map(section =>
+          section.id === sectionId
+            ? { ...section, html: updatedHtml }
+            : section
+        );
+        
+        return {
+          ...prev,
+          sections: updatedSections
+        };
+      });
+      
+      // Also update the regular newsletter state for backward compatibility
+      if (newsletter) {
+        setNewsletter(prev => {
+          if (!prev) return prev;
+          
+          // For backward compatibility, we'll update the raw HTML
+          // This is a simplified approach - in production you might want more sophisticated merging
+          return {
+            ...prev,
+            rawContent: updatedHtml,
+            editedContent: updatedHtml
+          };
+        });
+      }
+    }
+  };
+
   return (
-    <div className="h-screen sm:min-h-screen bg-white relative page-transition overflow-hidden">
+    <div className="h-screen sm:min-h-screen bg-white relative page-transition overflow-hidden" style={{ touchAction: 'none' }}>
       {showLoadingPage ? (
         // Loading Page - Show dedicated loading screen with custom loader
         <Loader progress={generationProgress} step={generationStep} />
-      ) : showTemplateSelection ? (
-        // Template Selection Phase - Hide form, show only template selection
-        <div className="h-screen sm:min-h-screen bg-white p-4 sm:p-6 lg:p-8 overflow-y-auto">
 
-          <Card className="max-w-6xl w-full p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-xl mx-auto mt-4 sm:mt-8 animate-in slide-in-from-bottom-4 duration-700">
-            <div className="text-center mb-6 sm:mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">Choose Your Newsletter Template</h2>
-              <p className="text-sm sm:text-base text-gray-600 px-2 mb-4">Select a design from the templates below. We'll populate it with your social media content.</p>
-              <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                <ChevronLeft className="w-4 h-4" />
-                <span>Scroll to browse templates</span>
-                <ChevronRight className="w-4 h-4" />
-              </div>
-            </div>
-            
-                        <CardCarousel className="mb-6 px-4 py-4">
-              {(() => {
-                console.log('📋 Rendering templates:', NEWSLETTER_TEMPLATES.length, 'templates available');
-                return NEWSLETTER_TEMPLATES.map((template) => (
-                <div
-                  key={template.id}
-                  onClick={() => template.enabled && setSelectedTemplate(template.id)}
-                  className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-in-out transform hover:scale-102 ${
-                    template.enabled 
-                      ? `cursor-pointer ${
-                          selectedTemplate === template.id
-                            ? 'border-black bg-gray-50 shadow-xl scale-105'
-                            : 'border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1'
-                        }`
-                      : 'cursor-not-allowed opacity-60 border-gray-300'
-                  }`}
-                    style={{ width: '320px', flexShrink: 0 }}
-                >
-                  <div className="aspect-[4/3] bg-white relative overflow-hidden">
-                    <iframe 
-                      src={template.htmlPath}
-                      className="w-full h-full border-0 pointer-events-none transform scale-[0.5] origin-top-left"
-                      style={{ width: '200%', height: '200%' }}
-                      title={template.name}
-                    />
-                      {template.enabled ? (
-                        <>
-                          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-500 ease-in-out backdrop-blur-sm">
-                            <span className="text-white font-bold text-base sm:text-lg transform hover:scale-110 transition-transform duration-300">Select Template</span>
-                          </div>
-                          {selectedTemplate === template.id && (
-                            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-                              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-sm">
-                          <span className="text-white font-bold text-base sm:text-lg">Coming Soon</span>
-                        </div>
-                      )}
-                  </div>
-                  <div className="p-3 sm:p-4">
-                    <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{template.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">{template.description}</p>
-                    <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
-                      template.style === 'modern' ? 'bg-blue-100 text-blue-800' :
-                      template.style === 'classic' ? 'bg-green-100 text-green-800' :
-                      template.style === 'minimal' ? 'bg-gray-100 text-gray-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
-                      {template.style}
-                    </span>
-                  </div>
-                </div>
-                ));
-              })()}
-            </CardCarousel>
-            
-            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 gap-4 sm:gap-0">
-              {/* Back button on left */}
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowTemplateSelection(false);
-                  setCollectedData({});
-                  setSelectedTemplate(null);
-                }}
-                className="flex items-center gap-2 w-full sm:w-auto"
-              >
-                ← Back
-              </Button>
-              
-              {/* Generate Newsletter button on right */}
-              <LoadingButton
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }}
-                loading={loading}
-                loadingText="Generating Newsletter..."
-                disabled={!selectedTemplate || loading}
-                className="font-medium py-3 px-6 sm:px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 bg-black hover:bg-gray-800 text-white w-full sm:w-auto"
-              >
-                Generate Newsletter →
-              </LoadingButton>
-            </div>
-          </Card>
-        </div>
       ) : newsletter ? (
         // Newsletter Display Phase
-                  <div className="bg-gray-50 p-3 sm:p-6">
+                  <div className="bg-gray-50 p-3 sm:p-6" style={{ touchAction: 'none' }}>
           <div className="flex flex-col lg:flex-row justify-center items-start gap-4 sm:gap-6">
             
             {/* Newsletter Window */}
@@ -2647,7 +2618,6 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                     onClick={() => {
                       setNewsletter(null);
                       setNewsletterData(null);
-                      setShowTemplateSelection(false);
                       setCollectedData({});
                       setSelectedTemplate(null);
                     }}
@@ -2662,19 +2632,106 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               {/* Newsletter Content */}
               <div className="h-full overflow-hidden" style={{ height: 'calc(100% - 65px)' }}>
                 <div className="h-full overflow-y-auto">
-                  <AINewsletterRenderer 
-                    newsletterData={newsletter} 
-                    posts={newsletterData}
-                    onBackToBuilder={() => {
-                      setNewsletter(null);
-                      setNewsletterData(null);
-                      setShowTemplateSelection(false);
-                      setCollectedData({});
-                      setSelectedTemplate(null);
-                    }}
-                  />
-                  
+                  {sectionBasedNewsletter ? (
+                    <div className="h-full">
+                      <div className="bg-white border-b border-gray-200 px-4 py-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h1 className="text-lg font-semibold text-gray-900">
+                              {sectionBasedNewsletter.title}
+                            </h1>
+                            <p className="text-sm text-gray-500">
+                              {sectionBasedNewsletter.sections.length} section{sectionBasedNewsletter.sections.length !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowSectionEditor(!showSectionEditor)}
+                              className="flex items-center gap-2"
+                            >
+                              <Wand2 className="w-4 h-4" />
+                              {showSectionEditor ? 'Hide' : 'Show'} Section Editor
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setNewsletter(null);
+                                setNewsletterData(null);
+                                setSectionBasedNewsletter(null);
+                                setCollectedData({});
+                                setSelectedTemplate(null);
+                              }}
+                              className="flex items-center gap-2"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                              Back to Builder
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+                        {/* Newsletter Preview */}
+                        <div className="lg:col-span-2">
+                          <Card className="bg-white">
+                            <CardHeader>
+                              <CardTitle className="text-xl font-semibold text-gray-900">
+                                Newsletter Preview
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="newsletter-container">
+                                {sectionBasedNewsletter.sections.map((section) => (
+                                  <div key={section.id} className="newsletter-section mb-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">{section.title}</h3>
+                                    <div 
+                                      className="newsletter-content"
+                                      dangerouslySetInnerHTML={{ __html: section.html }}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
 
+                        {/* Section Editor */}
+                        {showSectionEditor && (
+                          <div className="lg:col-span-1">
+                            <Card className="bg-white sticky top-6">
+                              <CardHeader>
+                                <CardTitle className="text-lg font-semibold text-gray-900">
+                                  Section Editor
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <SectionEditor 
+                                  newsletterData={sectionBasedNewsletter}
+                                  onSectionUpdate={handleSectionUpdate}
+                                />
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <AINewsletterRenderer 
+                      newsletterData={sectionBasedNewsletter || newsletter} 
+                      posts={newsletterData}
+                      onSectionUpdate={handleSectionUpdate}
+                      onBackToBuilder={() => {
+                        setNewsletter(null);
+                        setNewsletterData(null);
+                        setSectionBasedNewsletter(null);
+                        setCollectedData({});
+                        setSelectedTemplate(null);
+                      }}
+                    />
+                  )}
                 </div>
               </div>
               
@@ -2686,9 +2743,9 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
           </div>
         </div>
       ) : (
-        // Newsletter Builder Form - Only show when NOT selecting templates
-        <div className="h-screen sm:min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 transition-all duration-500 ease-in-out overflow-y-auto">
-          <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-10">
+        // Newsletter Builder Form
+        <div className="h-screen sm:min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 transition-all duration-500 ease-in-out overflow-y-auto" style={{ touchAction: 'none' }}>
+          <div className="absolute top-16 sm:top-12 right-4 sm:right-6 z-10">
             <Button 
               variant="outline" 
               onClick={() => smoothNavigate('/')}
@@ -2713,23 +2770,22 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
               </div>
             )}
             
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900 text-center">Build Your Weekly Newsletter</h2>
+
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-3 text-center">Select Social Platforms</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 justify-center max-w-md mx-auto">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 justify-center max-w-md mx-auto">
                   {SOCIALS.map((s) => (
                     <div
                       key={s.key}
                       onClick={() => !s.disabled && !loading && handleCheck(s.key)}
                       className={`
-                        relative p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-500 ease-in-out group transform hover:scale-105 hover:-translate-y-1 active:scale-95
-                        ${s.key === 'youtube' ? 'col-span-2 sm:col-span-1' : ''}
+                        relative p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-500 ease-in-out group transform
+                        ${s.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 hover:-translate-y-1 active:scale-95'}
                         ${selected[s.key as keyof typeof selected] 
                           ? 'border-black bg-gray-50 shadow-lg scale-105' 
-                          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-xl'
+                          : s.disabled ? 'border-gray-200 bg-white' : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-xl'
                         }
-                        ${s.disabled ? 'opacity-50 cursor-not-allowed' : ''}
                         ${loading ? 'cursor-not-allowed opacity-75' : ''}
                       `}
                     >
@@ -2759,9 +2815,6 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                             {s.label.charAt(0).toUpperCase()}
                           </div>
                         </div>
-                        <span className={`text-xs font-medium text-center ${selected[s.key as keyof typeof selected] ? 'text-black' : 'text-gray-600'}`}>
-                          {s.label}
-                        </span>
                       </div>
                     </div>
                   ))}
@@ -2852,17 +2905,17 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
 
               <LoadingButton
                 type="submit"
-                loading={loading && !isTemplateSelectionPhase}
+                loading={loading}
                 loadingText="Generating Newsletter..."
                 disabled={loading}
-                className="mt-2 bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 w-full"
+                className="mt-2 bg-black hover:bg-gray-800 text-white font-medium py-3 px-3 sm:px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 w-full"
               >
-                {selectedTemplate ? "Generate Newsletter" : "Select Template"}
+                Generate
               </LoadingButton>
             </form>
             
-            {/* Rotating circular icon for template selection loading */}
-            {loading && isTemplateSelectionPhase && (
+            {/* Loading indicator */}
+            {loading && (
               <div className="flex flex-col items-center justify-center mt-4 sm:mt-6 space-y-2 sm:space-y-3">
                 <div className="relative">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
@@ -2914,6 +2967,31 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
           </div>
         </div>
       )}
+      
+      {/* CSS for falling particles animation */}
+      <style>{`
+        @keyframes fall {
+          0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 0.4;
+          }
+          90% {
+            opacity: 0.4;
+          }
+          100% {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        
+        .animate-fall {
+          animation: fall linear infinite;
+          will-change: transform, opacity;
+        }
+      `}</style>
     </div>
   );
 } 
