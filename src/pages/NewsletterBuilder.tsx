@@ -117,15 +117,28 @@ async function fetchInstagramData(usernameOrUrl: string) {
   }
 }
 
-async function fetchYouTubeData(url: string) {
+async function fetchYouTubeData(input: string) {
   try {
+    // Determine if input is a URL or channel ID
+    const isUrl = input.includes('youtube.com') || input.includes('youtu.be');
+    const isChannelId = input.startsWith('@') || /^[a-zA-Z0-9._-]+$/.test(input.replace('@', ''));
+    
+    let requestBody;
+    if (isUrl) {
+      requestBody = { url: input };
+    } else if (isChannelId) {
+      requestBody = { channelId: input.replace('@', '') };
+    } else {
+      throw new Error('Invalid YouTube input. Please provide a valid URL or channel ID.');
+    }
+    
     // Use server endpoint instead of direct API call
     const response = await fetch('/api/rapidapi/youtube', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
@@ -439,8 +452,8 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           // Apply timeline filtering
           const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'twitter', timelineOptions);
           
-          // Take top posts (default 3 if no timeline limit)
-          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.twitter?.postLimit || 3);
+          // Take top posts (default 5 if no timeline limit)
+          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.twitter?.postLimit || 5);
           
           // AI Summarization for Twitter posts (optimized)
           const summarizedPosts = await summarizeSocialMediaPosts(finalPosts, 'Twitter');
@@ -546,8 +559,8 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           // Apply timeline filtering
           const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'instagram', timelineOptions);
           
-          // Take top posts (default 3 if no timeline limit)
-          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.instagram?.postLimit || 3);
+          // Take top posts (default 5 if no timeline limit)
+          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.instagram?.postLimit || 5);
           
           // Always process AI for Instagram descriptions
           console.log('🤖 Starting Instagram AI summarization for descriptions...');
@@ -663,8 +676,8 @@ async function processAllPlatforms(selected: any, inputs: any, timelineOptions?:
           // Apply timeline filtering
           const timelineFilteredPosts = filterPostsByTimeline(sortedPosts, 'youtube', timelineOptions);
           
-          // Take top posts (default 3 if no timeline limit)
-          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.youtube?.postLimit || 3);
+          // Take top posts (default 5 if no timeline limit)
+          const finalPosts = timelineFilteredPosts.slice(0, timelineOptions?.youtube?.postLimit || 5);
           
           // Always process AI for YouTube subtitles in first person
           console.log('🤖 Starting YouTube AI summarization for subtitles...');
@@ -1331,18 +1344,18 @@ export default function NewsletterBuilder() {
   const [timelineOptions, setTimelineOptions] = useState({
     twitter: {
       timeRange: '7d', // 1d, 7d, 30d, 90d, all
-      postLimit: 10, // 1, 5, 10, 20, 50, 100
-      enabled: false
+      postLimit: 5, // 1, 5, 10, 20, 50, 100
+      enabled: true
     },
     instagram: {
       timeRange: '7d',
-      postLimit: 10,
-      enabled: false
+      postLimit: 5,
+      enabled: true
     },
     youtube: {
-      timeRange: '30d',
+      timeRange: '7d',
       postLimit: 5,
-      enabled: false
+      enabled: true
     }
   });
 
@@ -1650,7 +1663,7 @@ export default function NewsletterBuilder() {
   // Generate cache key for data
   const generateCacheKey = (platform: string, input: string, timelineOptions: any) => {
     const options = timelineOptions[platform];
-    return `${platform}_${input}_${options?.timeRange || 'all'}_${options?.postLimit || 10}`;
+    return `${platform}_${input}_${options?.timeRange || 'all'}_${options?.postLimit || 5}`;
   };
 
   const validateInputs = (): boolean => {
@@ -2582,12 +2595,32 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
     <div className="h-screen sm:min-h-screen bg-white relative page-transition overflow-hidden" style={{ touchAction: 'none' }}>
       {showLoadingPage ? (
         // Loading Page - Show dedicated loading screen with custom loader
-        <Loader progress={generationProgress} step={generationStep} />
-
+        <>
+          <Loader progress={generationProgress} step={generationStep} />
+          
+          {/* Show error on loading page if there is one */}
+          {error && (
+            <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
+              <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800 shadow-lg">
+                <AlertDescription className="text-red-700">{error}</AlertDescription>
+              </Alert>
+            </div>
+          )}
+        </>
       ) : newsletter ? (
         // Newsletter Display Phase
-                  <div className="bg-gray-50 p-3 sm:p-6" style={{ touchAction: 'none' }}>
-          <div className="flex flex-col lg:flex-row justify-center items-start gap-4 sm:gap-6">
+        <>
+          {/* Show error on newsletter display page if there is one */}
+          {error && (
+            <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
+              <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800 shadow-lg">
+                <AlertDescription className="text-red-700">{error}</AlertDescription>
+              </Alert>
+            </div>
+          )}
+          
+          <div className="bg-gray-50 p-3 sm:p-6" style={{ touchAction: 'none' }}>
+            <div className="flex flex-col lg:flex-row justify-center items-start gap-4 sm:gap-6">
             
             {/* Newsletter Window */}
             <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden animate-in slide-in-from-left-6 duration-800 w-full lg:w-auto" 
@@ -2742,6 +2775,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
             
           </div>
         </div>
+        </>
       ) : (
         // Newsletter Builder Form
         <div className="h-screen sm:min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 transition-all duration-500 ease-in-out overflow-y-auto" style={{ touchAction: 'none' }}>
@@ -2875,7 +2909,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                               <span className="text-gray-500">•</span>
                               
                               <select
-                                value={timelineOptions[s.key as keyof typeof timelineOptions]?.postLimit || 10}
+                                value={timelineOptions[s.key as keyof typeof timelineOptions]?.postLimit || 5}
                                 onChange={(e) => handleTimelineOption(s.key, 'postLimit', parseInt(e.target.value))}
                                 className="border border-gray-300 rounded px-1 py-0.5 text-xs"
                                 disabled={loading}
