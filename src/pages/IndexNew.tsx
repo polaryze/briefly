@@ -19,7 +19,7 @@ const IndexNew = () => {
   const [mouseX, setMouseX] = useState(0);
   const [mouseY, setMouseY] = useState(0);
   const [heroDots, setHeroDots] = useState('');
-  const [newsletterDots, setNewsletterDots] = useState('');
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,7 +48,7 @@ const IndexNew = () => {
     const isMobile = window.innerWidth < 1024; // lg breakpoint
     if (isMobile) {
       setHeroDots('');
-      setNewsletterDots('');
+
       return;
     }
 
@@ -86,41 +86,9 @@ const IndexNew = () => {
       setHeroDots(`${baseDot}, ${reactiveDots.join(', ')}`);
     };
 
-    const updateNewsletterDots = () => {
-      const baseDot = `radial-gradient(circle at 20px 20px, rgba(0,0,0,0.05) 2px, transparent 0)`;
-      const reactiveDots = [];
-      const maxDistance = 120;
-      const gridSize = 40;
-      
-      const mouseCol = Math.floor(mousePosition.x / gridSize);
-      const mouseRow = Math.floor(mousePosition.y / gridSize);
-      const affectedRange = Math.ceil(maxDistance / gridSize) + 1;
-      
-      for (let col = mouseCol - affectedRange; col <= mouseCol + affectedRange; col++) {
-        for (let row = mouseRow - affectedRange; row <= mouseRow + affectedRange; row++) {
-          const x = col * gridSize + gridSize / 2;
-          const y = row * gridSize + gridSize / 2;
-          
-          const distance = Math.sqrt(
-            Math.pow(mousePosition.x - x, 2) + 
-            Math.pow(mousePosition.y - y, 2)
-          );
-          
-          if (distance < maxDistance) {
-            const effect = Math.max(0, 1 - distance / maxDistance);
-            const size = 2 * (1 + effect * 2);
-            const opacity = 0.05 * (1 + effect * 4);
-            
-            reactiveDots.push(`radial-gradient(circle at ${x}px ${y}px, rgba(0,0,0,${opacity}) ${size}px, transparent 0)`);
-          }
-        }
-      }
-      
-      setNewsletterDots(`${baseDot}, ${reactiveDots.join(', ')}`);
-    };
+
 
     updateHeroDots();
-    updateNewsletterDots();
   }, [mousePosition]);
 
   useEffect(() => {
@@ -291,76 +259,7 @@ const IndexNew = () => {
         </div>
       </div>
 
-      {/* Newsletter Generation Section */}
-      <div 
-        className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center relative newsletter-section"
-        style={{
-          backgroundImage: newsletterDots,
-          opacity: Math.max(0, (scrollY - 400) / 400),
-          transform: `translate3d(0, ${Math.max(0, scrollY - 400) * 0.2}px, 0)`,
-          willChange: 'transform, opacity',
-          transition: 'background-image 0.2s ease-out'
-        }}
-      >
-        <div className="text-center mb-32 sm:mb-64 px-4">
-          <h2 
-            className="text-3xl sm:text-5xl lg:text-7xl font-bold text-gray-800 mb-4 sm:mb-8"
-            style={{
-              transform: `translate3d(0, ${Math.max(0, scrollY - 500) * 0.3}px, 0)`,
-              marginTop: '-50px sm:-100px',
-              willChange: 'transform'
-            }}
-          >
-            Generate Sample
-          </h2>
-        </div>
 
-        <div 
-          className="bg-white rounded-3xl shadow-2xl p-6 max-w-xl w-full mx-8"
-          style={{
-            transform: `translate3d(0, ${Math.max(0, scrollY - 700) * 0.1}px, 0)`,
-            boxShadow: `0 20px 40px rgba(0,0,0,${0.1 + Math.max(0, scrollY - 700) * 0.0001})`,
-            willChange: 'transform'
-          }}
-        >
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Content Type</label>
-              <select className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option>Blog Post</option>
-                <option>Social Media</option>
-                <option>Article</option>
-                <option>News</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tone</label>
-              <select className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option>Professional</option>
-                <option>Casual</option>
-                <option>Friendly</option>
-                <option>Formal</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Your Content</label>
-              <textarea 
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 resize-none"
-                placeholder="Paste your content here or describe what you want to create..."
-              />
-            </div>
-
-            <button 
-              onClick={handleGenerateNewsletter}
-              className="w-full bg-gradient-to-r from-black to-gray-800 text-white font-semibold py-3 px-6 rounded-xl hover:from-gray-800 hover:to-black transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg"
-            >
-              Generate Newsletter
-            </button>
-          </div>
-        </div>
-      </div>
 
       <style dangerouslySetInnerHTML={{
         __html: `
