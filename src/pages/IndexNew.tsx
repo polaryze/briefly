@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Shield, Wand2 } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import StyledButton from '../components/StyledButton';
-
-// TypeScript declaration for device orientation
-declare global {
-  interface Window {
-    DeviceOrientationEvent: typeof DeviceOrientationEvent;
-  }
-  
-  interface DeviceOrientationEvent {
-    requestPermission?: () => Promise<'granted' | 'denied'>;
-  }
-}
 
 const IndexNew = () => {
   const [searchParams] = useSearchParams();
@@ -25,12 +14,10 @@ const IndexNew = () => {
   const [showBriefly, setShowBriefly] = useState(false);
 
   const [scrollY, setScrollY] = useState(0);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [reactiveDots, setReactiveDots] = useState('');
   const [mouseX, setMouseX] = useState(0);
   const [mouseY, setMouseY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [heroDots, setHeroDots] = useState('');
-  const [deviceOrientation, setDeviceOrientation] = useState({ x: 0, y: 0, z: 0 });
 
 
   useEffect(() => {
@@ -39,67 +26,17 @@ const IndexNew = () => {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
       setMouseX(e.clientX);
       setMouseY(e.clientY);
+      setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
-    const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
-      // Normalize orientation values to -1 to 1 range
-      const x = event.beta ? Math.max(-1, Math.min(1, (event.beta - 45) / 45)) : 0;
-      const y = event.gamma ? Math.max(-1, Math.min(1, event.gamma / 90)) : 0;
-      const z = event.alpha ? Math.max(-1, Math.min(1, (event.alpha - 180) / 180)) : 0;
-      
-      // Debug log to see if values are changing
-      console.log('Device orientation:', { x, y, z, raw: { beta: event.beta, gamma: event.gamma, alpha: event.alpha } });
-      
-      setDeviceOrientation({ x, y, z });
-    };
-
-    // Request permission for device orientation (required on iOS)
-    const requestOrientationPermission = async () => {
-      try {
-        // Check if we're on iOS and need permission
-        if (typeof DeviceOrientationEvent !== 'undefined' && (DeviceOrientationEvent as any).requestPermission) {
-          console.log('Requesting device orientation permission...');
-          const permission = await (DeviceOrientationEvent as any).requestPermission();
-          console.log('Permission result:', permission);
-          
-          if (permission === 'granted') {
-            console.log('Permission granted, adding event listener');
-            window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-          } else {
-            console.log('Permission denied');
-          }
-        } else {
-          // For devices that don't require permission
-          console.log('No permission required, adding event listener directly');
-          window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-        }
-      } catch (error) {
-        console.error('Error requesting orientation permission:', error);
-        // Fallback: try to add listener anyway
-        try {
-          window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-          console.log('Added event listener as fallback');
-        } catch (fallbackError) {
-          console.error('Failed to add event listener:', fallbackError);
-        }
-      }
-    };
-
-    // Add event listeners to document instead of window
     document.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('mousemove', handleMouseMove, { passive: true });
-    
-    // Request orientation permission and add listener
-    requestOrientationPermission();
     
     return () => {
       document.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousemove', handleMouseMove);
-      // Clean up device orientation listener
-      window.removeEventListener('deviceorientation', handleDeviceOrientation);
     };
   }, []);
 
@@ -109,7 +46,6 @@ const IndexNew = () => {
     const isMobile = window.innerWidth < 1024; // lg breakpoint
     if (isMobile) {
       setHeroDots('');
-
       return;
     }
 
@@ -144,10 +80,8 @@ const IndexNew = () => {
         }
       }
       
-      setHeroDots(`${baseDot}, ${reactiveDots.join(', ')}`);
+      setHeroDots(reactiveDots.join(', '));
     };
-
-
 
     updateHeroDots();
   }, [mousePosition]);
@@ -178,19 +112,8 @@ const IndexNew = () => {
     }
   }, [currentIndex, fullText, isTyping]);
 
-  const handleGenerateNewsletter = () => {
-    window.location.href = '/newsletter-builder';
-  };
-
-
-
   const buttons = [
     {
-      id: 'generate',
-      icon: <Wand2 className="w-6 h-6" />,
-      delay: 150,
-      size: 'large',
-      onClick: handleGenerateNewsletter,
       title: 'Generate Newsletter'
     }
   ];
@@ -271,7 +194,7 @@ const IndexNew = () => {
         </div>
 
         {/* Mobile Layout - Optimized for iOS */}
-        <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen overflow-hidden">
+        <div className="lg:hidden flex flex-col items-center justify-center w-full px-4 sm:px-8 relative h-screen overflow-hidden" style={{ touchAction: 'none' }}>
           {/* Background Animation - Mobile Only */}
           <div className="absolute inset-0 pointer-events-none">
             {/* Efficient particle system - 26 particles total */}
@@ -306,9 +229,8 @@ const IndexNew = () => {
                     key={i}
                     className={`absolute ${size} ${color} rounded-full ${opacity} animate-float-dust`}
                     style={{
-                      top: `calc(${baseTop}% + ${deviceOrientation.x * moveX}px)`,
-                      left: `calc(${baseLeft}% + ${deviceOrientation.y * moveY}px)`,
-                      transform: `translate3d(${deviceOrientation.x * transformX}px, ${deviceOrientation.y * transformY}px, ${deviceOrientation.z * transformZ}px)`,
+                      top: `${baseTop}%`,
+                      left: `${baseLeft}%`,
                       animationDelay: `${animationDelay}s`,
                       animationDuration: `${animationDuration}s`
                     }}
@@ -369,24 +291,8 @@ const IndexNew = () => {
               <StyledButton />
             </div>
           </div>
-
-          {/* Debug info for device orientation */}
-          <div className="absolute top-4 left-4 text-xs text-gray-500 z-20">
-            <div>Orientation: X: {deviceOrientation.x.toFixed(2)}, Y: {deviceOrientation.y.toFixed(2)}, Z: {deviceOrientation.z.toFixed(2)}</div>
-            <button 
-              onClick={() => {
-                console.log('Manual orientation test');
-                console.log('Current deviceOrientation state:', deviceOrientation);
-              }}
-              className="mt-1 px-2 py-1 bg-gray-200 rounded text-xs"
-            >
-              Test Orientation
-            </button>
-          </div>
         </div>
       </div>
-
-
 
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -394,6 +300,8 @@ const IndexNew = () => {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0; }
           }
+          
+
           
           /* Mobile Background Animations */
           @keyframes float-1 {
@@ -492,4 +400,4 @@ const IndexNew = () => {
   );
 };
 
-export default IndexNew; 
+export default IndexNew;

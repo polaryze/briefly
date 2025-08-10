@@ -121,3 +121,64 @@ export const validateEmail = (email: string): ValidationResult => {
 
   return { isValid: true };
 }; 
+
+// Input sanitization helpers
+// These are intentionally conservative to avoid altering semantics used by the backend
+
+// Remove zero-width and control characters, trim whitespace
+export const sanitizeBasic = (value: string): string => {
+  if (typeof value !== 'string') return '';
+  return value
+    .replace(/[\u0000-\u001F\u007F\u200B-\u200D\uFEFF]/g, '')
+    .trim();
+};
+
+// Strip trailing slashes from URLs (without touching query/hash)
+export const stripTrailingSlash = (value: string): string => {
+  if (!value) return value;
+  try {
+    const url = new URL(value);
+    url.pathname = url.pathname.replace(/\/+$/, '');
+    return url.toString();
+  } catch {
+    // Not a URL, return as-is
+    return value.replace(/\s+$/, '');
+  }
+};
+
+// Normalize handles or URLs per platform without changing backend expectations
+export const sanitizePlatformInput = (value: string, platform: string): string => {
+  const v = sanitizeBasic(value);
+  if (!v) return v;
+
+  // If it looks like a URL, only strip trailing slashes
+  if (/^https?:\/\//i.test(v)) {
+    return stripTrailingSlash(v);
+  }
+
+  switch (platform.toLowerCase()) {
+    case 'twitter':
+    case 'instagram':
+      // Collapse inner spaces, keep leading @ if provided
+      return v.replace(/\s+/g, '');
+    case 'youtube':
+      // Accept @handle or channel name; collapse spaces
+      return v.replace(/\s+/g, '');
+    default:
+      return v;
+  }
+};
+
+export type PlatformInputs = {
+  twitter?: string;
+  instagram?: string;
+  youtube?: string;
+};
+
+export const sanitizeAllInputs = (inputs: PlatformInputs): PlatformInputs => {
+  return {
+    twitter: inputs.twitter ? sanitizePlatformInput(inputs.twitter, 'twitter') : '',
+    instagram: inputs.instagram ? sanitizePlatformInput(inputs.instagram, 'instagram') : '',
+    youtube: inputs.youtube ? sanitizePlatformInput(inputs.youtube, 'youtube') : '',
+  };
+};

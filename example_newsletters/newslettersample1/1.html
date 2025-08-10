@@ -1,63 +1,353 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Melodies</title>
-<style>
-body{margin:0;padding:0;font-family:'Raleway',sans-serif;background:#e7e7e7;color:#000}
-.section{max-width:600px;margin:0 auto;padding:30px 20px;box-sizing:border-box}
-.logo{text-align:center;color:#fca311;font-size:30px}
-.split{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center}
-.split img,.split div{flex:1 1 48%;box-sizing:border-box}
-.heading{color:#fca311;font-family:'Playfair Display',serif;font-size:40px;margin-bottom:10px}
-.text{color:#95a5a6;font-size:14px;line-height:1.4}
-.dark{background:#182235;color:#fff}
-.dark .heading{color:#fca311;font-size:34px}
-.icons{display:flex;justify-content:space-around;padding:20px 0}
-.icons img{width:60px}
-img{max-width:100%;height:auto;display:block;margin:10px auto}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minimal Newsletter — Instagram & YouTube</title>
+  <style>
+    :root{
+      --bg:#0f1724;       /* deep navy */
+      --card:#0b1220;     /* slightly lighter */
+      --muted:#96a0b8;
+      --accent:#7dd3fc;   /* soft cyan */
+      --glass: rgba(255,255,255,0.03);
+      --radius:14px;
+      --maxwidth:900px;
+      --gap:18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #e6eef8;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg, #071021 0%, var(--bg) 100%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:var(--maxwidth);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:18px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      padding:22px;
+      box-sizing:border-box;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .logo{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .logo-mark{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background: linear-gradient(135deg, var(--accent), #60a5fa);
+      box-shadow: 0 6px 18px rgba(45,100,200,0.12), inset 0 -6px 18px rgba(255,255,255,0.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#052233;
+      font-size:18px;
+      letter-spacing:0.6px;
+    }
+
+    h1{
+      margin:0;
+      font-size:16px;
+      letter-spacing:0.2px;
+      color:#dff6ff;
+    }
+
+    .meta{
+      text-align:right;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* Two-column layout for the two sections */
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:var(--gap);
+      align-items:stretch;
+    }
+
+    /* Each section card */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:16px;
+      box-sizing:border-box;
+      border:1px solid rgba(255,255,255,0.025);
+      display:flex;
+      flex-direction:column;
+      min-height:320px; /* make heights similar */
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+    }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(600px 250px at 10% 20%, rgba(125,211,252,0.04), transparent 6%),
+                  radial-gradient(500px 180px at 90% 80%, rgba(96,165,250,0.03), transparent 8%);
+      pointer-events:none;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    .title{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .icon {
+      width:42px;
+      height:42px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:14px;
+      color: #052233;
+      padding:6px;
+    }
+
+    .insta { background: linear-gradient(135deg,#ff7a7a,#ffb86b); }
+    .yt    { background: linear-gradient(135deg,#ff6b6b,#ff4757); }
+
+    .section-meta{
+      text-align:right;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .hero{
+      width:100%;
+      border-radius:10px;
+      overflow:hidden;
+      min-height:110px;
+      display:block;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px dashed rgba(255,255,255,0.02);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
+      padding:10px;
+      box-sizing:border-box;
+    }
+
+    .hero img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    p.lead{
+      margin:0;
+      font-size:13px;
+      color:#d2eafc;
+      line-height:1.35;
+    }
+
+    .bullets{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:4px;
+      font-size:13px;
+      color:var(--muted);
+      flex-grow:1;
+    }
+
+    .bullet{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+
+    .dot{
+      width:8px;
+      height:8px;
+      border-radius:2px;
+      background:rgba(255,255,255,0.06);
+      margin-top:6px;
+    }
+
+    .cta-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:8px;
+    }
+
+    .btn{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.04);
+      padding:8px 12px;
+      border-radius:10px;
+      font-size:13px;
+      color:var(--accent);
+      text-decoration:none;
+    }
+
+    .stat{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    footer.note{
+      margin-top:14px;
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      padding-top:6px;
+      border-top:1px dashed rgba(255,255,255,0.02);
+    }
+
+    /* Responsive: stack on small screens */
+    @media (max-width:720px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-<div id="logo" class="section logo">LOGO</div>
+  <div class="wrap" role="article" aria-label="Newsletter: Instagram and YouTube">
+    <header>
+      <div class="logo">
+        <div class="logo-mark">NV</div>
+        <div>
+          <h1>Newsletter — Quick Drops</h1>
+          <div style="font-size:12px;color:var(--muted)">Short summary for socials • Minimal & extractable</div>
+        </div>
+      </div>
+      <div class="meta">Aug 10, 2025<br>Issue #12</div>
+    </header>
 
-<div id="intro" class="section split">
-  <img src="images/image-1.png" alt="DJs">
-  <div>
-    <div class="heading">Melodies<br>at Midnight</div>
-    <p class="text">Lorem ipsum dolor sit amet, consec adip elit, sed do eiusmod tempor in cididunt ut labore.</p>
-  </div>
-</div>
+    <!-- START GRID OF TWO SECTIONS (Instagram / YouTube) -->
+    <div class="grid">
 
-<div id="about" class="section split dark">
-  <img src="images/image-2.png" alt="Music girl">
-  <div>
-    <div class="heading">About<br>The Event</div>
-    <p class="text">Lorem ipsum dolor sit amet, consec adip elit, sed do eiusmod tempor in cididunt ut labore.</p>
-  </div>
-</div>
+      <!-- START INSTAGRAM SECTION -->
+      <!-- Section is intentionally self-contained: id, data-section and comment markers help extraction -->
+      <!-- START INSTAGRAM -->
+      <section id="instagram" class="card" data-section="instagram" aria-labelledby="insta-title">
+        <div class="section-head">
+          <div class="title">
+            <div class="icon insta">IG</div>
+            <div>
+              <div id="insta-title" style="font-weight:600;font-size:14px">Instagram — Visual Highlights</div>
+              <div style="font-size:12px;color:var(--muted)">Bitesized creativity • 3 updates</div>
+            </div>
+          </div>
+          <div class="section-meta">Followers +2.1% • 24h</div>
+        </div>
 
-<div id="extra" class="section split dark">
-  <div>
-    <div class="heading">Lorem ipsum<br>dolor sit amet</div>
-  </div>
-  <div></div>
-</div>
+        <div class="hero" role="img" aria-label="Instagram hero image placeholder">
+          <!-- replace src with your image URL -->
+          <img src="https://via.placeholder.com/600x300?text=Instagram+Hero" alt="Instagram highlight" />
+        </div>
 
-<div id="features" class="section split dark icons">
-  <div>
-    <img src="images/image-3.png" alt="Icon 1">
-    <p class="text">Text block<br>Change the text.</p>
+        <p class="lead">A quick visual round-up: bright shots, short Reels, and one behind-the-scenes moment that resonated.</p>
+
+        <div class="bullets">
+          <div class="bullet"><div class="dot"></div><div><strong>Reel: Sunset edit</strong> — 18s clip, organic reach spike. Tip: tag collaborators.</div></div>
+          <div class="bullet"><div class="dot"></div><div><strong>Carousel: Studio shots</strong> — neat before/after layout, keep captions concise.</div></div>
+          <div class="bullet"><div class="dot"></div><div><strong>Story poll</strong> — 2k impressions, 62% voted “more BTS”.</div></div>
+        </div>
+
+        <div class="cta-row">
+          <a class="btn" href="#" aria-label="Open Instagram post">Open on Instagram</a>
+          <div class="stat">Avg. engagement: 6.8%</div>
+        </div>
+
+        <footer class="note"> <!-- small note useful for AI processing -->
+          <!-- extraction-hint: instagram-section-end -->
+          Instagram section: structured for easy extraction (title, hero, bullets, CTAs).
+        </footer>
+      </section>
+      <!-- END INSTAGRAM -->
+
+      <!-- START YOUTUBE SECTION -->
+      <!-- Section is intentionally self-contained: id, data-section and comment markers help extraction -->
+      <!-- START YOUTUBE -->
+      <section id="youtube" class="card" data-section="youtube" aria-labelledby="yt-title">
+        <div class="section-head">
+          <div class="title">
+            <div class="icon yt">YT</div>
+            <div>
+              <div id="yt-title" style="font-weight:600;font-size:14px">YouTube — Weekly Drops</div>
+              <div style="font-size:12px;color:var(--muted)">Long-form highlights • 2 releases</div>
+            </div>
+          </div>
+          <div class="section-meta">Views +4.3% • 7d</div>
+        </div>
+
+        <div class="hero" role="img" aria-label="YouTube hero image placeholder">
+          <!-- replace src with your image URL -->
+          <img src="https://via.placeholder.com/600x300?text=YouTube+Hero" alt="YouTube highlight" />
+        </div>
+
+        <p class="lead">This week’s featured video explores craft and process — longer watch times, steady subscriber growth.</p>
+
+        <div class="bullets">
+          <div class="bullet"><div class="dot"></div><div><strong>Feature: Studio tour</strong> — 8:12 runtime, high retention on first 2 min.</div></div>
+          <div class="bullet"><div class="dot"></div><div><strong>Short: Quick tip</strong> — 34s, strong shares to socials.</div></div>
+          <div class="bullet"><div class="dot"></div><div><strong>Community Q&A</strong> — add pinned comment with timestamps.</div></div>
+        </div>
+
+        <div class="cta-row">
+          <a class="btn" href="#" aria-label="Open YouTube video">Watch on YouTube</a>
+          <div class="stat">Avg. view duration: 3m 12s</div>
+        </div>
+
+        <footer class="note">
+          <!-- extraction-hint: youtube-section-end -->
+          YouTube section: same structure as Instagram for parity — easy to extract and process.
+        </footer>
+      </section>
+      <!-- END YOUTUBE -->
+
+    </div>
+    <!-- END GRID -->
+
+    <footer style="margin-top:18px;text-align:center;color:var(--muted);font-size:12px">
+      You're receiving this because you signed up for Quick Drops • <span style="opacity:0.9">Unsubscribe</span>
+    </footer>
   </div>
-  <div>
-    <img src="images/image-4.png" alt="Icon 2">
-    <p class="text">Text block<br>Change the text.</p>
-  </div>
-  <div>
-    <img src="images/image-5.png" alt="Icon 3">
-    <p class="text">Text block<br>Change the text.</p>
-  </div>
-</div>
 </body>
 </html>

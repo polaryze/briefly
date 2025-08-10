@@ -439,6 +439,83 @@ app.post('/api/openai/summarize', async (req, res) => {
   }
 });
 
+// OpenAI API endpoint for updating newsletter sections
+app.post('/api/openai/updateSection', async (req, res) => {
+  const { sectionId, sectionHtml, sectionTitle, newsletterContext, userPrompt } = req.body;
+  
+  if (!OPENAI_API_KEY) {
+    return res.status(500).json({ 
+      error: 'OpenAI API key not configured on server' 
+    });
+  }
+
+  if (!sectionId || !sectionHtml || !sectionTitle || !userPrompt) {
+    return res.status(400).json({ 
+      error: 'sectionId, sectionHtml, sectionTitle, and userPrompt are required' 
+    });
+  }
+
+  try {
+    const systemPrompt = `You are editing a newsletter section called "${sectionTitle}".
+
+Current HTML for this section:
+${sectionHtml}
+
+Newsletter context: ${newsletterContext || 'No additional context provided'}
+
+User request: ${userPrompt}
+
+IMPORTANT: Return ONLY valid HTML for this section. Do not include any other text, explanations, or markdown. The response should be pure HTML that can be directly inserted into the newsletter.
+
+Maintain the same structure and styling as the original section, but update the content according to the user's request.`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: `Please update the "${sectionTitle}" section according to my request: ${userPrompt}`
+          }
+        ],
+        max_tokens: 2000,
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return res.status(response.status).json({ 
+        error: `OpenAI API error: ${errorData.error?.message || response.statusText}` 
+      });
+    }
+
+    const result = await response.json();
+    const updatedHtml = result.choices[0]?.message?.content || '';
+    
+    // Clean the HTML response to ensure it's valid
+    const cleanHtml = updatedHtml.trim();
+    
+    res.json({ 
+      updatedHtml: cleanHtml,
+      sectionId: sectionId
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message || 'Failed to update section' 
+    });
+  }
+});
+
 // RapidAPI endpoints
 app.post('/api/rapidapi/twitter', async (req, res) => {
   const { handle } = req.body;
@@ -658,7 +735,7 @@ app.post('/api/rapidapi/instagram', async (req, res) => {
 });
 
 app.post('/api/rapidapi/youtube', async (req, res) => {
-  const { url } = req.body;
+  const { url, channelId } = req.body;
   
   if (!RAPIDAPI_KEY) {
     return res.status(500).json({ 
@@ -666,58 +743,144 @@ app.post('/api/rapidapi/youtube', async (req, res) => {
     });
   }
 
-  if (!url) {
+  if (!url && !channelId) {
     return res.status(400).json({ 
-      error: 'YouTube URL is required' 
+      error: 'YouTube URL or Channel ID is required' 
     });
   }
 
   try {
-    // Extract video ID from URL
-    const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-    
-    if (!videoId) {
-      return res.status(400).json({ error: 'Invalid YouTube URL' });
-    }
+    let posts = [];
 
-    const apiUrl = `https://youtube-video-download-info.p.rapidapi.com/dl?id=${videoId}`;
-    const options = {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_KEY,
-        'X-RapidAPI-Host': 'youtube-video-download-info.p.rapidapi.com'
+    if (channelId) {
+      // Handle channel ID - fetch multiple videos from channel
+      const channelApiUrl = `https://youtube-video-download-info.p.rapidapi.com/channel?id=${channelId}`;
+      const channelOptions = {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': RAPIDAPI_KEY,
+          'X-RapidAPI-Host': 'youtube-video-download-info.p.rapidapi.com'
+        }
+      };
+
+      const channelResponse = await fetch(channelApiUrl, channelOptions);
+      const channelResult = await channelResponse.text();
+      
+      let channelData;
+      try {
+        channelData = JSON.parse(channelResult);
+      } catch (err) {
+        return res.status(500).json({ error: 'Failed to parse YouTube channel API response' });
       }
-    };
 
-    const response = await fetch(apiUrl, options);
-    const result = await response.text();
-    
-    let data;
-    try {
-      data = JSON.parse(result);
-    } catch (err) {
-      return res.status(500).json({ error: 'Failed to parse YouTube API response' });
+      // If channel API doesn't work, try to fetch recent videos using search
+      if (!channelData.videos || channelData.videos.length === 0) {
+        const searchApiUrl = `https://youtube-video-download-info.p.rapidapi.com/search?q=channel:${channelId}&type=video&sort=date`;
+        const searchOptions = {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': RAPIDAPI_KEY,
+            'X-RapidAPI-Host': 'youtube-video-download-info.p.rapidapi.com'
+          }
+        };
+
+        const searchResponse = await fetch(searchApiUrl, searchOptions);
+        const searchResult = await searchResponse.text();
+        
+        let searchData;
+        try {
+          searchData = JSON.parse(searchResult);
+        } catch (err) {
+          return res.status(500).json({ error: 'Failed to parse YouTube search API response' });
+        }
+
+        // Transform search results to posts
+        if (searchData.videos && Array.isArray(searchData.videos)) {
+          posts = searchData.videos.slice(0, 10).map(video => ({
+            id: video.id || video.video_id,
+            text: video.title || 'No title available',
+            created_at: video.upload_date || video.published || new Date().toISOString(),
+            favorite_count: video.likes || 0,
+            reply_count: video.comment_count || 0,
+            retweet_count: 0,
+            user: {
+              screen_name: video.channel || 'Unknown Channel',
+              name: video.channel || 'Unknown Channel',
+              profile_image_url: video.thumbnail || ''
+            },
+            entities: {},
+            platform: 'youtube',
+            images: video.thumbnail ? [video.thumbnail] : []
+          }));
+        }
+      } else {
+        // Transform channel videos to posts
+        posts = channelData.videos.slice(0, 10).map(video => ({
+          id: video.id || video.video_id,
+          text: video.title || 'No title available',
+          created_at: video.upload_date || video.published || new Date().toISOString(),
+          favorite_count: video.likes || 0,
+          reply_count: video.comment_count || 0,
+          retweet_count: 0,
+          user: {
+            screen_name: video.channel || 'Unknown Channel',
+            name: video.channel || 'Unknown Channel',
+            profile_image_url: video.thumbnail || ''
+          },
+          entities: {},
+          platform: 'youtube',
+          images: video.thumbnail ? [video.thumbnail] : []
+        }));
+      }
+    } else if (url) {
+      // Handle single video URL (existing logic)
+      const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+      
+      if (!videoId) {
+        return res.status(400).json({ error: 'Invalid YouTube URL' });
+      }
+
+      const apiUrl = `https://youtube-video-download-info.p.rapidapi.com/dl?id=${videoId}`;
+      const options = {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': RAPIDAPI_KEY,
+          'X-RapidAPI-Host': 'youtube-video-download-info.p.rapidapi.com'
+        }
+      };
+
+      const response = await fetch(apiUrl, options);
+      const result = await response.text();
+      
+      let data;
+      try {
+        data = JSON.parse(result);
+      } catch (err) {
+        return res.status(500).json({ error: 'Failed to parse YouTube API response' });
+      }
+
+      // Transform to standard format
+      const post = {
+        id: videoId,
+        text: data.title || 'No title available',
+        created_at: data.upload_date || new Date().toISOString(),
+        favorite_count: data.likes || 0,
+        reply_count: data.comment_count || 0,
+        retweet_count: 0, // YouTube doesn't have retweets
+        user: {
+          screen_name: data.channel || 'Unknown Channel',
+          name: data.channel || 'Unknown Channel',
+          profile_image_url: data.thumbnail || ''
+        },
+        entities: {},
+        platform: 'youtube',
+        images: data.thumbnail ? [data.thumbnail] : []
+      };
+
+      posts = [post];
     }
 
-    // Transform to standard format
-    const post = {
-      id: videoId,
-      text: data.title || 'No title available',
-      created_at: data.upload_date || new Date().toISOString(),
-      favorite_count: data.likes || 0,
-      reply_count: data.comment_count || 0,
-      retweet_count: 0, // YouTube doesn't have retweets
-      user: {
-        screen_name: data.channel || 'Unknown Channel',
-        name: data.channel || 'Unknown Channel',
-        profile_image_url: data.thumbnail || ''
-      },
-      entities: {},
-      platform: 'youtube',
-      images: data.thumbnail ? [data.thumbnail] : []
-    };
-
-    res.json({ data: [post] });
+    res.json({ data: posts });
   } catch (error) {
     res.status(500).json({ 
       error: `YouTube API error: ${error.message || 'Unknown error'}` 

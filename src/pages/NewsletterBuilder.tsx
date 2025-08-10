@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,7 +10,7 @@ import { ArrowLeft, Play, Loader2, Home, ChevronLeft, ChevronRight, Shield, Wand
 import AINewsletterRenderer from "@/components/AINewsletterRenderer";
 import Loader from "@/components/Loader";
 import { logger } from "@/lib/logger";
-import { validateSocialMediaUrl, validateRequired } from "@/lib/validation";
+import { validateSocialMediaUrl, validateRequired, sanitizeAllInputs, sanitizePlatformInput } from "@/lib/validation";
 import { LoadingButton } from "@/components/ui/loading";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { configManager } from "@/lib/config";
@@ -19,6 +22,8 @@ import { CardCarousel } from '@/components/ui/card-carousel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import SectionEditor from "@/components/SectionEditor";
+import LoadingProgressPanel from "@/components/LoadingProgressPanel";
+import type { PlatformStatus } from "@/components/LoadingProgressPanel";
 
 const SOCIALS = [
   {
@@ -1373,6 +1378,11 @@ export default function NewsletterBuilder() {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState('');
   const [showLoadingPage, setShowLoadingPage] = useState(false);
+  const [platformStatus, setPlatformStatus] = useState<Record<'twitter' | 'instagram' | 'youtube', PlatformStatus>>({
+    twitter: { phase: 'idle' },
+    instagram: { phase: 'idle' },
+    youtube: { phase: 'idle' },
+  });
 
   // Section-based newsletter state
   const [sectionBasedNewsletter, setSectionBasedNewsletter] = useState<{
@@ -1386,6 +1396,80 @@ export default function NewsletterBuilder() {
     css?: string;
   } | null>(null);
   const [showSectionEditor, setShowSectionEditor] = useState(false);
+
+  // React Hook Form with Zod validation
+  const formSchema = React.useMemo(() => {
+    return z.object({
+      twitter: z
+        .string()
+        .optional()
+        .superRefine((val, ctx) => {
+          if (selected.twitter) {
+            if (!val || val.trim().length === 0) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Twitter is required' });
+              return;
+            }
+            // Use local validator for X
+            if (typeof validateXInput === 'function') {
+              if (!validateXInput(val)) {
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter a valid X URL or handle (e.g., @username or username)' });
+              }
+            }
+          }
+        }),
+      instagram: z
+        .string()
+        .optional()
+        .superRefine((val, ctx) => {
+          if (selected.instagram) {
+            if (!val || val.trim().length === 0) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Instagram is required' });
+              return;
+            }
+            const isUrl = val.includes('instagram.com');
+            const isUsername = /^[a-zA-Z0-9._]+$/.test(val.trim());
+            if (!isUrl && !isUsername) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter a valid Instagram URL or username' });
+            }
+          }
+        }),
+      youtube: z
+        .string()
+        .optional()
+        .superRefine((val, ctx) => {
+          if (selected.youtube) {
+            if (!val || val.trim().length === 0) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'YouTube is required' });
+              return;
+            }
+            const clean = val.trim();
+            const isChannelName = /^[a-zA-Z0-9._-]+$/.test(clean.replace('@', ''));
+            const isYouTubeUrl = clean.includes('youtube.com/') || clean.includes('youtu.be/');
+            const hasAt = clean.startsWith('@');
+            if (!isChannelName && !isYouTubeUrl && !hasAt) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter a valid YouTube channel (e.g., @username, username, or YouTube URL)' });
+            }
+          }
+        }),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected.twitter, selected.instagram, selected.youtube]);
+
+  const {
+    register,
+    formState: { errors, isValid },
+    setValue,
+    trigger,
+    watch,
+  } = useForm<{ twitter?: string; instagram?: string; youtube?: string }>({
+    resolver: zodResolver(formSchema),
+    mode: 'onChange',
+    defaultValues: {
+      twitter: '',
+      instagram: '',
+      youtube: '',
+    },
+  });
 
   // Handle edited newsletter content from editor
   useEffect(() => {
@@ -1466,12 +1550,14 @@ export default function NewsletterBuilder() {
     for (const platform of platforms) {
       if (!selected[platform] || !inputs[platform]) {
         console.log(`⏭️ Skipping ${platform}: not selected or no input`);
+        setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'skipped' } } as any));
         continue;
       }
       
       console.log(`📱 Processing ${platform}...`);
       setGenerationStep(`Processing ${platform} data...`);
       setGenerationProgress(20 + (platforms.indexOf(platform) * 15)); // 20, 35, 50
+      setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'fetching', fetchedCount: 0 } } as any));
       
       try {
         let platformData: any[] = [];
@@ -1503,9 +1589,12 @@ export default function NewsletterBuilder() {
         if (platformData.length === 0) {
           console.log(`⚠️ No data found for ${platform}`);
           summaries[platform] = [];
+          setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'done', fetchedCount: 0, summarizedCount: 0 } } as any));
           continue;
         }
         
+        setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'fetching', fetchedCount: platformData.length } } as any));
+
         // Filter by timeline if specified
         if (timelineOptions && timelineOptions[platform]) {
           platformData = filterPostsByTimeline(platformData, platform, timelineOptions[platform]);
@@ -1551,6 +1640,7 @@ export default function NewsletterBuilder() {
         setGenerationStep(`Summarizing ${platform} content...`);
         setGenerationProgress(50 + (platforms.indexOf(platform) * 10)); // 50, 60, 70
         const platformSummaries: string[] = [];
+        setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'summarizing', fetchedCount: platformData.length, summarizedCount: 0 } } as any));
         
         for (let i = 0; i < platformData.length; i++) {
           const post = platformData[i];
@@ -1559,21 +1649,26 @@ export default function NewsletterBuilder() {
               const summary = await summarizeText(post.text);
               platformSummaries.push(summary);
               console.log(`✅ Summarized ${platform} post ${i + 1}/${platformData.length}`);
+              setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'summarizing', fetchedCount: platformData.length, summarizedCount: i + 1 } } as any));
             } catch (error) {
               console.error(`❌ Failed to summarize ${platform} post ${i + 1}:`, error);
               platformSummaries.push(post.text); // Use original text as fallback
+              setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'summarizing', fetchedCount: platformData.length, summarizedCount: i + 1 } } as any));
             }
           } else {
             platformSummaries.push(post.text || '');
+            setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'summarizing', fetchedCount: platformData.length, summarizedCount: i + 1 } } as any));
           }
         }
         
         summaries[platform] = platformSummaries;
         console.log(`✅ Completed ${platform}: ${platformSummaries.length} summaries`);
+        setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'done', fetchedCount: platformData.length, summarizedCount: platformSummaries.length } } as any));
         
       } catch (error) {
         console.error(`❌ Error processing ${platform}:`, error);
         summaries[platform] = [];
+        setPlatformStatus(prev => ({ ...prev, [platform]: { phase: 'error', error: (error as any)?.message || 'Error' } } as any));
       }
     }
     
@@ -1626,9 +1721,11 @@ export default function NewsletterBuilder() {
   };
 
   const handleInput = (key: string, value: string) => {
-    setInputs((prev) => ({ ...prev, [key]: value }));
-    
-    // Clear validation error when user starts typing
+    const sanitized = sanitizePlatformInput(value, key);
+    setInputs((prev) => ({ ...prev, [key]: sanitized }));
+    setValue(key as 'twitter' | 'instagram' | 'youtube', sanitized, { shouldValidate: true, shouldTouch: true, shouldDirty: true });
+    trigger(key as 'twitter' | 'instagram' | 'youtube');
+
     if (validationErrors[key]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -1757,6 +1854,11 @@ export default function NewsletterBuilder() {
     // API calls are now handled server-side, no need to validate keys on frontend
     console.log('✅ API calls handled server-side');
 
+    // Sync RHF values to local state and validate
+    const sanitized = sanitizeAllInputs(inputs);
+    setInputs(sanitized as any);
+    await trigger();
+
     if (!validateInputs()) {
       console.log('❌ Validation failed');
       return;
@@ -1774,6 +1876,7 @@ export default function NewsletterBuilder() {
       console.log('🚀 Starting step-by-step processing...');
       setGenerationProgress(10);
       setGenerationStep('Initializing data collection...');
+      setPlatformStatus({ twitter: { phase: 'idle' }, instagram: { phase: 'idle' }, youtube: { phase: 'idle' } });
       
       const { summaries, images, processingTime } = await processSocialMediaStepByStep(selected, inputs, timelineOptions);
       
@@ -1940,7 +2043,7 @@ export default function NewsletterBuilder() {
       // Create section-based newsletter structure
       const sectionBasedNewsletterData = {
         id: `newsletter-${Date.now()}`,
-        title: `${template.name} Newsletter`,
+        title: `Your Weekly Newsletter`,
         sections: [
           {
             id: 'intro',
@@ -2597,6 +2700,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
         // Loading Page - Show dedicated loading screen with custom loader
         <>
           <Loader progress={generationProgress} step={generationStep} />
+          <LoadingProgressPanel generationProgress={generationProgress} generationStep={generationStep} platformStatus={platformStatus} />
           
           {/* Show error on loading page if there is one */}
           {error && (
@@ -2706,9 +2810,9 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+                      <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 p-6`}>
                         {/* Newsletter Preview */}
-                        <div className="lg:col-span-2">
+                        <div className={`${showSectionEditor ? 'lg:col-span-2' : 'lg:col-span-3'}`} data-lov-id="src/pages/NewsletterBuilder.tsx:2815:24">
                           <Card className="bg-white">
                             <CardHeader>
                               <CardTitle className="text-xl font-semibold text-gray-900">
@@ -2731,7 +2835,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                           </Card>
                         </div>
 
-                        {/* Section Editor */}
+                        {/* Section Editor (only when enabled) */}
                         {showSectionEditor && (
                           <div className="lg:col-span-1">
                             <Card className="bg-white sticky top-6">
@@ -2805,7 +2909,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
             )}
             
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6" noValidate>
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-3 text-center">Select Social Platforms</label>
                 <div className="grid grid-cols-3 gap-3 sm:gap-4 justify-center max-w-md mx-auto">
@@ -2875,8 +2979,8 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                           placeholder={s.placeholder}
                           disabled={loading}
                         />
-                        {validationErrors[s.key] && (
-                          <p className="text-red-500 text-xs mt-1">{validationErrors[s.key]}</p>
+                        {(validationErrors[s.key] || (errors as any)[s.key]?.message) && (
+                          <p className="text-red-500 text-xs mt-1">{(errors as any)[s.key]?.message || validationErrors[s.key]}</p>
                         )}
                         
                         {/* Timeline Options */}
@@ -2941,7 +3045,7 @@ Return ONLY the complete modified HTML document. Start with <!DOCTYPE html> and 
                 type="submit"
                 loading={loading}
                 loadingText="Generating Newsletter..."
-                disabled={loading}
+                disabled={loading || !isValid}
                 className="mt-2 bg-black hover:bg-gray-800 text-white font-medium py-3 px-3 sm:px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg active:scale-95 w-full"
               >
                 Generate

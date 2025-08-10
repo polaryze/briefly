@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Play, ExternalLink, Edit } from 'lucide-react';
+import { ArrowLeft, Play, ExternalLink, Edit, Wand2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { useNavigate } from 'react-router-dom';
+import SectionEditor from './SectionEditor';
 
 interface NewsletterSection {
   title: string;
   icon: string;
   content: string;
+}
+
+interface SectionBasedNewsletterSection {
+  id: string;
+  title: string;
+  html: string;
 }
 
 interface AINewsletterData {
@@ -19,10 +26,18 @@ interface AINewsletterData {
   youtubeSummaries?: {[key: string]: string};
 }
 
+interface SectionBasedNewsletterData {
+  id: string;
+  title: string;
+  sections: SectionBasedNewsletterSection[];
+  css?: string;
+}
+
 interface AINewsletterRendererProps {
-  newsletterData: AINewsletterData;
+  newsletterData: AINewsletterData | SectionBasedNewsletterData;
   posts?: any[];
   onBackToBuilder?: () => void;
+  onSectionUpdate?: (sectionId: string, updatedHtml: string) => void;
 }
 
 // Safe HTML sanitization function
@@ -50,10 +65,22 @@ const SafeHTMLRenderer: React.FC<{ html: string }> = ({ html }) => {
   );
 };
 
-const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterData, posts, onBackToBuilder }) => {
+const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ 
+  newsletterData, 
+  posts, 
+  onBackToBuilder,
+  onSectionUpdate 
+}) => {
   const navigate = useNavigate();
   const [sanitizedHTML, setSanitizedHTML] = useState<string | null>(null);
+  const [showSectionEditor, setShowSectionEditor] = useState(false);
   
+  // Check if this is a section-based newsletter
+  const isSectionBased = 'id' in newsletterData && 'sections' in newsletterData && 
+    Array.isArray(newsletterData.sections) && 
+    newsletterData.sections.length > 0 && 
+    'id' in newsletterData.sections[0];
+
   const handleBackToGenerator = () => {
     logger.info('User clicked back to generator');
     if (onBackToBuilder) {
@@ -64,9 +91,21 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   const handleEditNewsletter = () => {
     logger.info('User clicked edit newsletter');
     // Navigate to the newsletter editor with the current content
+    let newsletterContent = '';
+    if ('rawContent' in newsletterData && newsletterData.rawContent) {
+      newsletterContent = newsletterData.rawContent;
+    } else if ('editedContent' in newsletterData && newsletterData.editedContent) {
+      newsletterContent = newsletterData.editedContent;
+    } else if (isSectionBased) {
+      // For section-based newsletters, combine all sections
+      newsletterContent = (newsletterData as SectionBasedNewsletterData).sections
+        .map(section => section.html)
+        .join('\n');
+    }
+    
     navigate('/newsletter-editor', { 
       state: { 
-        newsletterContent: newsletterData.rawContent || newsletterData.editedContent || '',
+        newsletterContent,
         newsletterData: newsletterData 
       } 
     });
@@ -82,9 +121,9 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   );
 
   // Handle raw content display - TRUE BLANK CANVAS MODE
-  if (newsletterData.rawContent || newsletterData.editedContent) {
-    const contentToRender = newsletterData.editedContent || newsletterData.rawContent || '';
-    const cssToApply = newsletterData.css || '';
+  if (!isSectionBased && ('rawContent' in newsletterData && newsletterData.rawContent) || ('editedContent' in newsletterData && newsletterData.editedContent)) {
+    const contentToRender = ('editedContent' in newsletterData && newsletterData.editedContent) || ('rawContent' in newsletterData && newsletterData.rawContent) || '';
+    const cssToApply = 'css' in newsletterData ? newsletterData.css || '' : '';
     
     logger.info('Rendering newsletter with raw content', { 
       contentLength: contentToRender.length,
@@ -622,7 +661,7 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   }
 
   // Handle error display
-  if (newsletterData.error) {
+  if ('error' in newsletterData && newsletterData.error) {
     logger.error('Newsletter renderer displaying error', new Error(newsletterData.error));
     
     return (
@@ -640,7 +679,7 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
   logger.info('Rendering structured newsletter', { 
     sectionsCount: newsletterData.sections?.length || 0,
     postsCount: posts?.length || 0,
-    youtubeSummariesCount: Object.keys(newsletterData.youtubeSummaries || {}).length
+    youtubeSummariesCount: 'youtubeSummaries' in newsletterData ? Object.keys(newsletterData.youtubeSummaries || {}).length : 0
   });
 
   return (
@@ -653,21 +692,34 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
                 <h1 className="text-xl sm:text-2xl font-bold mb-2">Your Weekly Newsletter</h1>
                 <p className="text-sm sm:text-base text-muted-foreground">Generated from your social media content and YouTube videos</p>
               </div>
-              <Button
-                onClick={handleEditNewsletter}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Newsletter
-              </Button>
+              <div className="flex gap-2">
+                {isSectionBased && onSectionUpdate && (
+                  <Button
+                    onClick={() => setShowSectionEditor(true)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 hover:bg-green-50 hover:border-green-200"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                    Edit Sections
+                  </Button>
+                )}
+                <Button
+                  onClick={handleEditNewsletter}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200"
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit Newsletter
+                </Button>
+              </div>
             </div>
           </header>
           
           <main className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             {/* AI Generated Content */}
-            {newsletterData.sections && newsletterData.sections.length > 0 && (
+            {!isSectionBased && newsletterData.sections && newsletterData.sections.length > 0 && (
               <Section title="AI Generated Content" icon="🤖">
                 {newsletterData.sections.map((section, index) => (
                   <div key={index} className="mb-4 sm:mb-6 last:mb-0">
@@ -682,8 +734,24 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
               </Section>
             )}
 
+            {/* Section-based Newsletter Content */}
+            {isSectionBased && newsletterData.sections && newsletterData.sections.length > 0 && (
+              <div className="space-y-6">
+                {(newsletterData as SectionBasedNewsletterData).sections.map((section, index) => (
+                  <div key={section.id} className="bg-card rounded-lg p-4 shadow-sm border border-border">
+                    <h3 className="text-lg font-semibold mb-3 text-foreground">
+                      {section.title}
+                    </h3>
+                    <div className="prose prose-sm max-w-none">
+                      <SafeHTMLRenderer html={section.html} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* YouTube Video Summaries */}
-            {newsletterData.youtubeSummaries && Object.keys(newsletterData.youtubeSummaries).length > 0 && (
+            {'youtubeSummaries' in newsletterData && newsletterData.youtubeSummaries && Object.keys(newsletterData.youtubeSummaries).length > 0 && (
               <Section title="YouTube Video Summaries" icon="📺">
                 <div className="space-y-3 sm:space-y-4">
                   {Object.entries(newsletterData.youtubeSummaries).map(([videoUrl, summary], index) => (
@@ -746,7 +814,7 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
 
             {/* Empty State */}
             {(!newsletterData.sections || newsletterData.sections.length === 0) && 
-             (!newsletterData.youtubeSummaries || Object.keys(newsletterData.youtubeSummaries).length === 0) && 
+             (!('youtubeSummaries' in newsletterData) || !newsletterData.youtubeSummaries || Object.keys(newsletterData.youtubeSummaries).length === 0) && 
              (!posts || posts.length === 0) && (
               <div className="text-center py-6 sm:py-8">
                 <p className="text-sm sm:text-base text-muted-foreground">No content available to display in your newsletter.</p>
@@ -756,6 +824,32 @@ const AINewsletterRenderer: React.FC<AINewsletterRendererProps> = ({ newsletterD
           </main>
         </div>
       </div>
+      
+      {/* Section Editor Modal */}
+      {showSectionEditor && isSectionBased && onSectionUpdate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Edit Newsletter Sections</h2>
+                <Button
+                  onClick={() => setShowSectionEditor(false)}
+                  variant="outline"
+                  size="sm"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <SectionEditor
+                newsletterData={newsletterData as SectionBasedNewsletterData}
+                onSectionUpdate={onSectionUpdate}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -17,56 +17,6 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     preview: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
     htmlPath: '/example_newsletters/newslettersample6/cleaned_newsletter.html',
     enabled: true
-  },
-  
-  {
-    id: 'sample1',
-    name: 'Professional Business',
-    description: 'Clean, professional design perfect for business newsletters with social media integration',
-    style: 'classic',
-    preview: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample1/1.html',
-    enabled: false
-  },
-  
-  {
-    id: 'sample2', 
-    name: 'Modern Tech',
-    description: 'Contemporary design with clean typography ideal for tech and startup newsletters',
-    style: 'modern',
-    preview: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample2/2.html',
-    enabled: false
-  },
-  
-  {
-    id: 'sample3',
-    name: 'Creative Lifestyle', 
-    description: 'Vibrant, engaging design perfect for lifestyle and creative industry newsletters',
-    style: 'creative',
-    preview: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample3/3.html',
-    enabled: false
-  },
-  
-  {
-    id: 'sample4',
-    name: 'Minimal Elegant',
-    description: 'Clean, minimal design with elegant typography for sophisticated content',
-    style: 'minimal', 
-    preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample4/4.html',
-    enabled: false
-  },
-  
-  {
-    id: 'sample5',
-    name: 'Sectioned Newsletter',
-    description: 'Advanced template with 5 distinct sections for targeted content generation',
-    style: 'modern',
-    preview: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=300&h=200&fit=crop',
-    htmlPath: '/example_newsletters/newslettersample5/5.html',
-    enabled: false
   }
 ];
 
